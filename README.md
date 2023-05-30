@@ -1,4 +1,29 @@
-# Baseball Stats
+# Baseball OBP and COBP
+
+This project calculates On-Base Percentage (OBP) and Conditional On-Base Percentage (COBP) for MLB
+players based on [retrosheet.org](retrosheet.org) event data.
+
+Interface to the application is TBD - current usage only works for a single, local data set.
+
+# Definitions 
+## OBP
+`On-Base % (OBP)` = how frequently batter reaches base per plate appearance
+
+- Includes: hits (H), walks (BB), and hit by pitches (HBP) in the numerator
+- Does not include: errors, fielder’s choice, or dropped third strike
+- Sacrifice bunts (SB) are removed from the numerator but sacrifice flies (SF) are
+included in the denominator.
+- Denominator equals: `At-Bats (AB) + Walks (BB) + Hit by Pitches (HBP) + Sacrifice
+Flies (SF)`
+- `OBP = (H + BB + HBP) / (AB + BB + HBP + SF)`
+
+## COBP
+`Conditional On-Base % (COBP)` = the OBP when any batter(s) reach(es) base in the
+same inning.
+- Includes same factors as OBP but requires other batter(s) to reach base in the same
+inning (either before or after the current batter).
+- If no one gets on base in a specific inning, those At-Bats are not included in the
+COBP calculation.
 
 # Data
 - [Retrosheet Play-by-Play Data Files (Event Files)](https://www.retrosheet.org/game.htm)
@@ -18,7 +43,8 @@
     - calculate correlations
 - future work
     - track where each player batted in the line-up when they got on base
-    - If available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
+    - if available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
+    - provide user-friendly interface, allowing selection of a particular team over specified seasons
 
 ### Credits
 - Project skeleton generated via `cookiecutter https://github.com/rozelie/Python-Project-Cookiecutter`
