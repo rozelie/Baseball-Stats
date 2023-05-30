@@ -1,4 +1,4 @@
-from baseball_obp_and_cobp.games import Game
+from baseball_obp_and_cobp.game import Game
 from baseball_obp_and_cobp.player import Player
 
 

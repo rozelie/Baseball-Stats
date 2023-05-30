@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Iterator
 
 from baseball_obp_and_cobp.player import Player
-from baseball_obp_and_cobp.plays import Play
-from baseball_obp_and_cobp.teams import Team, TeamType
+from baseball_obp_and_cobp.play import Play
+from baseball_obp_and_cobp.team import Team, TeamType
 
 
 @dataclass

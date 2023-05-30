@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from baseball_obp_and_cobp.plays import Play
+from baseball_obp_and_cobp.play import Play
 
 
 @dataclass
