@@ -3,7 +3,7 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "baseball_stats"
+name = "baseball_obp_and_cobp"
 version = "0.0.1"
 description = "My new project"
 authors = [
@@ -31,7 +31,7 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/rozelie/baseball_stats"
+"Homepage" = "https://github.com/rozelie/baseball_obp_and_cobp"
 
 [tool.ruff]
 line-length = 120
