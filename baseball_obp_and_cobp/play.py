@@ -162,8 +162,8 @@ class Play:
     modifiers: list[PlayResultModifier]
 
     @classmethod
-    def from_play_line(cls, line: str) -> "Play":
-        _, inning, _, batter_id, _, _, play_descriptor = line.split(",")
+    def from_play_line(cls, line_values: list[str]) -> "Play":
+        inning, _, batter_id, _, _, play_descriptor = line_values
         result = PlayResult.from_play_descriptor(play_descriptor)
 
         modifiers = []

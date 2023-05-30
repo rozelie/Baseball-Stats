@@ -11,10 +11,9 @@ class Player:
     plays: list[Play] = field(default_factory=list)
 
     @classmethod
-    def from_start_line(cls, line: str) -> "Player":
-        split_line = line.split(",")
+    def from_start_line(cls, line_values: list[str]) -> "Player":
         return cls(
-            id=split_line[1],
-            name=split_line[2].replace('"', ""),
-            lineup_position=int(split_line[4]),
+            id=line_values[0],
+            name=line_values[1].replace('"', ""),
+            lineup_position=int(line_values[3]),
         )

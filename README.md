@@ -31,7 +31,6 @@ COBP calculation.
     - download for 2022 data: https://www.retrosheet.org/events/2022eve.zip
   - [data/2022CHN.EVN](data/2022CHN.EVN)
     - Cub's 2022 data
-- [Team Abbreviation Lookup](https://www.retrosheet.org/TEAMABR.TXT)
 
 # Todo
 - calculate on-base percentages (OBP) conditional on-base percentage (COBP) for one team, for one season

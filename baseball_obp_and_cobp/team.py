@@ -1,3 +1,4 @@
+"""Team data."""
 from enum import Enum
 
 
@@ -9,6 +10,11 @@ class TeamType(Enum):
 
 
 class Team(Enum):
+    """Team identifiers, as defined in Retrosheet spec.
+
+    https://www.retrosheet.org/TEAMABR.TXT
+    """
+
     ANAHEIM_ANGELS = "ANA"
     ARIZONA_DIAMONDBACKS = "ARI"
     ATLANTA_BRAVES = "ATL"
