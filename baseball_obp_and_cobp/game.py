@@ -1,6 +1,7 @@
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Mapping
 
 from baseball_obp_and_cobp.play import Play
 from baseball_obp_and_cobp.player import Player
@@ -21,6 +22,7 @@ class Game:
 
     id: str
     players: list[Player]
+    inning_to_plays: Mapping[int, list[Play]]
 
     @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
@@ -28,12 +30,15 @@ class Game:
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
+        plays = list(_get_plays(game_lines))
         player_id_to_player = {player.id: player for player in players}
-        for play in _get_plays(game_lines):
+        inning_to_plays: Mapping[int, list[Play]] = defaultdict(list)
+        for play in plays:
+            inning_to_plays[play.inning].append(play)
             if batter := player_id_to_player.get(play.batter_id):
                 batter.plays.append(play)
 
-        return cls(id=game_id, players=players)
+        return cls(id=game_id, inning_to_plays=inning_to_plays, players=players)
 
     def get_player(self, player_id: str) -> Player:
         for player in self.players:

@@ -1,5 +1,6 @@
 """Calculate OBP and COBP stats from game data."""
 from dataclasses import dataclass
+from typing import Iterator, Mapping
 
 from baseball_obp_and_cobp.game import Game
 from baseball_obp_and_cobp.play import Play
@@ -15,16 +16,28 @@ class OBPCounters:
     sacrifice_flys: int = 0
 
 
-def get_player_to_game_on_base_percentage(game: Game, explain: bool = False) -> dict[str, float]:
-    return {player.id: _get_players_on_base_percentage(player, explain) for player in game.players}
+def get_player_to_game_on_base_percentage(
+    game: Game, is_conditional: bool = False, explain: bool = False
+) -> dict[str, float]:
+    return {
+        player.id: _get_players_on_base_percentage(player, game.inning_to_plays, is_conditional, explain)
+        for player in game.players
+    }
 
 
-def _get_players_on_base_percentage(player: Player, explain: bool = False) -> float:
+def _get_players_on_base_percentage(
+    player: Player, inning_to_plays: Mapping[int, list[Play]], is_conditional: bool = False, explain: bool = False
+) -> float:
     explain_lines: list[str] = []
     obp_counters = OBPCounters()
     for play in player.plays:
         play_description_prefix = _get_play_description_prefix(play)
         result = play.result
+        other_plays_on_base_in_inning = list(_get_other_plays_on_base_in_inning(play, inning_to_plays[play.inning]))
+        if is_conditional and not other_plays_on_base_in_inning:
+            _add_explanation_line(explain_lines, play_description_prefix, "N/A (no other on-base in inning)")
+            continue
+
         if result.is_at_bat:
             obp_counters.at_bats += 1
 
@@ -52,7 +65,8 @@ def _get_players_on_base_percentage(player: Player, explain: bool = False) -> fl
     except ZeroDivisionError:
         on_base_percentage = 0.0
 
-    explain_lines.insert(0, f"{player.name}: OBP = {round(on_base_percentage, 3)}")
+    measurement = "COBP" if is_conditional else "OBP"
+    explain_lines.insert(0, f"{player.name}: {measurement} = {round(on_base_percentage, 3)}")
     explain_lines.append(
         f"  > hits={obp_counters.hits} + walks={obp_counters.walks} + hit_by_pitches={obp_counters.hit_by_pitches} == {numerator}"  # noqa: E501
     )
@@ -78,3 +92,10 @@ def _get_play_description_prefix(play: Play) -> str:
         play_description_prefix = f"{play_description_prefix}/{modifiers}"
 
     return f"{play_description_prefix} ({play.play_descriptor})"
+
+
+def _get_other_plays_on_base_in_inning(play: Play, innings_plays: list[Play]) -> Iterator[Play]:
+    for inning_play in innings_plays:
+        result = inning_play.result
+        if any([result.is_hit, result.is_walk, result.is_hit_by_pitch]) and play != inning_play:
+            yield inning_play
