@@ -3,7 +3,13 @@
 This project calculates On-Base Percentage (OBP) and Conditional On-Base Percentage (COBP) for MLB
 players based on [retrosheet.org](retrosheet.org) event data.
 
-Interface to the application is TBD - current usage only works for a single, local data set.
+Interface is built with the `streamlit` library - current usage only works for a single, local data set.
+
+# Usage
+```shell
+make setup
+make run
+```
 
 # Definitions 
 ## OBP

@@ -1,6 +1,8 @@
 """Calculate OBP and COBP stats from game data."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterator, Mapping
+
+import streamlit as st
 
 from baseball_obp_and_cobp.game import Game
 from baseball_obp_and_cobp.play import Play
@@ -15,73 +17,110 @@ class OBPCounters:
     at_bats: int = 0
     sacrifice_flys: int = 0
 
+    @property
+    def numerator(self) -> int:
+        return self.hits + self.walks + self.hit_by_pitches
 
-def get_player_to_game_on_base_percentage(
-    game: Game, is_conditional: bool = False, explain: bool = False
-) -> dict[str, float]:
-    return {
-        player.id: _get_players_on_base_percentage(player, game.inning_to_plays, is_conditional, explain)
-        for player in game.players
+    @property
+    def denominator(self) -> int:
+        return self.at_bats + self.walks + self.hit_by_pitches + self.sacrifice_flys
+
+    @property
+    def obp(self) -> float:
+        try:
+            return self.numerator / self.denominator
+        except ZeroDivisionError:
+            return 0.0
+
+
+@dataclass
+class OBPs:
+    obp: float
+    cobp: float
+
+
+@dataclass
+class Explanation:
+    player: Player
+    obp_explanation: list[str] = field(default_factory=list)
+    cobp_explanation: list[str] = field(default_factory=list)
+
+    def add_play(self, play_description_prefix: str, resultant: str, to_obp: bool = True, to_cobp: bool = True) -> None:
+        value = f"{play_description_prefix} => {resultant}"
+        if to_obp:
+            self.obp_explanation.append(value)
+        if to_cobp:
+            self.cobp_explanation.append(value)
+
+    def add_arithmetic(self, counters: OBPCounters, to_obp: bool = False, to_cobp: bool = False) -> None:
+        numerator = f"H={counters.hits} + W={counters.walks} + HBP={counters.hit_by_pitches} == {counters.numerator}"
+        denominator = f"AB={counters.at_bats} + W={counters.walks} + HBP={counters.hit_by_pitches} + SF={counters.sacrifice_flys} == {counters.denominator}"  # noqa: E501
+        if to_obp:
+            self.obp_explanation.extend([numerator, denominator])
+        if to_cobp:
+            self.cobp_explanation.extend([numerator, denominator])
+
+
+GameOBPs = tuple[OBPs, Explanation]
+PlayerToGameOBP = dict[str, GameOBPs]
+
+
+def get_player_to_game_obps(game: Game) -> PlayerToGameOBP:
+    player_to_game_obps = {
+        player.id: _get_players_on_base_percentage(player, game.inning_to_plays) for player in game.players
     }
+    _display_player_obps(player_to_game_obps=player_to_game_obps, game=game)
+    return player_to_game_obps
 
 
-def _get_players_on_base_percentage(
-    player: Player, inning_to_plays: Mapping[int, list[Play]], is_conditional: bool = False, explain: bool = False
-) -> float:
-    explain_lines: list[str] = []
+def _get_players_on_base_percentage(player: Player, inning_to_plays: Mapping[int, list[Play]]) -> GameOBPs:
+    explanation = Explanation(player)
     obp_counters = OBPCounters()
+    cobp_counters = OBPCounters()
     for play in player.plays:
+        valid_cobp_play = True
         play_description_prefix = _get_play_description_prefix(play)
         result = play.result
         other_plays_on_base_in_inning = list(_get_other_plays_on_base_in_inning(play, inning_to_plays[play.inning]))
-        if is_conditional and not other_plays_on_base_in_inning:
-            _add_explanation_line(explain_lines, play_description_prefix, "N/A (no other on-base in inning)")
-            continue
+        if not other_plays_on_base_in_inning:
+            explanation.add_play(play_description_prefix, "N/A (no other on-base in inning)", to_obp=False)
+            valid_cobp_play = False
 
         if result.is_at_bat:
             obp_counters.at_bats += 1
+            if valid_cobp_play:
+                cobp_counters.at_bats += 1
 
         if result.is_hit:
             obp_counters.hits += 1
-            _add_explanation_line(explain_lines, play_description_prefix, "HIT, AB")
+            if valid_cobp_play:
+                cobp_counters.hits += 1
+            explanation.add_play(play_description_prefix, "HIT, AB", to_cobp=valid_cobp_play)
+
         elif result.is_walk:
             obp_counters.walks += 1
-            _add_explanation_line(explain_lines, play_description_prefix, "WALK")
+            if valid_cobp_play:
+                cobp_counters.walks += 1
+            explanation.add_play(play_description_prefix, "WALK", to_cobp=valid_cobp_play)
         elif result.is_hit_by_pitch:
             obp_counters.hit_by_pitches += 1
-            _add_explanation_line(explain_lines, play_description_prefix, "HBP")
+            if valid_cobp_play:
+                cobp_counters.hit_by_pitches += 1
+            explanation.add_play(play_description_prefix, "HBP", to_cobp=valid_cobp_play)
         elif any(modifier.is_sacrifice_fly for modifier in play.modifiers):
             obp_counters.sacrifice_flys += 1
-            _add_explanation_line(explain_lines, play_description_prefix, "SF, AB")
+            if valid_cobp_play:
+                cobp_counters.sacrifice_flys += 1
+            explanation.add_play(play_description_prefix, "SF, AB", to_cobp=valid_cobp_play)
         elif result.is_at_bat:
-            _add_explanation_line(explain_lines, play_description_prefix, "AB")
+            explanation.add_play(play_description_prefix, "AB", to_cobp=valid_cobp_play)
         else:
-            _add_explanation_line(explain_lines, play_description_prefix, "Unused for OBP")
+            explanation.add_play(play_description_prefix, "Unused for OBP", to_cobp=False)
+            explanation.add_play(play_description_prefix, "Unused for COBP", to_obp=False, to_cobp=valid_cobp_play)
 
-    numerator = obp_counters.hits + obp_counters.walks + obp_counters.hit_by_pitches
-    denominator = obp_counters.at_bats + obp_counters.walks + obp_counters.hit_by_pitches + obp_counters.sacrifice_flys
-    try:
-        on_base_percentage = numerator / denominator
-    except ZeroDivisionError:
-        on_base_percentage = 0.0
-
-    measurement = "COBP" if is_conditional else "OBP"
-    explain_lines.insert(0, f"{player.name}: {measurement} = {round(on_base_percentage, 3)}")
-    explain_lines.append(
-        f"  > hits={obp_counters.hits} + walks={obp_counters.walks} + hit_by_pitches={obp_counters.hit_by_pitches} == {numerator}"  # noqa: E501
-    )
-    explain_lines.append(
-        f"  > at_bats={obp_counters.at_bats} + walks={obp_counters.walks} + hit_by_pitches={obp_counters.hit_by_pitches} + sacrifice_flys={obp_counters.sacrifice_flys} == {denominator}"  # noqa: E501
-    )
-    explain_lines.append("")
-    if explain:
-        print("\n".join(explain_lines))
-
-    return on_base_percentage
-
-
-def _add_explanation_line(explain_lines: list[str], play_description_prefix: str, resultant: str) -> None:
-    explain_lines.append(f"{play_description_prefix} => {resultant}")
+    explanation.add_arithmetic(obp_counters, to_obp=True)
+    explanation.add_arithmetic(cobp_counters, to_cobp=True)
+    return OBPs(obp=obp_counters.obp, cobp=cobp_counters.obp), explanation
 
 
 def _get_play_description_prefix(play: Play) -> str:
@@ -99,3 +138,20 @@ def _get_other_plays_on_base_in_inning(play: Play, innings_plays: list[Play]) ->
         result = inning_play.result
         if any([result.is_hit, result.is_walk, result.is_hit_by_pitch]) and play != inning_play:
             yield inning_play
+
+
+def _display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> None:
+    for player_id, (obps, explanation) in player_to_game_obps.items():
+        player_column, obp_column, cobp_column = st.columns(3)
+        with player_column:
+            player = game.get_player(player_id)
+            st.text(player.name)
+        with obp_column:
+            st.text(f"OBP = {round(obps.obp, 3)}")
+            for line in explanation.obp_explanation:
+                st.text(line)
+        with cobp_column:
+            st.text(f"COBP = {round(obps.cobp, 3)}")
+            for line in explanation.cobp_explanation:
+                st.text(line)
+        st.divider()

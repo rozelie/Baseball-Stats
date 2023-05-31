@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Iterator, Mapping
 
@@ -21,6 +22,8 @@ class Game:
     """Parsed Retrosheet game (event) data."""
 
     id: str
+    home_team: Team
+    visiting_team: Team
     players: list[Player]
     inning_to_plays: Mapping[int, list[Play]]
 
@@ -38,7 +41,22 @@ class Game:
             if batter := player_id_to_player.get(play.batter_id):
                 batter.plays.append(play)
 
-        return cls(id=game_id, inning_to_plays=inning_to_plays, players=players)
+        return cls(
+            id=game_id,
+            home_team=home_team,
+            visiting_team=visiting_team,
+            inning_to_plays=inning_to_plays,
+            players=players,
+        )
+
+    @property
+    def pretty_id(self) -> str:
+        return f"{self.date.strftime('%Y/%m/%d')} {self.visiting_team.name} @ {self.home_team.name}"
+
+    @property
+    def date(self) -> date:
+        date_ = "".join([c for c in self.id if c.isnumeric()])
+        return date(year=int(date_[0:4]), month=int(date_[4:6]), day=int(date_[6:8]))
 
     def get_player(self, player_id: str) -> Player:
         for player in self.players:
