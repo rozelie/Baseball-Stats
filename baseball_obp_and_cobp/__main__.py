@@ -1,11 +1,9 @@
-import streamlit as st
-
 from baseball_obp_and_cobp import game, obp, paths, ui
 
 
 def main() -> None:
     """Project entrypoint."""
-    st.set_page_config(page_title="Baseball (C)OBP", layout="wide")
+    ui.set_streamlit_config()
     game_selected = _get_game_choice()
     player_to_game_obps = obp.get_player_to_game_obps(game_selected)
 

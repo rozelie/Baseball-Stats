@@ -5,6 +5,9 @@ import streamlit as st
 from baseball_obp_and_cobp.game import Game
 from baseball_obp_and_cobp.obp import PlayerToGameOBP
 
+def set_streamlit_config() -> None:
+    st.set_page_config(page_title="Baseball (C)OBP", layout="wide")
+
 
 def get_selection(prompt: str, options: list[Any]) -> Any:
     return st.selectbox(prompt, options=options)
@@ -34,10 +37,7 @@ def display_innings(game: Game) -> None:
         has_multiple_on_bases = "Yes" if game.inning_has_multiple_on_bases(inning) else "No"
         st.text(f"Inning {inning} (Has Multiple On Bases: {has_multiple_on_bases})")
         for play in plays:
-            try:
-                player = game.get_player(play.batter_id)
-            except ValueError:
-                continue
+            player = game.get_player(play.batter_id)
+            st.text(f"- {player.name}: {play.pretty_description} => {play.obp_id}")
 
-            st.text(f"{player.name}: {play.pretty_description} => {play.obp_id}")
         st.divider()
