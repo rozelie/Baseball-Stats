@@ -45,3 +45,8 @@ class Team(Enum):
     TEXAS_RANGERS = "TEX"
     TORONTO_BLUE_JAYS = "TOR"
     WASHINGTON_NATIONALS = "WAS"
+
+    @property
+    def pretty_name(self) -> str:
+        words = [word.title() for word in self.name.split("_")]
+        return " ".join(words)

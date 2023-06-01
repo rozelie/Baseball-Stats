@@ -22,6 +22,7 @@ class Game:
     """Parsed Retrosheet game (event) data."""
 
     id: str
+    team: Team
     home_team: Team
     visiting_team: Team
     players: list[Player]
@@ -33,7 +34,7 @@ class Game:
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
-        plays = list(_get_plays(game_lines))
+        plays = list(_get_teams_plays(game_lines, players))
         player_id_to_player = {player.id: player for player in players}
         inning_to_plays: Mapping[int, list[Play]] = defaultdict(list)
         for play in plays:
@@ -43,6 +44,7 @@ class Game:
 
         return cls(
             id=game_id,
+            team=team,
             home_team=home_team,
             visiting_team=visiting_team,
             inning_to_plays=inning_to_plays,
@@ -51,7 +53,7 @@ class Game:
 
     @property
     def pretty_id(self) -> str:
-        return f"{self.date.strftime('%Y/%m/%d')} {self.visiting_team.name} @ {self.home_team.name}"
+        return f"{self.date.strftime('%Y/%m/%d')} {self.visiting_team.pretty_name} @ {self.home_team.pretty_name}"
 
     @property
     def date(self) -> date:
@@ -62,7 +64,13 @@ class Game:
         for player in self.players:
             if player.id == player_id:
                 return player
-        raise Exception(f"Unable to find player id of {player_id} within the game")
+        raise ValueError(f"Unable to find player id of {player_id} within the game")
+
+    def get_plays_resulting_on_base_in_inning(self, inning: int) -> list[Play]:
+        return [inning_play for inning_play in self.inning_to_plays[inning] if inning_play.results_in_on_base]
+
+    def inning_has_multiple_on_bases(self, inning: int) -> bool:
+        return len(self.get_plays_resulting_on_base_in_inning(inning)) > 1
 
 
 def load_events_file(path: Path) -> list[Game]:
@@ -129,7 +137,10 @@ def _get_teams_players(
                 yield player
 
 
-def _get_plays(game_lines: list[GameLine]) -> Iterator[Play]:
+def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> Iterator[Play]:
+    team_player_ids = {player.id for player in team_players}
     for line in game_lines:
         if line.id == "play":
-            yield Play.from_play_line(line.values)
+            play = Play.from_play_line(line.values)
+            if play.batter_id in team_player_ids:
+                yield play

@@ -177,3 +177,37 @@ class Play:
             result=result,
             modifiers=modifiers,
         )
+
+    @property
+    def pretty_description(self) -> str:
+        pretty_description = self.result.name
+        if self.modifiers:
+            modifiers = "/".join(modifier.name for modifier in self.modifiers)
+            pretty_description = f"{pretty_description}/{modifiers}"
+
+        return f"{pretty_description} ({self.play_descriptor})"
+
+    @property
+    def is_sacrifice_fly(self) -> bool:
+        return any(modifier.is_sacrifice_fly for modifier in self.modifiers)
+
+    @property
+    def results_in_on_base(self) -> bool:
+        result = self.result
+        return any([result.is_hit, result.is_walk, result.is_hit_by_pitch])
+
+    @property
+    def obp_id(self) -> str:
+        result = self.result
+        if result.is_hit:
+            return "HIT, AB"
+        elif result.is_walk:
+            return "WALK"
+        elif result.is_hit_by_pitch:
+            return "HBP"
+        elif self.is_sacrifice_fly:
+            return "SF, AB"
+        elif result.is_at_bat:
+            return "AB"
+        else:
+            return "N/A"
