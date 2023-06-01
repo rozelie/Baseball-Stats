@@ -127,7 +127,7 @@ def _get_teams_players(
     game_lines: list[GameLine], team: Team, visiting_team: Team, home_team: Team
 ) -> Iterator[Player]:
     for line in game_lines:
-        if line.id == "start":
+        if line.id in ["start", "sub"]:
             player = Player.from_start_line(line.values)
             # only include the team we're interested in players
             players_team_type = TeamType(int(line.values[2]))
