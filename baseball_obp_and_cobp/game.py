@@ -74,7 +74,10 @@ class Game:
 
 
 def load_events_file(path: Path) -> list[Game]:
-    team = _get_files_team(path)
+    try:
+        team = _get_files_team(path)
+    except FileNotFoundError:
+        raise ValueError(f"Unable to locate file: {path.as_posix()} -- likely that this data does not exist")
     return [Game.from_game_lines(lines, team) for lines in _yield_game_lines(path)]
 
 

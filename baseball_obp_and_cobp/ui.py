@@ -14,20 +14,27 @@ def get_selection(prompt: str, options: list[Any]) -> Any:
     return st.selectbox(prompt, options=options)
 
 
+def display_error(error: str) -> None:
+    st.error(error)
+
+
 def display_legend():
-    st.markdown(":green[GREEN]: On-Base | :orange[ORANGE]: At Bat | :red[RED]: N/A")
+    with st.expander("View Legend"):
+        st.markdown(":green[GREEN]: On-Base | :orange[ORANGE]: At Bat | :red[RED]: N/A")
 
 
 def display_innings(game: Game) -> None:
-    st.header(f"Inning Play-by-Play For {game.team.pretty_name}")
-    for inning, plays in game.inning_to_plays.items():
-        has_an_on_base = "Yes" if game.inning_has_an_on_base(inning) else "No"
-        st.markdown(f"**Inning {inning}** (Has An On Base: {has_an_on_base})")
-        for play in plays:
-            player = game.get_player(play.batter_id)
-            st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.obp_id}]")
+    header = f"Inning Play-by-Play For {game.team.pretty_name}"
+    with st.expander(f"View {header}"):
+        st.header(header)
+        for inning, plays in game.inning_to_plays.items():
+            has_an_on_base = "Yes" if game.inning_has_an_on_base(inning) else "No"
+            st.markdown(f"**Inning {inning}** (Has An On Base: {has_an_on_base})")
+            for play in plays:
+                player = game.get_player(play.batter_id)
+                st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.obp_id}]")
 
-        st.divider()
+            st.divider()
 
 
 def display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> None:
