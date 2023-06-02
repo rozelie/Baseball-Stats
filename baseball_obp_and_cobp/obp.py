@@ -73,7 +73,7 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
         valid_cobp_play = True
         play_description_prefix = f"- {play.pretty_description}"
         result = play.result
-        if game.inning_has_multiple_on_bases(play.inning):
+        if not game.inning_has_multiple_on_bases(play.inning):
             explanation.add_play(play_description_prefix, "N/A (no other on-base in inning)", to_obp=False)
             valid_cobp_play = False
 
