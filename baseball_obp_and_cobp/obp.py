@@ -84,44 +84,37 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
             explanation.add_play(play, resultant="N/A")
             continue
 
-        valid_cobp_play = True
-        if not game.inning_has_an_on_base(play.inning):
+        valid_cobp_play = game.inning_has_an_on_base(play.inning)
+        if not valid_cobp_play:
             explanation.add_play(play, resultant="N/A (no other on-base in inning)", to_obp=False, color="red")
-            valid_cobp_play = False
 
         result = play.result
-        if result.is_at_bat:
-            obp_counters.at_bats += 1
-            if valid_cobp_play:
-                cobp_counters.at_bats += 1
-
-        if result.is_hit:
-            obp_counters.hits += 1
-            if valid_cobp_play:
-                cobp_counters.hits += 1
-            explanation.add_play(play, to_cobp=valid_cobp_play)
-
-        elif result.is_walk:
-            obp_counters.walks += 1
-            if valid_cobp_play:
-                cobp_counters.walks += 1
-            explanation.add_play(play, to_cobp=valid_cobp_play)
-        elif result.is_hit_by_pitch:
-            obp_counters.hit_by_pitches += 1
-            if valid_cobp_play:
-                cobp_counters.hit_by_pitches += 1
-            explanation.add_play(play, to_cobp=valid_cobp_play)
-        elif play.is_sacrifice_fly:
-            obp_counters.sacrifice_flys += 1
-            if valid_cobp_play:
-                cobp_counters.sacrifice_flys += 1
-            explanation.add_play(play, to_cobp=valid_cobp_play)
-        elif result.is_at_bat:
+        if any([result.is_hit, result.is_walk, result.is_hit_by_pitch, play.is_sacrifice_fly, result.is_at_bat]):
             explanation.add_play(play, to_cobp=valid_cobp_play)
         else:
             explanation.add_play(play, to_cobp=False)
             explanation.add_play(play, to_obp=False, to_cobp=valid_cobp_play)
 
+        if result.is_at_bat:
+            _increment_counters("at_bats", obp_counters, cobp_counters, valid_cobp_play)
+
+        if result.is_hit:
+            _increment_counters("hits", obp_counters, cobp_counters, valid_cobp_play)
+        elif result.is_walk:
+            _increment_counters("walks", obp_counters, cobp_counters, valid_cobp_play)
+        elif result.is_hit_by_pitch:
+            _increment_counters("hit_by_pitches", obp_counters, cobp_counters, valid_cobp_play)
+        elif play.is_sacrifice_fly:
+            _increment_counters("sacrifice_flys", obp_counters, cobp_counters, valid_cobp_play)
+
     explanation.add_arithmetic(obp_counters, to_obp=True)
     explanation.add_arithmetic(cobp_counters, to_cobp=True)
     return OBPs(obp=obp_counters.obp, cobp=cobp_counters.obp), explanation
+
+
+def _increment_counters(
+    counter: str, obp_counters: OBPCounters, cobp_counters: OBPCounters, valid_cobp_play: bool
+) -> None:
+    obp_counters.__dict__[counter] += 1
+    if valid_cobp_play:
+        cobp_counters.__dict__[counter] += 1
