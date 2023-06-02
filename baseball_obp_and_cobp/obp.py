@@ -59,8 +59,8 @@ class Explanation:
             self.cobp_explanation.append(value)
 
     def add_arithmetic(self, counters: OBPCounters, to_obp: bool = False, to_cobp: bool = False) -> None:
-        numerator = f"H={counters.hits} + W={counters.walks} + HBP={counters.hit_by_pitches} == {counters.numerator}"
-        denominator = f"AB={counters.at_bats} + W={counters.walks} + HBP={counters.hit_by_pitches} + SF={counters.sacrifice_flys} == {counters.denominator}"  # noqa: E501
+        numerator = f"*H={counters.hits} + W={counters.walks} + HBP={counters.hit_by_pitches} == {counters.numerator}*"
+        denominator = f"*AB={counters.at_bats} + W={counters.walks} + HBP={counters.hit_by_pitches} + SF={counters.sacrifice_flys} == {counters.denominator}*"  # noqa: E501
         if to_obp:
             self.obp_explanation.extend([numerator, denominator])
         if to_cobp:
