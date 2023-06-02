@@ -15,10 +15,7 @@ def get_selection(prompt: str, options: list[Any]) -> Any:
 
 
 def display_legend():
-    st.markdown("### Legend")
-    st.markdown(":green[GREEN] => On-Base")
-    st.markdown(":orange[ORANGE] => At Bat")
-    st.markdown(":red[RED] => N/A")
+    st.markdown(":green[GREEN]: On-Base | :orange[ORANGE]: At Bat | :red[RED]: N/A")
 
 
 def display_innings(game: Game) -> None:
