@@ -3,7 +3,9 @@
 This project calculates On-Base Percentage (OBP) and Conditional On-Base Percentage (COBP) for MLB
 players based on [retrosheet.org](retrosheet.org) event data.
 
-Interface is built with the `streamlit` library - current usage only works for a single, local data set.
+Data is dynamically downloaded based on user's input of a team and a year.
+
+Interface is built with the `streamlit` library.
 
 # Usage
 ```shell
@@ -26,10 +28,8 @@ Flies (SF)`
 ## COBP
 `Conditional On-Base % (COBP)` = the OBP when any batter(s) reach(es) base in the
 same inning.
-- Includes same factors as OBP but requires other batter(s) to reach base in the same
-inning (either before or after the current batter).
-- If no one gets on base in a specific inning, those At-Bats are not included in the
-COBP calculation.
+- Includes same factors as OBP but requires other batter(s) (or the current batter) to reach base in the same inning.
+- If no one gets on base in a specific inning, those At-Bats are not included in the COBP calculation.
 
 # Data
 - [Retrosheet Play-by-Play Data Files (Event Files)](https://www.retrosheet.org/game.htm)
