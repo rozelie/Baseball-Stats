@@ -197,6 +197,10 @@ class Play:
         return any([result.is_hit, result.is_walk, result.is_hit_by_pitch])
 
     @property
+    def is_unused_in_obp_calculations(self) -> bool:
+        return self.result in [PlayResult.WILD_PITCH, PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING]
+
+    @property
     def obp_id(self) -> str:
         result = self.result
         if result.is_hit:
@@ -211,3 +215,12 @@ class Play:
             return "AB"
         else:
             return "N/A"
+
+    @property
+    def color(self) -> str:
+        if self.is_unused_in_obp_calculations:
+            return "red"
+        elif self.results_in_on_base:
+            return "green"
+        else:
+            return "orange"

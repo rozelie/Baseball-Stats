@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 
 from baseball_obp_and_cobp.game import Game
-from baseball_obp_and_cobp.play import Play, PlayResult
+from baseball_obp_and_cobp.play import Play
 from baseball_obp_and_cobp.player import Player
 
 
@@ -42,8 +42,17 @@ class Explanation:
     obp_explanation: list[str] = field(default_factory=list)
     cobp_explanation: list[str] = field(default_factory=list)
 
-    def add_play(self, play: Play, resultant: str | None = None, to_obp: bool = True, to_cobp: bool = True) -> None:
-        value = f"{play.pretty_description} => {resultant if resultant else play.obp_id}"
+    def add_play(
+        self,
+        play: Play,
+        resultant: str | None = None,
+        to_obp: bool = True,
+        to_cobp: bool = True,
+        color: str | None = None,
+    ) -> None:
+        resultant = resultant if resultant else play.obp_id
+        color = color if color else play.color
+        value = f"{play.pretty_description} => :{color}[{resultant}]"
         if to_obp:
             self.obp_explanation.append(value)
         if to_cobp:
@@ -71,16 +80,16 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
     obp_counters = OBPCounters()
     cobp_counters = OBPCounters()
     for play in player.plays:
-        result = play.result
-        if result in [PlayResult.WILD_PITCH, PlayResult.NO_PLAY]:
+        if play.is_unused_in_obp_calculations:
             explanation.add_play(play, resultant="N/A")
             continue
 
         valid_cobp_play = True
         if not game.inning_has_an_on_base(play.inning):
-            explanation.add_play(play, resultant="N/A (no other on-base in inning)", to_obp=False)
+            explanation.add_play(play, resultant="N/A (no other on-base in inning)", to_obp=False, color="red")
             valid_cobp_play = False
 
+        result = play.result
         if result.is_at_bat:
             obp_counters.at_bats += 1
             if valid_cobp_play:

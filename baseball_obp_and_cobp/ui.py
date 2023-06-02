@@ -14,31 +14,57 @@ def get_selection(prompt: str, options: list[Any]) -> Any:
     return st.selectbox(prompt, options=options)
 
 
-def display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> None:
-    st.header(f"{game.team.pretty_name} Player (C)OBP")
-    for player_id, (obps, explanation) in player_to_game_obps.items():
-        player_column, obp_column, cobp_column = st.columns(3)
-        with player_column:
-            player = game.get_player(player_id)
-            st.text(player.name)
-        with obp_column:
-            st.text(f"OBP = {round(obps.obp, 3)}")
-            for line in explanation.obp_explanation:
-                st.text(line)
-        with cobp_column:
-            st.text(f"COBP = {round(obps.cobp, 3)}")
-            for line in explanation.cobp_explanation:
-                st.text(line)
-        st.divider()
+def display_legend():
+    st.markdown("### Legend")
+    st.markdown(":green[GREEN] => On-Base")
+    st.markdown(":orange[ORANGE] => At Bat")
+    st.markdown(":red[RED] => N/A")
 
 
 def display_innings(game: Game) -> None:
     st.header(f"Inning Play-by-Play For {game.team.pretty_name}")
     for inning, plays in game.inning_to_plays.items():
         has_an_on_base = "Yes" if game.inning_has_an_on_base(inning) else "No"
-        st.text(f"Inning {inning} (Has An On Base: {has_an_on_base})")
+        st.markdown(f"**Inning {inning}** (Has An On Base: {has_an_on_base})")
         for play in plays:
             player = game.get_player(play.batter_id)
-            st.text(f"- {player.name}: {play.pretty_description} => {play.obp_id}")
+            st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.obp_id}]")
 
         st.divider()
+
+
+def display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> None:
+    st.header(f"{game.team.pretty_name} Player (C)OBP")
+    for player_id, (obps, explanation) in player_to_game_obps.items():
+        player_column, obp_column, cobp_column = st.columns(3)
+        with player_column:
+            player = game.get_player(player_id)
+            st.markdown(f"**{player.name}**")
+        with obp_column:
+            st.markdown(f"**OBP = {round(obps.obp, 3)}**")
+            for line in explanation.obp_explanation:
+                st.markdown(line)
+        with cobp_column:
+            st.markdown(f"**COBP = {round(obps.cobp, 3)}**")
+            for line in explanation.cobp_explanation:
+                st.markdown(line)
+        st.divider()
+
+
+def display_footer() -> None:
+    retrosheet_notice = " ".join(
+        """\
+        The information used here was obtained free of
+        charge from and is copyrighted by Retrosheet.  Interested
+        parties may contact Retrosheet at 20 Sunset Rd.,
+        Newark, DE 19711.
+    """.split()
+    )
+    st.caption(retrosheet_notice)
+
+
+def display_game(game: Game, player_to_game_obps: PlayerToGameOBP) -> None:
+    display_legend()
+    display_innings(game)
+    display_player_obps(player_to_game_obps, game)
+    display_footer()
