@@ -69,8 +69,8 @@ class Game:
     def get_plays_resulting_on_base_in_inning(self, inning: int) -> list[Play]:
         return [inning_play for inning_play in self.inning_to_plays[inning] if inning_play.results_in_on_base]
 
-    def inning_has_multiple_on_bases(self, inning: int) -> bool:
-        return len(self.get_plays_resulting_on_base_in_inning(inning)) > 1
+    def inning_has_an_on_base(self, inning: int) -> bool:
+        return len(self.get_plays_resulting_on_base_in_inning(inning)) > 0
 
 
 def load_events_file(path: Path) -> list[Game]:

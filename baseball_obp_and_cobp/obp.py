@@ -2,6 +2,7 @@
 from dataclasses import dataclass, field
 
 from baseball_obp_and_cobp.game import Game
+from baseball_obp_and_cobp.play import Play, PlayResult
 from baseball_obp_and_cobp.player import Player
 
 
@@ -41,8 +42,8 @@ class Explanation:
     obp_explanation: list[str] = field(default_factory=list)
     cobp_explanation: list[str] = field(default_factory=list)
 
-    def add_play(self, play_description_prefix: str, resultant: str, to_obp: bool = True, to_cobp: bool = True) -> None:
-        value = f"{play_description_prefix} => {resultant}"
+    def add_play(self, play: Play, resultant: str | None = None, to_obp: bool = True, to_cobp: bool = True) -> None:
+        value = f"{play.pretty_description} => {resultant if resultant else play.obp_id}"
         if to_obp:
             self.obp_explanation.append(value)
         if to_cobp:
@@ -70,11 +71,14 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
     obp_counters = OBPCounters()
     cobp_counters = OBPCounters()
     for play in player.plays:
-        valid_cobp_play = True
-        play_description_prefix = f"- {play.pretty_description}"
         result = play.result
-        if not game.inning_has_multiple_on_bases(play.inning):
-            explanation.add_play(play_description_prefix, "N/A (no other on-base in inning)", to_obp=False)
+        if result in [PlayResult.WILD_PITCH, PlayResult.NO_PLAY]:
+            explanation.add_play(play, resultant="N/A")
+            continue
+
+        valid_cobp_play = True
+        if not game.inning_has_an_on_base(play.inning):
+            explanation.add_play(play, resultant="N/A (no other on-base in inning)", to_obp=False)
             valid_cobp_play = False
 
         if result.is_at_bat:
@@ -86,28 +90,28 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
             obp_counters.hits += 1
             if valid_cobp_play:
                 cobp_counters.hits += 1
-            explanation.add_play(play_description_prefix, play.obp_id, to_cobp=valid_cobp_play)
+            explanation.add_play(play, to_cobp=valid_cobp_play)
 
         elif result.is_walk:
             obp_counters.walks += 1
             if valid_cobp_play:
                 cobp_counters.walks += 1
-            explanation.add_play(play_description_prefix, play.obp_id, to_cobp=valid_cobp_play)
+            explanation.add_play(play, to_cobp=valid_cobp_play)
         elif result.is_hit_by_pitch:
             obp_counters.hit_by_pitches += 1
             if valid_cobp_play:
                 cobp_counters.hit_by_pitches += 1
-            explanation.add_play(play_description_prefix, play.obp_id, to_cobp=valid_cobp_play)
+            explanation.add_play(play, to_cobp=valid_cobp_play)
         elif play.is_sacrifice_fly:
             obp_counters.sacrifice_flys += 1
             if valid_cobp_play:
                 cobp_counters.sacrifice_flys += 1
-            explanation.add_play(play_description_prefix, play.obp_id, to_cobp=valid_cobp_play)
+            explanation.add_play(play, to_cobp=valid_cobp_play)
         elif result.is_at_bat:
-            explanation.add_play(play_description_prefix, play.obp_id, to_cobp=valid_cobp_play)
+            explanation.add_play(play, to_cobp=valid_cobp_play)
         else:
-            explanation.add_play(play_description_prefix, play.obp_id, to_cobp=False)
-            explanation.add_play(play_description_prefix, play.obp_id, to_obp=False, to_cobp=valid_cobp_play)
+            explanation.add_play(play, to_cobp=False)
+            explanation.add_play(play, to_obp=False, to_cobp=valid_cobp_play)
 
     explanation.add_arithmetic(obp_counters, to_obp=True)
     explanation.add_arithmetic(cobp_counters, to_cobp=True)

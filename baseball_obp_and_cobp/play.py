@@ -185,7 +185,7 @@ class Play:
             modifiers = "/".join(modifier.name for modifier in self.modifiers)
             pretty_description = f"{pretty_description}/{modifiers}"
 
-        return f"{pretty_description} ({self.play_descriptor})"
+        return f"{self.inning}: {pretty_description} ({self.play_descriptor})"
 
     @property
     def is_sacrifice_fly(self) -> bool:
