@@ -7,8 +7,7 @@ EMPTY_CHOICE = ""
 def main() -> None:
     """Project entrypoint."""
     ui.set_streamlit_config()
-    team = selectors.get_team_selection()
-    year = selectors.get_year_selection()
+    team, year = selectors.get_team_and_year_selection()
     if not team or not year:
         return
 
