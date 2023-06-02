@@ -45,6 +45,10 @@ class PlayResult(Enum):
             else:
                 break
 
+        # some play descriptions include 'H' (home base), which we trim for the mapping
+        if alpha_play_main_descriptor.endswith("H"):
+            alpha_play_main_descriptor = alpha_play_main_descriptor.replace("H", "")
+
         if not alpha_play_main_descriptor:
             # descriptor is a number, which specifies a fielder causing the out
             return cls.FIELDED_OUT
@@ -133,6 +137,8 @@ class PlayResultModifier(Enum):
     UNSPECIFIED_TRIPLE_PLAY = "TP"
     UMPIRE_INTERFERENCE = "UINT"
     UMPIRE_REVIEW_OF_CALL_ON_THE_FIELD = "UREV"
+    FIELDER_VALUES = "FIELDER_VALUES"
+    UNKNOWN = ""
 
     @classmethod
     def from_play_modifier(cls, play_modifier: str) -> "PlayResultModifier":
@@ -146,7 +152,11 @@ class PlayResultModifier(Enum):
         for result in cls:
             if result.value == alpha_play_modifier:
                 return result
-        raise ValueError(f"Unable to load PlayResultModifier from: {play_modifier=}")
+
+        if all(char.isnumeric() for char in play_modifier):
+            return cls.FIELDER_VALUES
+
+        return cls.UNKNOWN
 
     @property
     def is_sacrifice_fly(self) -> bool:
