@@ -83,9 +83,8 @@ def display_game(games: list[Game], player_to_obps: PlayerToOBPs, player_to_ba: 
 
 
 def _display_metric(name: str, value: float, explanation_lines: list[str], toggleable: bool) -> None:
-    st.markdown(f"**{name} = {round(value, 3)}**")
     if toggleable:
-        with st.expander(f"View {name} Explanation"):
+        with st.expander(f"**{name} = {round(value, 3)}**"):
             for line in explanation_lines:
                 st.markdown(line)
     else:
