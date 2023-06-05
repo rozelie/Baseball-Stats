@@ -40,9 +40,12 @@ def display_innings(game: Game) -> None:
 def display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> None:
     st.header(f"{game.team.pretty_name} Player (C)OBP")
     for player_id, (obps, explanation) in player_to_game_obps.items():
+        player = game.get_player(player_id)
+        if not player.plays:
+            continue
+
         player_column, obp_column, cobp_column = st.columns(3)
         with player_column:
-            player = game.get_player(player_id)
             st.markdown(f"**{player.name}**")
         with obp_column:
             st.markdown(f"**OBP = {round(obps.obp, 3)}**")
