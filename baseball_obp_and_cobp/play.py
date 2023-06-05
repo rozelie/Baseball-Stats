@@ -227,7 +227,7 @@ class Play:
 
     @property
     def color(self) -> str:
-        if self.is_unused_in_obp_calculations:
+        if self.is_unused_in_obp_calculations or self.is_unused_in_ba_calculations:
             return "red"
         elif self.results_in_on_base:
             return "green"
