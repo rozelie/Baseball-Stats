@@ -88,21 +88,20 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
         if not valid_cobp_play:
             explanation.add_play(play, resultant="N/A (no other on-base in inning)", to_obp=False, color="red")
 
-        result = play.result
-        if any([result.is_hit, result.is_walk, result.is_hit_by_pitch, play.is_sacrifice_fly, result.is_at_bat]):
+        if any([play.is_hit, play.is_walk, play.is_hit_by_pitch, play.is_sacrifice_fly, play.is_at_bat]):
             explanation.add_play(play, to_cobp=valid_cobp_play)
         else:
             explanation.add_play(play, to_cobp=False)
             explanation.add_play(play, to_obp=False, to_cobp=valid_cobp_play)
 
-        if result.is_at_bat:
+        if play.is_at_bat:
             _increment_counters("at_bats", obp_counters, cobp_counters, valid_cobp_play)
 
-        if result.is_hit:
+        if play.is_hit:
             _increment_counters("hits", obp_counters, cobp_counters, valid_cobp_play)
-        elif result.is_walk:
+        elif play.is_walk:
             _increment_counters("walks", obp_counters, cobp_counters, valid_cobp_play)
-        elif result.is_hit_by_pitch:
+        elif play.is_hit_by_pitch:
             _increment_counters("hit_by_pitches", obp_counters, cobp_counters, valid_cobp_play)
         elif play.is_sacrifice_fly:
             _increment_counters("sacrifice_flys", obp_counters, cobp_counters, valid_cobp_play)

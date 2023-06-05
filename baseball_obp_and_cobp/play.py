@@ -59,39 +59,6 @@ class PlayResult(Enum):
 
         raise ValueError(f"Unable to load PlayResult from: {play_main_descriptor=}")
 
-    @property
-    def is_hit(self) -> bool:
-        return self in [
-            PlayResult.SINGLE,
-            PlayResult.DOUBLE,
-            PlayResult.TRIPLE,
-            PlayResult.HOME_RUN,
-            PlayResult.HOME_RUN_2,
-            PlayResult.GROUND_RULE_DOUBLE,
-        ]
-
-    @property
-    def is_walk(self) -> bool:
-        return self in [
-            PlayResult.WALK,
-            PlayResult.INTENTIONAL_WALK,
-            PlayResult.INTENTIONAL_WALK_2,
-        ]
-
-    @property
-    def is_hit_by_pitch(self) -> bool:
-        return self is PlayResult.HIT_BY_PITCH
-
-    @property
-    def is_at_bat(self) -> bool:
-        return all(
-            [
-                self not in [PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING],
-                not self.is_walk,
-                not self.is_hit_by_pitch,
-            ]
-        )
-
 
 class PlayResultModifier(Enum):
     APPEAL_PLAY = "AP"
@@ -158,10 +125,6 @@ class PlayResultModifier(Enum):
 
         return cls.UNKNOWN
 
-    @property
-    def is_sacrifice_fly(self) -> bool:
-        return self == PlayResultModifier.SACRIFICE_FLY
-
 
 @dataclass
 class Play:
@@ -199,12 +162,45 @@ class Play:
 
     @property
     def is_sacrifice_fly(self) -> bool:
-        return any(modifier.is_sacrifice_fly for modifier in self.modifiers)
+        return any(modifier == PlayResultModifier.SACRIFICE_FLY for modifier in self.modifiers)
+
+    @property
+    def is_hit(self) -> bool:
+        return self.result in [
+            PlayResult.SINGLE,
+            PlayResult.DOUBLE,
+            PlayResult.TRIPLE,
+            PlayResult.HOME_RUN,
+            PlayResult.HOME_RUN_2,
+            PlayResult.GROUND_RULE_DOUBLE,
+        ]
+
+    @property
+    def is_walk(self) -> bool:
+        return self.result in [
+            PlayResult.WALK,
+            PlayResult.INTENTIONAL_WALK,
+            PlayResult.INTENTIONAL_WALK_2,
+        ]
+
+    @property
+    def is_hit_by_pitch(self) -> bool:
+        return self.result is PlayResult.HIT_BY_PITCH
 
     @property
     def results_in_on_base(self) -> bool:
-        result = self.result
-        return any([result.is_hit, result.is_walk, result.is_hit_by_pitch])
+        return any([self.is_hit, self.is_walk, self.is_hit_by_pitch])
+
+    @property
+    def is_at_bat(self) -> bool:
+        return all(
+            [
+                self.result not in [PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING],
+                not self.is_walk,
+                not self.is_hit_by_pitch,
+                not self.is_sacrifice_fly,
+            ]
+        )
 
     @property
     def is_unused_in_obp_calculations(self) -> bool:
@@ -212,16 +208,15 @@ class Play:
 
     @property
     def obp_id(self) -> str:
-        result = self.result
-        if result.is_hit:
+        if self.is_hit:
             return "HIT, AB"
-        elif result.is_walk:
+        elif self.is_walk:
             return "WALK"
-        elif result.is_hit_by_pitch:
+        elif self.is_hit_by_pitch:
             return "HBP"
         elif self.is_sacrifice_fly:
             return "SF, AB"
-        elif result.is_at_bat:
+        elif self.is_at_bat:
             return "AB"
         else:
             return "N/A"
