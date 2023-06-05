@@ -58,6 +58,9 @@ def _get_players_batting_average(games: list[Game], player: Player) -> BA:
             continue
 
         for play in game_player.plays:
+            if play.is_unused_in_ba_calculations:
+                continue
+
             if not play.is_hit and not play.is_at_bat:
                 explanation.add_play(play, resultant="N/A", color="red")
                 continue
