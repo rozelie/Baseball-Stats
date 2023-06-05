@@ -42,14 +42,20 @@ same inning.
 - calculate on-base percentages (OBP) conditional on-base percentage (COBP) for one team, for one season
     - ✅ data retrieval, retrosheet.org suggested
     - ✅ calculate per-game OBP
-    - calculate seasonal OBP
-    - calculate per-game COBP
-    - calculate seasonal COBP
-    - calculate correlations
-- future work
-    - track where each player batted in the line-up when they got on base
-    - if available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
-    - provide user-friendly interface, allowing selection of a particular team over specified seasons
+    - ✅ calculate per-game COBP
+- ✅ provide user-friendly interface, allowing selection of a particular team over specified seasons
+- ❌ calculate seasonal OBP
+- ❌ calculate seasonal COBP
+- ❌ calculate correlations (TBD)
+- ❌ calculate sequential on-base percentage (SOBP): computed as regular OBP, but only for any batters that come to the plate after at least one other batter gets on base
+- ❌ calculate batting average (BA): `BA = H / AB`
+- ❌ calculate slugging percentage (SB): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
+  - ❌ calculate OPS: `OBP + SP`
+  - ❌ calculate COPS: `COBP + SP`
+
+## Future Work
+- ❌ track where each player batted in the line-up when they got on base
+- ❌ if available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
 
 ### Credits
 - Project skeleton generated via `cookiecutter https://github.com/rozelie/Python-Project-Cookiecutter`
