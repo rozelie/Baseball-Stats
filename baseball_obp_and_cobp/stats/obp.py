@@ -108,9 +108,7 @@ def _get_players_on_base_percentage(games: list[Game], player: Player) -> OBPs_:
             if not valid_sobp_play:
                 explanation.add_play(play, resultant="N/A (no other on-base prior to play)", to_sobp=True, color="red")
 
-            if any([play.is_hit, play.is_walk, play.is_hit_by_pitch, play.is_sacrifice_fly, play.is_at_bat]):
-                explanation.add_play(play, to_obp=True, to_cobp=valid_cobp_play, to_sobp=valid_sobp_play)
-
+            explanation.add_play(play, to_obp=True, to_cobp=valid_cobp_play, to_sobp=valid_sobp_play)
             increment_args = obp_counters, cobp_counters, sobp_counters, valid_cobp_play, valid_sobp_play
             if play.is_at_bat:
                 _increment_counters("at_bats", *increment_args)
