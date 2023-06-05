@@ -53,7 +53,7 @@ class Explanation:
         to_sobp: bool = False,
         color: str | None = None,
     ) -> None:
-        resultant = resultant if resultant else play.obp_id
+        resultant = resultant if resultant else play.id
         color = color if color else play.color
         value = f"{play.pretty_description} => :{color}[{resultant}]"
         if to_obp:
@@ -76,16 +76,16 @@ class Explanation:
             self.sobp_explanation.extend([numerator, denominator])
 
 
-GameOBPs = tuple[OBPs, Explanation]
-PlayerToGameOBP = dict[str, GameOBPs]
+OBPs_ = tuple[OBPs, Explanation]
+PlayerToOBPs = dict[str, OBPs_]
 
 
-def get_player_to_obps(games: list[Game]) -> PlayerToGameOBP:
+def get_player_to_obps(games: list[Game]) -> PlayerToOBPs:
     players = get_players_in_games(games)
     return {player.id: _get_players_on_base_percentage(games, player) for player in players}
 
 
-def _get_players_on_base_percentage(games: list[Game], player: Player) -> GameOBPs:
+def _get_players_on_base_percentage(games: list[Game], player: Player) -> OBPs_:
     explanation = Explanation(player)
     obp_counters = OBPCounters()
     cobp_counters = OBPCounters()

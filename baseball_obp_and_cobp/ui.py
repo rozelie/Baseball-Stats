@@ -3,7 +3,8 @@ from typing import Any
 import streamlit as st
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
-from baseball_obp_and_cobp.obp import PlayerToGameOBP
+from baseball_obp_and_cobp.stats.ba import PlayerToBA
+from baseball_obp_and_cobp.stats.obp import PlayerToOBPs
 
 
 def set_streamlit_config() -> None:
@@ -32,29 +33,32 @@ def display_innings(game: Game) -> None:
             st.markdown(f"**Inning {inning}** (Has An On Base: {has_an_on_base})")
             for play in plays:
                 player = game.get_player(play.batter_id)
-                st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.obp_id}]")
+                st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.id}]")
 
             st.divider()
 
 
-def display_player_obps(player_to_game_obps: PlayerToGameOBP, games: list[Game]) -> None:
+def display_player_obps(player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA, games: list[Game]) -> None:
     player_id_to_player = {p.id: p for p in get_players_in_games(games)}
     st.header(f"{games[0].team.pretty_name} Player (C)OBP")
     explanation_toggleable = len(games) > 1
-    for player_id, (obps, explanation) in player_to_game_obps.items():
+    for player_id, (obps, explanation) in player_to_obps.items():
         player = player_id_to_player[player_id]
         if not player.plays:
             continue
 
-        player_column, obp_column, cobp_column, sobp_column = st.columns(4)
+        player_column, obp_column, cobp_column, sobp_column, ba_column = st.columns(5)
         with player_column:
             st.markdown(f"**{player.name}**")
         with obp_column:
-            _display_obp_explanation("OBP", obps.obp, explanation.obp_explanation, toggleable=explanation_toggleable)
+            _display_metric("OBP", obps.obp, explanation.obp_explanation, toggleable=explanation_toggleable)
         with cobp_column:
-            _display_obp_explanation("COBP", obps.cobp, explanation.cobp_explanation, toggleable=explanation_toggleable)
+            _display_metric("COBP", obps.cobp, explanation.cobp_explanation, toggleable=explanation_toggleable)
         with sobp_column:
-            _display_obp_explanation("SOBP", obps.sobp, explanation.sobp_explanation, toggleable=explanation_toggleable)
+            _display_metric("SOBP", obps.sobp, explanation.sobp_explanation, toggleable=explanation_toggleable)
+        with ba_column:
+            ba, ba_explanation = player_to_ba[player_id]
+            _display_metric("BA", ba, ba_explanation.explanation, toggleable=explanation_toggleable)
         st.divider()
 
 
@@ -70,16 +74,16 @@ def display_footer() -> None:
     st.caption(retrosheet_notice)
 
 
-def display_game(games: list[Game], player_to_game_obps: PlayerToGameOBP) -> None:
+def display_game(games: list[Game], player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA) -> None:
     display_legend()
     if len(games) == 1:
         display_innings(games[0])
-    display_player_obps(player_to_game_obps, games)
+    display_player_obps(player_to_obps, player_to_ba, games)
     display_footer()
 
 
-def _display_obp_explanation(name: str, obp: float, explanation_lines: list[str], toggleable: bool) -> None:
-    st.markdown(f"**{name} = {round(obp, 3)}**")
+def _display_metric(name: str, value: float, explanation_lines: list[str], toggleable: bool) -> None:
+    st.markdown(f"**{name} = {round(value, 3)}**")
     if toggleable:
         with st.expander(f"View {name} Explanation"):
             for line in explanation_lines:

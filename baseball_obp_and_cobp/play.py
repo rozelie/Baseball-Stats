@@ -207,7 +207,7 @@ class Play:
         return self.result in [PlayResult.WILD_PITCH, PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING]
 
     @property
-    def obp_id(self) -> str:
+    def id(self) -> str:
         if self.is_hit:
             return "HIT, AB"
         elif self.is_walk:
