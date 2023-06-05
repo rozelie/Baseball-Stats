@@ -81,6 +81,17 @@ def load_events_file(path: Path) -> list[Game]:
     return [Game.from_game_lines(lines, team) for lines in _yield_game_lines(path)]
 
 
+def get_players_in_games(games: list[Game]) -> list[Player]:
+    seen_player_ids = set()
+    players = []
+    for game in games:
+        for player in game.players:
+            if player.id not in seen_player_ids:
+                players.append(player)
+                seen_player_ids.add(player.id)
+    return players
+
+
 def _get_files_team(path: Path) -> Team:
     id_line = path.read_text().splitlines()[0]
     file_id = id_line.split(",")[1]

@@ -2,7 +2,7 @@ from typing import Any
 
 import streamlit as st
 
-from baseball_obp_and_cobp.game import Game
+from baseball_obp_and_cobp.game import Game, get_players_in_games
 from baseball_obp_and_cobp.obp import PlayerToGameOBP
 
 
@@ -37,10 +37,12 @@ def display_innings(game: Game) -> None:
             st.divider()
 
 
-def display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> None:
-    st.header(f"{game.team.pretty_name} Player (C)OBP")
+def display_player_obps(player_to_game_obps: PlayerToGameOBP, games: list[Game]) -> None:
+    player_id_to_player = {p.id: p for p in get_players_in_games(games)}
+    st.header(f"{games[0].team.pretty_name} Player (C)OBP")
+    explanation_toggleable = len(games) > 1
     for player_id, (obps, explanation) in player_to_game_obps.items():
-        player = game.get_player(player_id)
+        player = player_id_to_player[player_id]
         if not player.plays:
             continue
 
@@ -48,13 +50,9 @@ def display_player_obps(player_to_game_obps: PlayerToGameOBP, game: Game) -> Non
         with player_column:
             st.markdown(f"**{player.name}**")
         with obp_column:
-            st.markdown(f"**OBP = {round(obps.obp, 3)}**")
-            for line in explanation.obp_explanation:
-                st.markdown(line)
+            _display_obp_explanation("OBP", obps.obp, explanation.obp_explanation, toggleable=explanation_toggleable)
         with cobp_column:
-            st.markdown(f"**COBP = {round(obps.cobp, 3)}**")
-            for line in explanation.cobp_explanation:
-                st.markdown(line)
+            _display_obp_explanation("COBP", obps.cobp, explanation.cobp_explanation, toggleable=explanation_toggleable)
         st.divider()
 
 
@@ -70,8 +68,20 @@ def display_footer() -> None:
     st.caption(retrosheet_notice)
 
 
-def display_game(game: Game, player_to_game_obps: PlayerToGameOBP) -> None:
+def display_game(games: list[Game], player_to_game_obps: PlayerToGameOBP) -> None:
     display_legend()
-    display_innings(game)
-    display_player_obps(player_to_game_obps, game)
+    if len(games) == 1:
+        display_innings(games[0])
+    display_player_obps(player_to_game_obps, games)
     display_footer()
+
+
+def _display_obp_explanation(name: str, obp: float, explanation_lines: list[str], toggleable: bool) -> None:
+    st.markdown(f"**{name}= {round(obp, 3)}**")
+    if toggleable:
+        with st.expander(f"View {name} Explanation"):
+            for line in explanation_lines:
+                st.markdown(line)
+    else:
+        for line in explanation_lines:
+            st.markdown(line)

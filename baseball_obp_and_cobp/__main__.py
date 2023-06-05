@@ -1,5 +1,6 @@
 from baseball_obp_and_cobp import game, obp, retrosheet, selectors, ui
 from baseball_obp_and_cobp.game import Game
+from baseball_obp_and_cobp.selectors import ENTIRE_SEASON
 
 EMPTY_CHOICE = ""
 
@@ -11,16 +12,21 @@ def main() -> None:
     if not team or not year:
         return
 
-    games = _load_games(year, team.value)
-    if not games:
+    all_games = _load_games(year, team.value)
+    if not all_games:
         return
 
-    game_ = selectors.get_game_selection(games)
+    game_ = selectors.get_game_selection(all_games)
     if not game_:
         return
 
-    player_to_game_obps = obp.get_player_to_game_obps(game_)
-    ui.display_game(game_, player_to_game_obps)
+    if game_ == ENTIRE_SEASON:
+        games = all_games
+    else:
+        games = [game_]  # type: ignore
+
+    player_to_game_obps = obp.get_player_to_obps(games)
+    ui.display_game(games, player_to_game_obps)
 
 
 def _load_games(year: int, team_id: str) -> list[Game] | None:

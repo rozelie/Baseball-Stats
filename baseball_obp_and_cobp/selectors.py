@@ -5,6 +5,7 @@ from baseball_obp_and_cobp.game import Game
 from baseball_obp_and_cobp.team import Team
 
 EMPTY_CHOICE = ""
+ENTIRE_SEASON = "Entire Season"
 
 
 def get_team_and_year_selection() -> tuple[Team | None, int | None]:
@@ -16,16 +17,18 @@ def get_team_and_year_selection() -> tuple[Team | None, int | None]:
     return team, year
 
 
-def get_game_selection(games: list[Game]) -> Game | None:
+def get_game_selection(games: list[Game]) -> Game | str | None:
     game_id_to_game = {g.id: g for g in games}
     game_pretty_ids = [g.pretty_id for g in games]
     game_pretty_id_to_game_id = {g.pretty_id: g.id for g in games}
-    options = [EMPTY_CHOICE, *sorted(game_pretty_ids)]
-    game_pretty_id_selected = ui.get_selection("Select Game:", options=options)
-    if not game_pretty_id_selected:
+    options = [EMPTY_CHOICE, ENTIRE_SEASON, *sorted(game_pretty_ids)]
+    selection = ui.get_selection("Select Game:", options=options)
+    if not selection:
         return None
+    if selection == ENTIRE_SEASON:
+        return ENTIRE_SEASON
 
-    game_id_selected = game_pretty_id_to_game_id[game_pretty_id_selected]
+    game_id_selected = game_pretty_id_to_game_id[selection]
     return game_id_to_game[game_id_selected]
 
 
