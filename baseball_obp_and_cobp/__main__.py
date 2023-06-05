@@ -1,14 +1,17 @@
-from baseball_obp_and_cobp import game, retrosheet, selectors, ui
+from baseball_obp_and_cobp import game, retrosheet
 from baseball_obp_and_cobp.game import Game
-from baseball_obp_and_cobp.selectors import ENTIRE_SEASON
 from baseball_obp_and_cobp.stats import ba, obp
+from baseball_obp_and_cobp.ui import selectors
+from baseball_obp_and_cobp.ui.core import display_error, set_streamlit_config
+from baseball_obp_and_cobp.ui.selectors import ENTIRE_SEASON
+from baseball_obp_and_cobp.ui.stats import display_game
 
 EMPTY_CHOICE = ""
 
 
 def main() -> None:
     """Project entrypoint."""
-    ui.set_streamlit_config()
+    set_streamlit_config()
     team, year = selectors.get_team_and_year_selection()
     if not team or not year:
         return
@@ -28,7 +31,7 @@ def main() -> None:
 
     player_to_obps = obp.get_player_to_obps(games)
     player_to_ba = ba.get_player_to_ba(games)
-    ui.display_game(games, player_to_obps, player_to_ba)
+    display_game(games, player_to_obps, player_to_ba)
 
 
 def _load_games(year: int, team_id: str) -> list[Game] | None:
@@ -36,7 +39,7 @@ def _load_games(year: int, team_id: str) -> list[Game] | None:
     try:
         return game.load_events_file(game_events_file)
     except ValueError as error:
-        ui.display_error(str(error))
+        display_error(str(error))
         return None
 
 

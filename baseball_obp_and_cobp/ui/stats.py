@@ -1,5 +1,3 @@
-from typing import Any
-
 import streamlit as st
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
@@ -7,24 +5,20 @@ from baseball_obp_and_cobp.stats.ba import PlayerToBA
 from baseball_obp_and_cobp.stats.obp import PlayerToOBPs
 
 
-def set_streamlit_config() -> None:
-    st.set_page_config(page_title="Baseball (C)OBP", layout="wide")
+def display_game(games: list[Game], player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA) -> None:
+    _display_legend()
+    if len(games) == 1:
+        _display_innings(games[0])
+    _display_player_obps(player_to_obps, player_to_ba, games)
+    _display_footer()
 
 
-def get_selection(prompt: str, options: list[Any]) -> Any:
-    return st.selectbox(prompt, options=options)
-
-
-def display_error(error: str) -> None:
-    st.error(error)
-
-
-def display_legend():
+def _display_legend():
     with st.expander("View Legend"):
         st.markdown(":green[GREEN]: On-Base | :orange[ORANGE]: At Bat | :red[RED]: N/A")
 
 
-def display_innings(game: Game) -> None:
+def _display_innings(game: Game) -> None:
     header = f"Inning Play-by-Play For {game.team.pretty_name}"
     with st.expander(f"View {header}"):
         st.header(header)
@@ -38,7 +32,7 @@ def display_innings(game: Game) -> None:
             st.divider()
 
 
-def display_player_obps(player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA, games: list[Game]) -> None:
+def _display_player_obps(player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA, games: list[Game]) -> None:
     player_id_to_player = {p.id: p for p in get_players_in_games(games)}
     st.header(f"{games[0].team.pretty_name} Player (C)OBP")
     explanation_toggleable = len(games) > 1
@@ -62,7 +56,7 @@ def display_player_obps(player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA, 
         st.divider()
 
 
-def display_footer() -> None:
+def _display_footer() -> None:
     retrosheet_notice = " ".join(
         """\
         The information used here was obtained free of
@@ -72,14 +66,6 @@ def display_footer() -> None:
     """.split()
     )
     st.caption(retrosheet_notice)
-
-
-def display_game(games: list[Game], player_to_obps: PlayerToOBPs, player_to_ba: PlayerToBA) -> None:
-    display_legend()
-    if len(games) == 1:
-        display_innings(games[0])
-    display_player_obps(player_to_obps, player_to_ba, games)
-    display_footer()
 
 
 def _display_metric(name: str, value: float, explanation_lines: list[str], toggleable: bool) -> None:
