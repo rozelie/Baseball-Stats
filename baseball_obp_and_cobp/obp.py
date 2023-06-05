@@ -81,7 +81,6 @@ def _get_players_on_base_percentage(game: Game, player: Player) -> GameOBPs:
     cobp_counters = OBPCounters()
     for play in player.plays:
         if play.is_unused_in_obp_calculations:
-            explanation.add_play(play, resultant="N/A")
             continue
 
         valid_cobp_play = game.inning_has_an_on_base(play.inning)
