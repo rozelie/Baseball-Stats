@@ -69,10 +69,12 @@ def _display_footer() -> None:
 
 
 def _display_metric(name: str, value: float, explanation_lines: list[str], toggleable: bool) -> None:
+    metric_formatted = f"**{name} = {round(value, 3)}**"
     if toggleable:
-        with st.expander(f"**{name} = {round(value, 3)}**"):
+        with st.expander(metric_formatted):
             for line in explanation_lines:
                 st.markdown(line)
     else:
+        st.markdown(metric_formatted)
         for line in explanation_lines:
             st.markdown(line)
