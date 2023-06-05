@@ -40,9 +40,10 @@ same inning.
 
 # Todo
 - calculate on-base percentages (OBP) conditional on-base percentage (COBP) for one team, for one season
-    - ✅ data retrieval, retrosheet.org suggested
-    - ✅ calculate per-game OBP
-    - ✅ calculate per-game COBP
+  - ✅ data retrieval, retrosheet.org suggested
+  - ✅ calculate per-game OBP
+  - ✅ calculate per-game COBP
+  - ❌ tests
 - ✅ provide user-friendly interface, allowing selection of a particular team over specified seasons
 - ❌ calculate seasonal OBP
 - ❌ calculate seasonal COBP
