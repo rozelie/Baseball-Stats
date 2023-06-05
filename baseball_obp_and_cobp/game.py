@@ -72,6 +72,15 @@ class Game:
     def inning_has_an_on_base(self, inning: int) -> bool:
         return len(self.get_plays_resulting_on_base_in_inning(inning)) > 0
 
+    def play_has_on_base_before_it_in_inning(self, inning: int, play: Play) -> bool:
+        for inning_play in self.inning_to_plays[inning]:
+            if inning_play == play:
+                return False
+            if inning_play.results_in_on_base:
+                return True
+
+        raise ValueError(f"Unable to find play within inning. {inning=} | play={play.pretty_description}")
+
 
 def load_events_file(path: Path) -> list[Game]:
     try:

@@ -47,7 +47,7 @@ same inning.
 - ✅ provide user-friendly interface, allowing selection of a particular team over specified seasons
 - ✅ calculate seasonal OBP
 - ✅ calculate seasonal COBP
-- ❌ calculate sequential on-base percentage (SOBP): computed as regular OBP, but only for any batters that come to the plate after at least one other batter gets on base
+- ✅ calculate sequential on-base percentage (SOBP): computed as regular OBP, but only for any batters that come to the plate after at least one other batter gets on base
 - ❌ calculate batting average (BA): `BA = H / AB`
 - ❌ calculate slugging percentage (SB): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
   - ❌ calculate OPS: `OBP + SP`

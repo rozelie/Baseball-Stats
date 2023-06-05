@@ -46,13 +46,15 @@ def display_player_obps(player_to_game_obps: PlayerToGameOBP, games: list[Game])
         if not player.plays:
             continue
 
-        player_column, obp_column, cobp_column = st.columns(3)
+        player_column, obp_column, cobp_column, sobp_column = st.columns(4)
         with player_column:
             st.markdown(f"**{player.name}**")
         with obp_column:
             _display_obp_explanation("OBP", obps.obp, explanation.obp_explanation, toggleable=explanation_toggleable)
         with cobp_column:
             _display_obp_explanation("COBP", obps.cobp, explanation.cobp_explanation, toggleable=explanation_toggleable)
+        with sobp_column:
+            _display_obp_explanation("SOBP", obps.sobp, explanation.sobp_explanation, toggleable=explanation_toggleable)
         st.divider()
 
 
@@ -77,7 +79,7 @@ def display_game(games: list[Game], player_to_game_obps: PlayerToGameOBP) -> Non
 
 
 def _display_obp_explanation(name: str, obp: float, explanation_lines: list[str], toggleable: bool) -> None:
-    st.markdown(f"**{name}= {round(obp, 3)}**")
+    st.markdown(f"**{name} = {round(obp, 3)}**")
     if toggleable:
         with st.expander(f"View {name} Explanation"):
             for line in explanation_lines:
