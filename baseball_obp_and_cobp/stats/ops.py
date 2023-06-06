@@ -13,7 +13,7 @@ class OPS(Stat):
     sp: float = 0.0
 
     def __post_init__(self) -> None:
-        self.explanation.append(f"OBP={round(self.obp, 3)} + SP={round(self.sp, 3)}")
+        self.explanation.append(f"*OBP={round(self.obp, 3)} + SP={round(self.sp, 3)}*")
 
     @property
     def ops(self):

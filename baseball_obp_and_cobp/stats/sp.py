@@ -24,8 +24,8 @@ class SP(Stat):
         return self.at_bats
 
     def add_arithmetic(self) -> None:
-        numerator = f"1 * 1B={self.singles} + 2 * 2B={self.doubles} + 3 * 3B={self.triples} + 4 * HR={self.home_runs}"
-        denominator = f"AB={self.at_bats}"
+        numerator = f"*1 * 1B={self.singles} + 2 * 2B={self.doubles} + 3 * 3B={self.triples} + 4 * HR={self.home_runs} = {self.numerator}*"  # noqa
+        denominator = f"*AB={self.at_bats}*"
         self.explanation.extend([numerator, denominator])
 
     @property
