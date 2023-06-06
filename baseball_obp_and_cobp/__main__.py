@@ -1,12 +1,10 @@
 from baseball_obp_and_cobp import game, retrosheet
 from baseball_obp_and_cobp.game import Game
-from baseball_obp_and_cobp.stats import ba, obp
+from baseball_obp_and_cobp.stats.aggregated import get_player_to_stats
 from baseball_obp_and_cobp.ui import selectors
 from baseball_obp_and_cobp.ui.core import display_error, set_streamlit_config
 from baseball_obp_and_cobp.ui.selectors import ENTIRE_SEASON
 from baseball_obp_and_cobp.ui.stats import display_game
-
-EMPTY_CHOICE = ""
 
 
 def main() -> None:
@@ -29,9 +27,7 @@ def main() -> None:
     else:
         games = [game_]  # type: ignore
 
-    player_to_obps = obp.get_player_to_obps(games)
-    player_to_ba = ba.get_player_to_ba(games)
-    display_game(games, player_to_obps, player_to_ba)
+    display_game(games, get_player_to_stats(games))
 
 
 def _load_games(year: int, team_id: str) -> list[Game] | None:

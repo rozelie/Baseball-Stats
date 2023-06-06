@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 
 from baseball_obp_and_cobp.play import Play
 
+TEAM_PLAYER_ID = "Team"
+
 
 @dataclass
 class Player:
@@ -16,4 +18,12 @@ class Player:
             id=line_values[0],
             name=line_values[1].replace('"', ""),
             lineup_position=int(line_values[3]),
+        )
+
+    @classmethod
+    def as_team(cls):
+        return cls(
+            id=TEAM_PLAYER_ID,
+            name=TEAM_PLAYER_ID,
+            lineup_position=-1,
         )

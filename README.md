@@ -51,7 +51,7 @@ same inning.
   - ❌ tests
 - ✅ calculate batting average (BA): `BA = H / AB`
   - ❌ tests
-- ❌ calculate aggregated team stats
+- ✅ calculate aggregated team stats
   - ❌ tests
 - ❌ calculate slugging percentage (SB): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
   - ❌ tests
