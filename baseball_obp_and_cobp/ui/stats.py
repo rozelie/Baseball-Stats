@@ -63,7 +63,7 @@ def _display_footer() -> None:
 
 def _display_stats_row(games: list[Game], player: Player, stats: PlayerStats) -> None:
     explanation_toggleable = len(games) > 1
-    player_column, obp_column, cobp_column, sobp_column, ba_column = st.columns(5)
+    player_column, obp_column, cobp_column, sobp_column, ba_column, sp_column, ops_column, cops_column = st.columns(8)
     with player_column:
         st.markdown(f"**{player.name}**")
     with obp_column:
@@ -74,6 +74,12 @@ def _display_stats_row(games: list[Game], player: Player, stats: PlayerStats) ->
         _display_metric("SOBP", stats.sobp.obp, stats.sobp.explanation, toggleable=explanation_toggleable)
     with ba_column:
         _display_metric("BA", stats.ba.ba, stats.ba.explanation, toggleable=explanation_toggleable)
+    with sp_column:
+        _display_metric("SP", stats.sp.sp, stats.sp.explanation, toggleable=explanation_toggleable)
+    with ops_column:
+        _display_metric("OPS", stats.ops.ops, stats.ops.explanation, toggleable=explanation_toggleable)
+    with cops_column:
+        _display_metric("COPS", stats.cops.cops, stats.cops.explanation, toggleable=explanation_toggleable)
     st.divider()
 
 

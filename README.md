@@ -53,11 +53,11 @@ same inning.
   - ❌ tests
 - ✅ calculate aggregated team stats
   - ❌ tests
-- ❌ calculate slugging percentage (SB): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
+- ✅ calculate slugging percentage (SP): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
   - ❌ tests
-- ❌ calculate OPS: `OBP + SP`
+- ✅ calculate OPS: `OBP + SP`
   - ❌ tests
-- ❌ calculate COPS: `COBP + SP`
+- ✅ calculate COPS: `COBP + SP`
   - ❌ tests
 - ❌ calculate correlations (TBD)
   - ❌ tests

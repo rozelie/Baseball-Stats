@@ -1,27 +1,15 @@
 """Calculate BA stats from game data."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
-from baseball_obp_and_cobp.play import Play
 from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
+from baseball_obp_and_cobp.stats.stat import Stat
 
 
 @dataclass
-class BA:
+class BA(Stat):
     hits: int = 0
     at_bats: int = 0
-    explanation: list[str] = field(default_factory=list)
-
-    def add_play(
-        self,
-        play: Play,
-        resultant: str | None = None,
-        color: str | None = None,
-    ) -> None:
-        resultant = resultant if resultant else play.id
-        color = color if color else play.color
-        value = f"{play.pretty_description} => :{color}[{resultant}]"
-        self.explanation.append(value)
 
     def add_arithmetic(self) -> None:
         self.explanation.append(f"*H={self.hits} / AB={self.at_bats} == {round(self.ba, 3)}*")

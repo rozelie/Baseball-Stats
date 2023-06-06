@@ -166,14 +166,31 @@ class Play:
 
     @property
     def is_hit(self) -> bool:
-        return self.result in [
-            PlayResult.SINGLE,
-            PlayResult.DOUBLE,
-            PlayResult.TRIPLE,
-            PlayResult.HOME_RUN,
-            PlayResult.HOME_RUN_2,
-            PlayResult.GROUND_RULE_DOUBLE,
-        ]
+        return any(
+            [
+                self.is_single,
+                self.is_double,
+                self.is_triple,
+                self.is_home_run,
+                self.result == PlayResult.GROUND_RULE_DOUBLE,
+            ]
+        )
+
+    @property
+    def is_single(self) -> bool:
+        return self.result == PlayResult.SINGLE
+
+    @property
+    def is_double(self) -> bool:
+        return self.result == PlayResult.DOUBLE
+
+    @property
+    def is_triple(self) -> bool:
+        return self.result == PlayResult.TRIPLE
+
+    @property
+    def is_home_run(self) -> bool:
+        return self.result in [PlayResult.HOME_RUN, PlayResult.HOME_RUN_2]
 
     @property
     def is_walk(self) -> bool:

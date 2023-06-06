@@ -1,19 +1,24 @@
 """Calculate OBP and COBP stats from game data."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
 from baseball_obp_and_cobp.play import Play
 from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
+from baseball_obp_and_cobp.stats.stat import Stat
 
 
 @dataclass
-class OBP:
+class OBP(Stat):
     hits: int = 0
     walks: int = 0
     hit_by_pitches: int = 0
     at_bats: int = 0
     sacrifice_flys: int = 0
-    explanation: list[str] = field(default_factory=list)
+
+    def add_arithmetic(self) -> None:
+        numerator = f"*H={self.hits} + W={self.walks} + HBP={self.hit_by_pitches} == {self.numerator}*"
+        denominator = f"*AB={self.at_bats} + W={self.walks} + HBP={self.hit_by_pitches} + SF={self.sacrifice_flys} == {self.denominator}*"  # noqa: E501
+        self.explanation.extend([numerator, denominator])
 
     @property
     def numerator(self) -> int:
@@ -29,22 +34,6 @@ class OBP:
             return self.numerator / self.denominator
         except ZeroDivisionError:
             return 0.0
-
-    def add_play(
-        self,
-        play: Play,
-        resultant: str | None = None,
-        color: str | None = None,
-    ) -> None:
-        resultant = resultant if resultant else play.id
-        color = color if color else play.color
-        value = f"{play.pretty_description} => :{color}[{resultant}]"
-        self.explanation.append(value)
-
-    def add_arithmetic(self) -> None:
-        numerator = f"*H={self.hits} + W={self.walks} + HBP={self.hit_by_pitches} == {self.numerator}*"
-        denominator = f"*AB={self.at_bats} + W={self.walks} + HBP={self.hit_by_pitches} + SF={self.sacrifice_flys} == {self.denominator}*"  # noqa: E501
-        self.explanation.extend([numerator, denominator])
 
 
 PlayerToOBP = dict[str, OBP]
