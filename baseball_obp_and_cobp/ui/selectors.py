@@ -3,6 +3,7 @@ from typing import Any
 import streamlit as st
 
 from baseball_obp_and_cobp.game import Game
+from baseball_obp_and_cobp.player import Player
 from baseball_obp_and_cobp.team import Team
 
 EMPTY_CHOICE = ""
@@ -31,6 +32,14 @@ def get_game_selection(games: list[Game]) -> Game | str | None:
 
     game_id_selected = game_pretty_id_to_game_id[selection]
     return game_id_to_game[game_id_selected]
+
+
+def get_player_selection(players: list[Player]) -> Player | None:
+    player_id_to_player = {p.id: p for p in players}
+    player_name_to_id = {p.name: p.id for p in players}
+    options = [EMPTY_CHOICE, *player_name_to_id.keys()]
+    player_name = _get_selection("Select Player:", options=options)
+    return player_id_to_player[player_name_to_id[player_name]] if player_name else None
 
 
 def _get_team_selection() -> Team | None:

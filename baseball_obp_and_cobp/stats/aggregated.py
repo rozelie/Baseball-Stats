@@ -1,7 +1,11 @@
+from collections import defaultdict
 from dataclasses import dataclass
+from typing import Mapping
+
+import pandas as pd
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
-from baseball_obp_and_cobp.player import Player
+from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
 from baseball_obp_and_cobp.stats.ba import BA, get_player_to_ba
 from baseball_obp_and_cobp.stats.cops import COPS, get_player_to_cops
 from baseball_obp_and_cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_obp, get_player_to_sobp
@@ -44,3 +48,22 @@ def get_player_to_stats(games: list[Game]) -> PlayerToStats:
         )
         for player in all_players
     }
+
+
+def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
+    all_players = get_players_in_games(games)
+    player_id_to_player = {p.id: p for p in all_players}
+    player_id_to_player[TEAM_PLAYER_ID] = Player.as_team()
+    data: Mapping[str, list[str | float]] = defaultdict(list)
+    for player_id, stats in player_to_stats.items():
+        player = player_id_to_player[player_id]
+        data["Player"].append(player.name)
+        data["OBP"].append(stats.obp.obp)
+        data["COBP"].append(stats.cobp.obp)
+        data["SOBP"].append(stats.sobp.obp)
+        data["BA"].append(stats.ba.ba)
+        data["SP"].append(stats.sp.sp)
+        data["OPS"].append(stats.ops.ops)
+        data["COPS"].append(stats.cops.cops)
+
+    return pd.DataFrame(data=data)
