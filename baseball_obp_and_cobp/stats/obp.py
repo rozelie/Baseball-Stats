@@ -64,9 +64,7 @@ def _get_obp(games: list[Game], players: list[Player]) -> OBP:
     obp = OBP()
     for game in games:
         for player in players:
-            try:
-                game_player = game.get_player(player.id)
-            except ValueError:
+            if not (game_player := game.get_player(player.id)):
                 continue
 
             for play in game_player.plays:
@@ -84,9 +82,7 @@ def _get_cobp(games: list[Game], players: list[Player]) -> OBP:
     obp = OBP()
     for game in games:
         for player in players:
-            try:
-                game_player = game.get_player(player.id)
-            except ValueError:
+            if not (game_player := game.get_player(player.id)):
                 continue
 
             for play in game_player.plays:
@@ -107,9 +103,7 @@ def _get_sobp(games: list[Game], players: list[Player]) -> OBP:
     obp = OBP()
     for game in games:
         for player in players:
-            try:
-                game_player = game.get_player(player.id)
-            except ValueError:
+            if not (game_player := game.get_player(player.id)):
                 continue
 
             for play in game_player.plays:

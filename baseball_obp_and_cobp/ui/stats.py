@@ -27,7 +27,8 @@ def _display_innings(game: Game) -> None:
             st.markdown(f"**Inning {inning}** (Has An On Base: {has_an_on_base})")
             for play in plays:
                 player = game.get_player(play.batter_id)
-                st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.id}]")
+                if player:
+                    st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.id}]")
 
             st.divider()
 

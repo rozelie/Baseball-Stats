@@ -1,4 +1,4 @@
-"""Calculate SP stats from game data."""
+"""Calculate SP (Slugging Percentage) stats from game data."""
 from dataclasses import dataclass, field
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
@@ -49,9 +49,7 @@ def get_player_to_sp(games: list[Game]) -> PlayerToSP:
 def _get_sp(games: list[Game], player: Player) -> SP:
     sp = SP()
     for game in games:
-        try:
-            game_player = [p for p in game.players if p.id == player.id][0]
-        except IndexError:
+        if not (game_player := game.get_player(player.id)):
             continue
 
         for play in game_player.plays:

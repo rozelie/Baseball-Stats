@@ -35,9 +35,7 @@ def get_player_to_ba(games: list[Game]) -> PlayerToBA:
 def _get_ba(games: list[Game], player: Player) -> BA:
     ba = BA()
     for game in games:
-        try:
-            game_player = [p for p in game.players if p.id == player.id][0]
-        except IndexError:
+        if not (game_player := game.get_player(player.id)):
             continue
 
         for play in game_player.plays:

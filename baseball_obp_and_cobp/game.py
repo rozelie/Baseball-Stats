@@ -60,11 +60,11 @@ class Game:
         date_ = "".join([c for c in self.id if c.isnumeric()])
         return date(year=int(date_[0:4]), month=int(date_[4:6]), day=int(date_[6:8]))
 
-    def get_player(self, player_id: str) -> Player:
+    def get_player(self, player_id: str) -> Player | None:
         for player in self.players:
             if player.id == player_id:
                 return player
-        raise ValueError(f"Unable to find player id of {player_id} within the game")
+        return None
 
     def get_plays_resulting_on_base_in_inning(self, inning: int) -> list[Play]:
         return [inning_play for inning_play in self.inning_to_plays[inning] if inning_play.results_in_on_base]
