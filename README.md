@@ -43,12 +43,12 @@ same inning.
   - ✅ data retrieval, retrosheet.org suggested
   - ✅ calculate per-game OBP
   - ✅ calculate per-game COBP
-  - ❌ tests
+  - ✅ tests
 - ✅ provide user-friendly interface, allowing selection of a particular team over specified seasons
 - ✅ allow seasonal calculations
   - ❌ seasonal tests
 - ✅ calculate sequential on-base percentage (SOBP): computed as regular OBP, but only for any batters that come to the plate after at least one other batter gets on base
-  - ❌ tests
+  - ✅ tests
 - ✅ calculate batting average (BA): `BA = H / AB`
   - ✅ tests
 - ✅ calculate aggregated team stats

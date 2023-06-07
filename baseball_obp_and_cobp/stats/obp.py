@@ -41,80 +41,77 @@ PlayerToOBP = dict[str, OBP]
 
 def get_player_to_obp(games: list[Game]) -> PlayerToOBP:
     players = get_players_in_games(games)
-    player_to_obp = {player.id: _get_obp(games, [player]) for player in players}
+    player_to_obp = {player.id: _get_obp(games, player) for player in players}
     player_to_obp[TEAM_PLAYER_ID] = _get_teams_obp(player_to_obp)
     return player_to_obp
 
 
 def get_player_to_cobp(games: list[Game]) -> PlayerToOBP:
     players = get_players_in_games(games)
-    player_to_cobp = {player.id: _get_cobp(games, [player]) for player in players}
+    player_to_cobp = {player.id: _get_cobp(games, player) for player in players}
     player_to_cobp[TEAM_PLAYER_ID] = _get_teams_obp(player_to_cobp)
     return player_to_cobp
 
 
 def get_player_to_sobp(games: list[Game]) -> PlayerToOBP:
     players = get_players_in_games(games)
-    player_to_sobp = {player.id: _get_sobp(games, [player]) for player in players}
+    player_to_sobp = {player.id: _get_sobp(games, player) for player in players}
     player_to_sobp[TEAM_PLAYER_ID] = _get_teams_obp(player_to_sobp)
     return player_to_sobp
 
 
-def _get_obp(games: list[Game], players: list[Player]) -> OBP:
+def _get_obp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
     for game in games:
-        for player in players:
-            if not (game_player := game.get_player(player.id)):
+        if not (game_player := game.get_player(player.id)):
+            continue
+
+        for play in game_player.plays:
+            if play.is_unused_in_obp_calculations:
                 continue
 
-            for play in game_player.plays:
-                if play.is_unused_in_obp_calculations:
-                    continue
-
-                obp.add_play(play)
-                _increment_obp_counters(play, obp)
+            obp.add_play(play)
+            _increment_obp_counters(play, obp)
 
     obp.add_arithmetic()
     return obp
 
 
-def _get_cobp(games: list[Game], players: list[Player]) -> OBP:
+def _get_cobp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
     for game in games:
-        for player in players:
-            if not (game_player := game.get_player(player.id)):
+        if not (game_player := game.get_player(player.id)):
+            continue
+
+        for play in game_player.plays:
+            if play.is_unused_in_obp_calculations:
+                continue
+            if not game.inning_has_an_on_base(play.inning):
+                obp.add_play(play, resultant="N/A (no other on-base in inning)", color="red")
                 continue
 
-            for play in game_player.plays:
-                if play.is_unused_in_obp_calculations:
-                    continue
-                if not game.inning_has_an_on_base(play.inning):
-                    obp.add_play(play, resultant="N/A (no other on-base in inning)", color="red")
-                    continue
-
-                obp.add_play(play)
-                _increment_obp_counters(play, obp)
+            obp.add_play(play)
+            _increment_obp_counters(play, obp)
 
     obp.add_arithmetic()
     return obp
 
 
-def _get_sobp(games: list[Game], players: list[Player]) -> OBP:
+def _get_sobp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
     for game in games:
-        for player in players:
-            if not (game_player := game.get_player(player.id)):
+        if not (game_player := game.get_player(player.id)):
+            continue
+
+        for play in game_player.plays:
+            if play.is_unused_in_obp_calculations:
+                continue
+            if not game.play_has_on_base_before_it_in_inning(play.inning, play):
+                obp.add_play(play, resultant="N/A (no other on-base prior to play)", color="red")
                 continue
 
-            for play in game_player.plays:
-                if play.is_unused_in_obp_calculations:
-                    continue
-                if not game.play_has_on_base_before_it_in_inning(play.inning, play):
-                    obp.add_play(play, resultant="N/A (no other on-base prior to play)", color="red")
-                    continue
-
-                obp.add_play(play)
-                _increment_obp_counters(play, obp)
+            obp.add_play(play)
+            _increment_obp_counters(play, obp)
 
     obp.add_arithmetic()
     return obp

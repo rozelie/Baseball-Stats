@@ -9,6 +9,7 @@ class TestBA:
         ba_.hits = 1
         ba_.at_bats = 2
 
+        # H / AB == 1 / 2
         assert ba_.ba == 0.5
 
     def test_ba__handles_zero_denominator(self):

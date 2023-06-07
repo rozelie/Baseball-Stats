@@ -12,6 +12,8 @@ class TestSP:
         sp_.home_runs = 1
         sp_.at_bats = 5
 
+        # numerator (1 * 1 + 2 * 1 + 3 * 1 + 4 * 1) == 10
+        # denominator (5) == 5
         assert sp_.sp == 2.0
 
     def test_sp__handles_zero_denominator(self):
