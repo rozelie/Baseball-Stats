@@ -50,7 +50,7 @@ same inning.
 - ✅ calculate sequential on-base percentage (SOBP): computed as regular OBP, but only for any batters that come to the plate after at least one other batter gets on base
   - ❌ tests
 - ✅ calculate batting average (BA): `BA = H / AB`
-  - ❌ tests
+  - ✅ tests
 - ✅ calculate aggregated team stats
   - ❌ tests
 - ✅ calculate slugging percentage (SP): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
