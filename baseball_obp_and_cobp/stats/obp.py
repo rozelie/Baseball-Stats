@@ -109,6 +109,12 @@ def _get_sobp(games: list[Game], player: Player) -> OBP:
             if not game.play_has_on_base_before_it_in_inning(play.inning, play):
                 obp.add_play(play, resultant="N/A (no other on-base prior to play)", color="red")
                 continue
+            if play.inning != 1 and not game.inning_has_an_on_base(play.inning - 1):
+                obp.add_play(play, resultant="N/A (no other on-base in prior inning)", color="red")
+                continue
+            if game.play_is_first_of_inning(play.inning, play):
+                obp.add_play(play, resultant="N/A (player is first batter in inning)", color="red")
+                continue
 
             obp.add_play(play)
             _increment_obp_counters(play, obp)

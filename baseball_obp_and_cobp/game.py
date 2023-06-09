@@ -81,6 +81,9 @@ class Game:
 
         raise ValueError(f"Unable to find play within inning. {inning=} | play={play.pretty_description}")
 
+    def play_is_first_of_inning(self, inning: int, play: Play) -> bool:
+        return self.inning_to_plays[inning][0] == play
+
 
 def load_events_file(path: Path) -> list[Game]:
     try:
