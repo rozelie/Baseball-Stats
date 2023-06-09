@@ -236,7 +236,7 @@ class Play:
         elif self.is_hit_by_pitch:
             return "HBP"
         elif self.is_sacrifice_fly:
-            return "SF, AB"
+            return "SF"
         elif self.is_at_bat:
             return "AB"
         else:
