@@ -17,7 +17,8 @@ def display_game(games: list[Game], player_to_stats: PlayerToStats, player_to_st
 
 def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     st.header(f"{games[0].team.pretty_name} Stats")
-    formatted_df = player_to_stats_df.applymap(lambda x: f"{float(x):.3f}" if isinstance(x, (float, int)) else x)
+    format_rules = {stat: "{:.3f}" for stat in ["OBP", "COBP", "SOBP", "BA", "SP", "OPS", "COPS"]}
+    formatted_df = player_to_stats_df.style.format(format_rules)
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping
 
 import pandas as pd
@@ -22,6 +22,27 @@ class PlayerStats:
     sp: SP
     ops: OPS
     cops: COPS
+
+    at_bats: int = field(init=False)
+    hits: int = field(init=False)
+    walks: int = field(init=False)
+    hit_by_pitches: int = field(init=False)
+    sacrifice_flys: int = field(init=False)
+    singles: int = field(init=False)
+    doubles: int = field(init=False)
+    triples: int = field(init=False)
+    home_runs: int = field(init=False)
+
+    def __post_init__(self):
+        self.at_bats = self.obp.at_bats
+        self.hits = self.obp.hits
+        self.walks = self.obp.walks
+        self.hit_by_pitches = self.obp.hit_by_pitches
+        self.sacrifice_flys = self.obp.sacrifice_flys
+        self.singles = self.sp.singles
+        self.doubles = self.sp.doubles
+        self.triples = self.sp.triples
+        self.home_runs = self.sp.home_runs
 
 
 PlayerToStats = dict[str, PlayerStats]
@@ -58,6 +79,15 @@ def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) ->
     for player_id, stats in player_to_stats.items():
         player = player_id_to_player[player_id]
         data["Player"].append(player.name)
+        data["AB"].append(stats.at_bats)
+        data["H"].append(stats.hits)
+        data["W"].append(stats.walks)
+        data["HBP"].append(stats.hit_by_pitches)
+        data["SF"].append(stats.sacrifice_flys)
+        data["S"].append(stats.singles)
+        data["D"].append(stats.doubles)
+        data["T"].append(stats.triples)
+        data["HR"].append(stats.home_runs)
         data["OBP"].append(stats.obp.obp)
         data["COBP"].append(stats.cobp.obp)
         data["SOBP"].append(stats.sobp.obp)
