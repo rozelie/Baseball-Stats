@@ -58,25 +58,25 @@ def _display_footer() -> None:
 def _display_player_stats_explanation_row(player: Player, stats: PlayerStats) -> None:
     obp_column, cobp_column, sobp_column, ba_column, sp_column, ops_column, cops_column = st.columns(7)
     with obp_column:
-        _display_metric("OBP", stats.obp.obp, stats.obp.explanation)
+        _display_stat("OBP", stats.obp.obp, stats.obp.explanation)
     with cobp_column:
-        _display_metric("COBP", stats.cobp.obp, stats.cobp.explanation)
+        _display_stat("COBP", stats.cobp.obp, stats.cobp.explanation)
     with sobp_column:
-        _display_metric("SOBP", stats.sobp.obp, stats.sobp.explanation)
+        _display_stat("SOBP", stats.sobp.obp, stats.sobp.explanation)
     with ba_column:
-        _display_metric("BA", stats.ba.ba, stats.ba.explanation)
+        _display_stat("BA", stats.ba.ba, stats.ba.explanation)
     with sp_column:
-        _display_metric("SP", stats.sp.sp, stats.sp.explanation)
+        _display_stat("SP", stats.sp.sp, stats.sp.explanation)
     with ops_column:
-        _display_metric("OPS", stats.ops.ops, stats.ops.explanation)
+        _display_stat("OPS", stats.ops.ops, stats.ops.explanation)
     with cops_column:
-        _display_metric("COPS", stats.cops.cops, stats.cops.explanation)
+        _display_stat("COPS", stats.cops.cops, stats.cops.explanation)
     st.divider()
 
 
-def _display_metric(name: str, value: float, explanation_lines: list[str]) -> None:
-    metric_formatted = f"**{name} = {round(value, 3)}**"
-    st.markdown(metric_formatted)
+def _display_stat(name: str, value: float, explanation_lines: list[str]) -> None:
+    stat_formatted = f"**{name} = {round(value, 3)}**"
+    st.markdown(stat_formatted)
     if explanation_lines:
         for line in explanation_lines:
             st.markdown(line)
