@@ -17,7 +17,8 @@ def display_game(games: list[Game], player_to_stats: PlayerToStats, player_to_st
 
 def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     st.header(f"{games[0].team.pretty_name} Stats")
-    st.dataframe(player_to_stats_df, hide_index=True, use_container_width=True)
+    formatted_df = player_to_stats_df.applymap(lambda x: f"{float(x):.3f}" if isinstance(x, (float, int)) else x)
+    st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
 def _display_innings_toggle(game: Game) -> None:
