@@ -17,8 +17,10 @@ def display_game(games: list[Game], player_to_stats: PlayerToStats, player_to_st
 
 def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     st.header(f"{games[0].team.pretty_name} Stats")
+    # ignore players without any at bats as they will have 0 values for all stats
+    filtered_df = player_to_stats_df[player_to_stats_df["AB"] > 0]
     format_rules = {stat: "{:.3f}" for stat in ["OBP", "COBP", "SOBP", "BA", "SP", "OPS", "COPS"]}
-    formatted_df = player_to_stats_df.style.format(format_rules)
+    formatted_df = filtered_df.style.format(format_rules)
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
