@@ -37,6 +37,10 @@ def main() -> None:
 
 def _load_games(year: int, team_id: str) -> list[Game] | None:
     game_events_file = retrosheet.get_teams_years_event_file(year, team_id)
+    if not game_events_file:
+        display_error(f"Unable to find event file for team={team_id}, year={year}")
+        return None
+
     try:
         return game.load_events_file(game_events_file)
     except ValueError as error:
