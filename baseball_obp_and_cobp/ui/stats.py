@@ -42,9 +42,9 @@ def _display_correlations(stat_name: str, player_to_game_value_df: pd.DataFrame)
     correlation_df = player_to_game_value_df.corr(method=correlation_method)
 
     def _format(cell_value: float) -> str | None:
-        if cell_value > 0.75:
+        if cell_value >= 0.75:
             return "background-color: green"
-        if cell_value < -0.75:
+        if cell_value <= -0.75:
             return "background-color: red"
         return None
 
