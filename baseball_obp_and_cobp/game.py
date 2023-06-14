@@ -104,6 +104,10 @@ def get_players_in_games(games: list[Game]) -> list[Player]:
     return players
 
 
+def get_games_inning_id(game: Game, inning: int) -> str:
+    return f"{game.pretty_id}-{inning}"
+
+
 def _get_files_team(path: Path) -> Team:
     id_line = path.read_text().splitlines()[0]
     file_id = id_line.split(",")[1]

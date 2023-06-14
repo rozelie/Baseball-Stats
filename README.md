@@ -60,11 +60,11 @@ same inning.
 - ✅ calculate COPS: `COBP + SP`
   - ❌ tests
 - ❌ calculate correlations
-  - correlate COBPs for each player (e.g., correlate Batter A’s COBP with B’s, C’s, etc.)
+  - ✅ correlate COBPs for each player (e.g., correlate Batter A’s COBP with B’s, C’s, etc.)
     - ❌ tests
-  - correlate COBPs with runs scored
+  - ❌ correlate COBPs with runs scored
     - ❌ tests
-  - correlate COBPs with wins
+  - ❌ correlate COBPs with wins
     - ❌ tests
 
 ## Future Work

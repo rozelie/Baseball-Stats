@@ -4,7 +4,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from baseball_obp_and_cobp.game import Game, get_players_in_games
+from baseball_obp_and_cobp.game import Game, get_games_inning_id, get_players_in_games
 from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
 from baseball_obp_and_cobp.stats.ba import BA, get_player_to_ba
 from baseball_obp_and_cobp.stats.cops import COPS, get_player_to_cops
@@ -72,9 +72,7 @@ def get_player_to_stats(games: list[Game]) -> PlayerToStats:
 
 
 def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
-    all_players = get_players_in_games(games)
-    player_id_to_player = {p.id: p for p in all_players}
-    player_id_to_player[TEAM_PLAYER_ID] = Player.as_team()
+    player_id_to_player = _get_all_players_id_to_player(games)
     data: Mapping[str, list[str | float]] = defaultdict(list)
     for player_id, stats in player_to_stats.items():
         player = player_id_to_player[player_id]
@@ -97,3 +95,40 @@ def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) ->
         data["COPS"].append(stats.cops.cops)
 
     return pd.DataFrame(data=data)
+
+
+def get_player_to_inning_cobp_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
+    player_id_to_player = _get_all_players_id_to_player(games)
+    data: Mapping[str, list[str | float]] = defaultdict(list)
+    for inning_id, player_inning_cobp in _get_inning_to_player_cobp(games, player_to_stats).items():
+        data["Inning"].append(inning_id)
+        for player_id, inning_cobp in player_inning_cobp.items():
+            player = player_id_to_player[player_id]
+            data[player.name].append(inning_cobp)
+
+    return pd.DataFrame(data=data)
+
+
+def _get_inning_to_player_cobp(games: list[Game], player_to_stats: PlayerToStats) -> Mapping[str, Mapping[str, float]]:
+    inning_to_player_cobp: Mapping[str, Mapping[str, float]] = defaultdict(dict)
+    player_id_to_player = _get_all_players_id_to_player(games, include_team=False)
+    for player_id, player in player_id_to_player.items():
+        if player_to_stats[player_id].at_bats == 0:
+            continue
+
+        for game in games:
+            for inning in range(1, 10):
+                inning_id = get_games_inning_id(game, inning)
+                player_inning_cobp = player_to_stats[player_id].cobp.game_inning_to_obp.get(inning_id)
+                player_inning_cobp_ = player_inning_cobp.obp if player_inning_cobp else None
+                inning_to_player_cobp[inning_id][player_id] = player_inning_cobp_  # type: ignore
+
+    return inning_to_player_cobp
+
+
+def _get_all_players_id_to_player(games: list[Game], include_team: bool = True) -> dict[str, Player]:
+    all_players = get_players_in_games(games)
+    player_id_to_player = {p.id: p for p in all_players}
+    if include_team:
+        player_id_to_player[TEAM_PLAYER_ID] = Player.as_team()
+    return player_id_to_player

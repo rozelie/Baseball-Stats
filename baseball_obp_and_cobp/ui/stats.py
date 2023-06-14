@@ -4,14 +4,24 @@ import streamlit as st
 from baseball_obp_and_cobp.game import Game, get_players_in_games
 from baseball_obp_and_cobp.player import Player
 from baseball_obp_and_cobp.stats.aggregated import PlayerStats, PlayerToStats
-from baseball_obp_and_cobp.ui.selectors import get_player_selection
+from baseball_obp_and_cobp.ui.selectors import get_correlation_method, get_player_selection
 
 
-def display_game(games: list[Game], player_to_stats: PlayerToStats, player_to_stats_df: pd.DataFrame) -> None:
+def display_game(
+    games: list[Game],
+    player_to_stats: PlayerToStats,
+    player_to_stats_df: pd.DataFrame,
+    player_to_inning_cobp_df: pd.DataFrame,
+) -> None:
     _display_stats(games, player_to_stats_df)
-    _display_correlations()
+    if len(games) > 1:
+        player_to_inning_cobp_no_inning_df = player_to_inning_cobp_df.drop(columns=["Inning"])
+        _display_correlations("COBP", player_to_inning_cobp_no_inning_df)
+        _display_df_toggle("Player COBP Per Game Inning", player_to_inning_cobp_df)
+
     if len(games) == 1:
         _display_innings_toggle(games[0])
+
     _display_player_stats_explanations_toggle(games, player_to_stats)
     _display_footer()
 
@@ -25,15 +35,29 @@ def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
-def _display_correlations() -> None:
-    # TODO
-    # import matplotlib.pyplot as plt
-    # import seaborn as sns
-    # st.header("Correlations")
-    # fig, ax = plt.subplots()
-    # sns.heatmap(player_to_stats_df.corr(), ax=ax)
-    # st.write(fig)
+def _display_correlations(stat_name: str, player_to_game_value_df: pd.DataFrame) -> None:
+    st.header(f"{stat_name} Correlations")
+    st.caption(f"None/empty {stat_name} values are excluded from correlations")
+    correlation_method = get_correlation_method()
+    correlation_df = player_to_game_value_df.corr(method=correlation_method)
+
+    def _format(cell_value: float) -> str | None:
+        if cell_value > 0.75:
+            return "background-color: green"
+        if cell_value < -0.75:
+            return "background-color: red"
+        return None
+
+    formatted_df = correlation_df.style.applymap(_format)
+    formatted_df = formatted_df.format("{:.2f}")
+    st.dataframe(formatted_df, use_container_width=True)
     return None
+
+
+def _display_df_toggle(header: str, df: pd.DataFrame) -> None:
+    with st.expander(f"View {header}"):
+        st.header(header)
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
 
 def _display_innings_toggle(game: Game) -> None:

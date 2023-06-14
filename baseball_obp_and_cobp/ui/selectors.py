@@ -42,6 +42,10 @@ def get_player_selection(players: list[Player]) -> Player | None:
     return player_id_to_player[player_name_to_id[player_name]] if player_name else None
 
 
+def get_correlation_method() -> str:
+    return _get_selection("Correlation Method:", options=["pearson", "kendall", "spearman"])  # type: ignore
+
+
 def _get_team_selection() -> Team | None:
     team_pretty_name_to_team = {t.pretty_name: t for t in Team}
     options = [EMPTY_CHOICE, *sorted(team_pretty_name_to_team.keys())]

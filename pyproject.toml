@@ -21,8 +21,7 @@ dependencies = [
     "streamlit==1.23.1",
     "requests==2.31.0",
     "pandas==2.0.2",
-    "seaborn==0.12.2",
-    "matplotlib==3.7.1",
+    "scipy==1.10.1"
 ]
 
 [project.optional-dependencies]
