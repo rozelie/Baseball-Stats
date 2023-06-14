@@ -9,6 +9,7 @@ from baseball_obp_and_cobp.ui.selectors import get_player_selection
 
 def display_game(games: list[Game], player_to_stats: PlayerToStats, player_to_stats_df: pd.DataFrame) -> None:
     _display_stats(games, player_to_stats_df)
+    _display_correlations()
     if len(games) == 1:
         _display_innings_toggle(games[0])
     _display_player_stats_explanations_toggle(games, player_to_stats)
@@ -22,6 +23,17 @@ def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     format_rules = {stat: "{:.3f}" for stat in ["OBP", "COBP", "SOBP", "BA", "SP", "OPS", "COPS"]}
     formatted_df = filtered_df.style.format(format_rules)
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
+
+
+def _display_correlations() -> None:
+    # TODO
+    # import matplotlib.pyplot as plt
+    # import seaborn as sns
+    # st.header("Correlations")
+    # fig, ax = plt.subplots()
+    # sns.heatmap(player_to_stats_df.corr(), ax=ax)
+    # st.write(fig)
+    return None
 
 
 def _display_innings_toggle(game: Game) -> None:
