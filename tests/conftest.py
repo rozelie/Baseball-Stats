@@ -18,7 +18,7 @@ def mock_player_2():
 @pytest.fixture
 def mock_game():
     return Game(
-        id="game_id",
+        id="CHN202204080",
         team=Team.CHICAGO_CUBS,
         home_team=Team.CHICAGO_CUBS,
         visiting_team=Team.CINCINNATI_REDS,
