@@ -1,5 +1,6 @@
 from io import BytesIO
 from pathlib import Path
+from typing import Iterator
 from zipfile import ZipFile
 
 import requests
@@ -9,16 +10,16 @@ from baseball_obp_and_cobp import paths
 RETROSHEET_URL = "https://www.retrosheet.org"
 
 
-def get_teams_years_event_file(year: int, team_id: str) -> Path | None:
+def get_seasons_event_files(year: int) -> Iterator[Path]:
     data_year_dir = paths.DATA_DIR / str(year)
-    events_file = _get_events_file(data_year_dir, year, team_id)
-    if events_file:
-        return events_file
+    seasons_events_file = _get_seasons_events_file(data_year_dir, year)
+    if seasons_events_file:
+        return seasons_events_file
 
-    years_event_files_zip_content = _get_years_event_files_zip_content(year)
+    seasons_event_files_zip_content = _get_years_event_files_zip_content(year)
     data_year_dir.mkdir(parents=True, exist_ok=True)
-    years_event_files_zip_content.extractall(data_year_dir.as_posix())
-    return _get_events_file(data_year_dir, year, team_id)
+    seasons_event_files_zip_content.extractall(data_year_dir.as_posix())
+    return _get_seasons_events_file(data_year_dir, year)
 
 
 def _get_years_event_files_zip_content(year: int) -> ZipFile:
@@ -27,13 +28,6 @@ def _get_years_event_files_zip_content(year: int) -> ZipFile:
     return ZipFile(BytesIO(response.content))
 
 
-def _get_events_file(data_year_dir: Path, year: int, team_id: str) -> Path | None:
-    evn_event_file = data_year_dir / f"{year}{team_id}.EVN"
-    if evn_event_file.exists():
-        return evn_event_file
-
-    eva_event_file = data_year_dir / f"{year}{team_id}.EVA"
-    if eva_event_file.exists():
-        return eva_event_file
-
-    return None
+def _get_seasons_events_file(data_year_dir: Path, year: int) -> Iterator[Path]:
+    yield from data_year_dir.glob(f"{year}*.EVN")
+    yield from data_year_dir.glob(f"{year}*.EVA")

@@ -5,6 +5,7 @@ from baseball_obp_and_cobp.stats.aggregated import (
     get_player_to_stats,
     get_player_to_stats_df,
 )
+from baseball_obp_and_cobp.team import Team
 from baseball_obp_and_cobp.ui import selectors
 from baseball_obp_and_cobp.ui.core import display_error, set_streamlit_config
 from baseball_obp_and_cobp.ui.selectors import ENTIRE_SEASON
@@ -18,7 +19,7 @@ def main() -> None:
     if not team or not year:
         return
 
-    all_games = _load_games(year, team.value)
+    all_games = _load_season_games(year, team)
     if not all_games:
         return
 
@@ -40,14 +41,10 @@ def main() -> None:
     )
 
 
-def _load_games(year: int, team_id: str) -> list[Game] | None:
-    game_events_file = retrosheet.get_teams_years_event_file(year, team_id)
-    if not game_events_file:
-        display_error(f"Unable to find event file for team={team_id}, year={year}")
-        return None
-
+def _load_season_games(year: int, team: Team) -> list[Game] | None:
+    seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
-        return game.load_events_file(game_events_file)
+        return list(game.load_games_for_team(list(seasons_event_files), team))
     except ValueError as error:
         display_error(str(error))
         return None
