@@ -157,9 +157,9 @@ def _get_visiting_team(game_lines: list[GameLine]) -> Team:
     raise Exception("Unable to locate visiting team")
 
 
-def _get_teams_players(
-    game_lines: list[GameLine], team: Team, visiting_team: Team, home_team: Team
-) -> Iterator[Player]:
+def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Team, home_team: Team) -> list[Player]:
+    seen_players = set()
+    players = []
     for line in game_lines:
         if line.id in ["start", "sub"]:
             player = Player.from_start_line(line.values)
@@ -167,8 +167,11 @@ def _get_teams_players(
             players_team_type = TeamType(int(line.values[2]))
             team_is_visiting_team = visiting_team == team and players_team_type == TeamType.VISITING
             team_is_home_team = home_team == team and players_team_type == TeamType.HOME
-            if team_is_visiting_team or team_is_home_team:
-                yield player
+            if (team_is_visiting_team or team_is_home_team) and player.id not in seen_players:
+                players.append(player)
+                seen_players.add(player.id)
+
+    return players
 
 
 def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> Iterator[Play]:
