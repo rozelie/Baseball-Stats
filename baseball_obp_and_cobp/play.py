@@ -209,23 +209,25 @@ class Play:
         return any([self.is_hit, self.is_walk, self.is_hit_by_pitch])
 
     @property
+    def is_unused_in_stats(self) -> bool:
+        return self.result in [
+            PlayResult.NO_PLAY,
+            PlayResult.WILD_PITCH,
+            PlayResult.CAUGHT_STEALING,
+            PlayResult.CATCHER_INTERFERENCE,
+            PlayResult.STOLEN_BASE,
+        ]
+
+    @property
     def is_at_bat(self) -> bool:
         return all(
             [
-                self.result not in [PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING],
+                not self.is_unused_in_stats,
                 not self.is_walk,
                 not self.is_hit_by_pitch,
                 not self.is_sacrifice_fly,
             ]
         )
-
-    @property
-    def is_unused_in_obp_calculations(self) -> bool:
-        return self.result in [PlayResult.WILD_PITCH, PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING]
-
-    @property
-    def is_unused_in_ba_calculations(self) -> bool:
-        return self.result in [PlayResult.WILD_PITCH, PlayResult.NO_PLAY, PlayResult.CAUGHT_STEALING]
 
     @property
     def id(self) -> str:
@@ -244,7 +246,7 @@ class Play:
 
     @property
     def color(self) -> str:
-        if self.is_unused_in_obp_calculations or self.is_unused_in_ba_calculations:
+        if self.is_unused_in_stats:
             return "red"
         elif self.results_in_on_base:
             return "green"

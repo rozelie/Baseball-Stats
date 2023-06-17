@@ -68,7 +68,7 @@ def _get_obp(games: list[Game], player: Player) -> OBP:
             continue
 
         for play in game_player.plays:
-            if play.is_unused_in_obp_calculations:
+            if play.is_unused_in_stats:
                 continue
 
             obp.add_play(play)
@@ -85,7 +85,7 @@ def _get_cobp(games: list[Game], player: Player) -> OBP:
             continue
 
         for play in game_player.plays:
-            if play.is_unused_in_obp_calculations:
+            if play.is_unused_in_stats:
                 continue
             if not game.inning_has_an_on_base(play.inning):
                 obp.add_play(play, resultant="N/A (no other on-base in inning)", color="red")
@@ -105,7 +105,7 @@ def _get_sobp(games: list[Game], player: Player) -> OBP:
             continue
 
         for play in game_player.plays:
-            if play.is_unused_in_obp_calculations:
+            if play.is_unused_in_stats:
                 continue
             if not game.play_has_on_base_before_it_in_inning(play.inning, play):
                 obp.add_play(play, resultant="N/A (no other on-base prior to play)", color="red")

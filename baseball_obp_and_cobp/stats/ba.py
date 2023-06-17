@@ -39,7 +39,7 @@ def _get_ba(games: list[Game], player: Player) -> BA:
             continue
 
         for play in game_player.plays:
-            if play.is_unused_in_ba_calculations:
+            if play.is_unused_in_stats:
                 continue
 
             if not play.is_hit and not play.is_at_bat:
