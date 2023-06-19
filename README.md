@@ -68,8 +68,8 @@ same inning.
   - ❌ correlate COBPs with wins
     - ❌ tests
   - ❌ display fixes
-    - ❌ same player correlations should show a `-` with no coloring
-    - ❌ colorize team row to make it stand out more from players
+    - ✅ same player correlations should show a `-` with no coloring
+    - ✅ colorize team row to make it stand out more from players
     - ❌ add drop-down menu for the correlation to calculate
   - ❌ calculate SOPS: SOBP + OPS
 

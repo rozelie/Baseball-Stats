@@ -1,10 +1,10 @@
-import numpy as np
 import pandas as pd
 import streamlit as st
 
 from baseball_obp_and_cobp.game import Game, get_players_in_games
 from baseball_obp_and_cobp.player import Player
 from baseball_obp_and_cobp.stats.aggregated import PlayerStats, PlayerToStats
+from baseball_obp_and_cobp.ui import formatters
 from baseball_obp_and_cobp.ui.selectors import get_correlation_method, get_player_selection
 
 
@@ -33,6 +33,7 @@ def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     filtered_df = player_to_stats_df[player_to_stats_df["AB"] > 0]
     format_rules = {stat: "{:.3f}" for stat in ["OBP", "COBP", "SOBP", "BA", "SP", "OPS", "COPS"]}
     formatted_df = filtered_df.style.format(format_rules)
+    formatted_df = formatted_df.apply(formatters.highlight_team_row, axis=1)
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
@@ -42,26 +43,9 @@ def _display_correlations(stat_name: str, player_to_game_value_df: pd.DataFrame)
     st.caption("Correlations are calculated at the game-level (rather than the inning level)")
     correlation_method = get_correlation_method()
     correlation_df = player_to_game_value_df.corr(method=correlation_method)
-    _replace_same_player_correlations_with_dash(correlation_df)
-
-    def _format(cell_value: float | str) -> str | None:
-        if isinstance(cell_value, str):
-            return None
-
-        if cell_value >= 0.75:
-            return "background-color: green"
-        elif cell_value <= -0.75:
-            return "background-color: red"
-        return None
-
-    def _float_format(cell_value: float | str) -> str | None:
-        if isinstance(cell_value, float):
-            if np.isnan(cell_value):
-                return None
-            return "{:.2f}".format(cell_value)
-        return cell_value
-
-    formatted_df = correlation_df.style.applymap(_format).format(_float_format)
+    formatters.replace_same_player_correlations_with_dash(correlation_df)
+    formatted_df = correlation_df.style.applymap(formatters.colorize_correlations)
+    formatted_df = formatted_df.format(formatters.format_floats)
     st.dataframe(formatted_df, use_container_width=True)
     return None
 
@@ -132,8 +116,3 @@ def _display_stat(name: str, value: float, explanation_lines: list[str]) -> None
     if explanation_lines:
         for line in explanation_lines:
             st.markdown(line)
-
-
-def _replace_same_player_correlations_with_dash(df: pd.DataFrame) -> None:
-    for i in range(len(df)):
-        df.iat[i, i] = "-"

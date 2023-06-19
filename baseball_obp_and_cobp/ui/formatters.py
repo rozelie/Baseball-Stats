@@ -1,0 +1,33 @@
+import numpy as np
+import pandas as pd
+
+
+def highlight_team_row(row: pd.Series) -> list[str] | None:
+    player = row.iloc[0]
+    if player == "Team":
+        return ["background-color: #4f4f4f"] * len(row)
+    return None
+
+
+def colorize_correlations(cell_value: float | str) -> str | None:
+    if isinstance(cell_value, str):
+        return None
+
+    if cell_value >= 0.75:
+        return "background-color: green"
+    elif cell_value <= -0.75:
+        return "background-color: red"
+    return None
+
+
+def replace_same_player_correlations_with_dash(df: pd.DataFrame) -> None:
+    for i in range(len(df)):
+        df.iat[i, i] = "-"
+
+
+def format_floats(cell_value: float | str) -> str | None:
+    if isinstance(cell_value, float):
+        if np.isnan(cell_value):
+            return None
+        return "{:.2f}".format(cell_value)
+    return cell_value
