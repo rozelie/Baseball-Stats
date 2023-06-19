@@ -35,8 +35,6 @@ def _get_basic_stats(games: list[Game], player: Player) -> BasicStats:
 
         for play in game_player.plays:
             if play.is_at_bat:
-                if player.id == "judga001":
-                    print(f"{play.result} / {play.modifiers}")
                 basic_stats.at_bats += 1
             if play.is_hit:
                 basic_stats.hits += 1
