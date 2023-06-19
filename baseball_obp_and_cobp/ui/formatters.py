@@ -14,9 +14,17 @@ def colorize_correlations(cell_value: float | str) -> str | None:
         return None
 
     if cell_value >= 0.75:
-        return "background-color: green"
+        return "background-color: #00C000"
+    elif cell_value >= 0.5:
+        return "background-color: #008000"
+    elif cell_value >= 0.25:
+        return "background-color: #006400"
     elif cell_value <= -0.75:
-        return "background-color: red"
+        return "background-color: #D70000"
+    elif cell_value <= -0.5:
+        return "background-color: #A00000"
+    elif cell_value <= -0.25:
+        return "background-color: #800000"
     return None
 
 
@@ -31,3 +39,13 @@ def format_floats(cell_value: float | str) -> str | None:
             return None
         return "{:.2f}".format(cell_value)
     return cell_value
+
+
+def remove_none_cells(df: pd.DataFrame) -> None:
+    for i in range(len(df)):
+        for j in range(len(df)):
+            cell_value = df.iat[i, j]
+            if cell_value is None:
+                df.iat[i, j] = "-"
+            if isinstance(cell_value, float) and np.isnan(cell_value):
+                df.iat[i, j] = "-"

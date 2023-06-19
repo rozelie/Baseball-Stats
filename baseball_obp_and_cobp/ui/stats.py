@@ -5,7 +5,7 @@ from baseball_obp_and_cobp.game import Game, get_players_in_games
 from baseball_obp_and_cobp.player import Player
 from baseball_obp_and_cobp.stats.aggregated import PlayerStats, PlayerToStats
 from baseball_obp_and_cobp.ui import formatters
-from baseball_obp_and_cobp.ui.selectors import get_correlation_method, get_player_selection
+from baseball_obp_and_cobp.ui.selectors import get_correlation_method, get_player_selection, get_stat_to_correlate
 
 
 def display_game(
@@ -16,9 +16,12 @@ def display_game(
 ) -> None:
     _display_stats(games, player_to_stats_df)
     if len(games) > 1:
-        player_to_game_cobp_no_game_df = player_to_game_cobp_df.drop(columns=["Game"])
-        _display_correlations("COBP", player_to_game_cobp_no_game_df)
-        _display_df_toggle("Player COBP Per Game", player_to_game_cobp_df)
+        st.header("Correlations")
+        if stat_to_correlate := get_stat_to_correlate():
+            if stat_to_correlate == "COBP":
+                player_to_game_cobp_no_game_df = player_to_game_cobp_df.drop(columns=["Game"])
+                _display_correlations("COBP", player_to_game_cobp_no_game_df)
+                _display_df_toggle("Player COBP Per Game", player_to_game_cobp_df)
 
     if len(games) == 1:
         _display_innings_toggle(games[0])
@@ -44,6 +47,7 @@ def _display_correlations(stat_name: str, player_to_game_value_df: pd.DataFrame)
     correlation_method = get_correlation_method()
     correlation_df = player_to_game_value_df.corr(method=correlation_method)
     formatters.replace_same_player_correlations_with_dash(correlation_df)
+    formatters.remove_none_cells(correlation_df)
     formatted_df = correlation_df.style.applymap(formatters.colorize_correlations)
     formatted_df = formatted_df.format(formatters.format_floats)
     st.dataframe(formatted_df, use_container_width=True)

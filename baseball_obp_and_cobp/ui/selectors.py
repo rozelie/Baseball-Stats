@@ -46,6 +46,11 @@ def get_correlation_method() -> str:
     return _get_selection("Correlation Method:", options=["pearson", "kendall", "spearman"])  # type: ignore
 
 
+def get_stat_to_correlate() -> str | None:
+    selection = _get_selection("Stat To Correlate:", options=[EMPTY_CHOICE, "COBP"])
+    return selection if selection != EMPTY_CHOICE else None
+
+
 def _get_team_selection() -> Team | None:
     team_pretty_name_to_team = {t.pretty_name: t for t in Team}
     options = [EMPTY_CHOICE, *sorted(team_pretty_name_to_team.keys())]
