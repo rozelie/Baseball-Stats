@@ -1,7 +1,7 @@
 """Calculate OBP and COBP stats from game data."""
 from dataclasses import dataclass, field
 
-from baseball_obp_and_cobp.game import Game, get_games_inning_id, get_players_in_games
+from baseball_obp_and_cobp.game import Game, get_players_in_games
 from baseball_obp_and_cobp.play import Play
 from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
 from baseball_obp_and_cobp.stats.stat import Stat
@@ -14,7 +14,7 @@ class OBP(Stat):
     hit_by_pitches: int = 0
     at_bats: int = 0
     sacrifice_flys: int = 0
-    game_inning_to_obp: dict[str, "OBP"] = field(default_factory=dict)
+    game_to_obp: dict[str, "OBP"] = field(default_factory=dict)
 
     def add_arithmetic(self) -> None:
         numerator = f"*H={self.hits} + W={self.walks} + HBP={self.hit_by_pitches} == {self.numerator}*"
@@ -137,24 +137,23 @@ def _get_teams_obp(player_to_obp: PlayerToOBP) -> OBP:
 
 
 def _increment_obp_counters(game: Game, play: Play, obp: OBP) -> None:
-    game_inning_id = get_games_inning_id(game, play.inning)
-    if game_inning_id not in obp.game_inning_to_obp:
-        obp.game_inning_to_obp[game_inning_id] = OBP()
+    if game.id not in obp.game_to_obp:
+        obp.game_to_obp[game.id] = OBP()
 
-    game_inning_obp = obp.game_inning_to_obp[game_inning_id]
+    game_obp = obp.game_to_obp[game.id]
     if play.is_at_bat:
         obp.at_bats += 1
-        game_inning_obp.at_bats += 1
+        game_obp.at_bats += 1
 
     if play.is_hit:
         obp.hits += 1
-        game_inning_obp.hits += 1
+        game_obp.hits += 1
     elif play.is_walk:
         obp.walks += 1
-        game_inning_obp.walks += 1
+        game_obp.walks += 1
     elif play.is_hit_by_pitch:
         obp.hit_by_pitches += 1
-        game_inning_obp.hit_by_pitches += 1
+        game_obp.hit_by_pitches += 1
     elif play.is_sacrifice_fly:
         obp.sacrifice_flys += 1
-        game_inning_obp.sacrifice_flys += 1
+        game_obp.sacrifice_flys += 1

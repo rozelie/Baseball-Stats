@@ -11,13 +11,13 @@ def display_game(
     games: list[Game],
     player_to_stats: PlayerToStats,
     player_to_stats_df: pd.DataFrame,
-    player_to_inning_cobp_df: pd.DataFrame,
+    player_to_game_cobp_df: pd.DataFrame,
 ) -> None:
     _display_stats(games, player_to_stats_df)
     if len(games) > 1:
-        player_to_inning_cobp_no_inning_df = player_to_inning_cobp_df.drop(columns=["Inning"])
-        _display_correlations("COBP", player_to_inning_cobp_no_inning_df)
-        _display_df_toggle("Player COBP Per Game Inning", player_to_inning_cobp_df)
+        player_to_game_cobp_no_game_df = player_to_game_cobp_df.drop(columns=["Game"])
+        _display_correlations("COBP", player_to_game_cobp_no_game_df)
+        _display_df_toggle("Player COBP Per Game", player_to_game_cobp_df)
 
     if len(games) == 1:
         _display_innings_toggle(games[0])
@@ -38,6 +38,7 @@ def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
 def _display_correlations(stat_name: str, player_to_game_value_df: pd.DataFrame) -> None:
     st.header(f"{stat_name} Correlations")
     st.caption(f"None/empty {stat_name} values are excluded from correlations")
+    st.caption("Correlations are calculated at the game-level (rather than the inning level)")
     correlation_method = get_correlation_method()
     correlation_df = player_to_game_value_df.corr(method=correlation_method)
 

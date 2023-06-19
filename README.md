@@ -62,10 +62,16 @@ same inning.
 - ❌ calculate correlations
   - ✅ correlate COBPs for each player (e.g., correlate Batter A’s COBP with B’s, C’s, etc.)
     - ❌ tests
+  - ✅ calculate at game level rather than inning level
   - ❌ correlate COBPs with runs scored
     - ❌ tests
   - ❌ correlate COBPs with wins
     - ❌ tests
+  - ❌ display fixes
+    - ❌ same player correlations should show a `-` with no coloring
+    - ❌ colorize team row to make it stand out more from players
+    - ❌ add drop-down menu for the correlation to calculate
+  - ❌ calculate SOPS: SOBP + OPS
 
 ## Future Work
 - ❌ track where each player batted in the line-up when they got on base
