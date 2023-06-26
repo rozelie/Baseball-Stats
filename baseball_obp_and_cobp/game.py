@@ -16,6 +16,11 @@ class GameLine:
     id: str
     values: list[str]
 
+    @classmethod
+    def from_line(cls, line: str) -> "GameLine":
+        split_line = line.split(",")
+        return cls(split_line[0], split_line[1:])
+
 
 @dataclass
 class Game:
@@ -114,8 +119,7 @@ def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
     lines = path.read_text().splitlines()
     team_is_in_game = False
     for i, line in enumerate(lines):
-        split_line = line.split(",")
-        game_line = GameLine(id=split_line[0], values=split_line[1:])
+        game_line = GameLine.from_line(line)
         if game_line.id == "id":
             if current_game_lines:
                 yield current_game_lines
@@ -128,6 +132,8 @@ def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
         if team_is_in_game:
             current_game_lines.append(game_line)
 
+    if current_game_lines:
+        yield current_game_lines
 
 def _get_game_id(game_lines: list[GameLine]) -> str:
     for line in game_lines:
