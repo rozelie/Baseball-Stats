@@ -182,7 +182,7 @@ class Play:
 
     @property
     def is_double(self) -> bool:
-        return self.result == PlayResult.DOUBLE
+        return self.result in [PlayResult.DOUBLE, PlayResult.GROUND_RULE_DOUBLE]
 
     @property
     def is_triple(self) -> bool:
@@ -216,6 +216,11 @@ class Play:
             PlayResult.CAUGHT_STEALING,
             PlayResult.CATCHER_INTERFERENCE,
             PlayResult.STOLEN_BASE,
+            PlayResult.OTHER_ADVANCE,
+            PlayResult.PASSED_BALL,
+            PlayResult.ERROR_ON_FOUL_FLY_BALL,
+            PlayResult.BALK,
+            PlayResult.PICKED_OFF,
         ]
 
     @property

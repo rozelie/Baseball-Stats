@@ -135,6 +135,7 @@ def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
     if current_game_lines:
         yield current_game_lines
 
+
 def _get_game_id(game_lines: list[GameLine]) -> str:
     for line in game_lines:
         if line.id == "id":
