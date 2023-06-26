@@ -6,6 +6,7 @@ from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
 
 @dataclass
 class BasicStats:
+    games: int = 0
     at_bats: int = 0
     hits: int = 0
     walks: int = 0
@@ -24,6 +25,7 @@ def get_player_to_basic_stats(games: list[Game]) -> PlayerToBasicStats:
     players = get_players_in_games(games)
     player_to_basic_stats = {player.id: _get_basic_stats(games, player) for player in players}
     player_to_basic_stats[TEAM_PLAYER_ID] = _get_teams_basic_stats(player_to_basic_stats)
+    player_to_basic_stats[TEAM_PLAYER_ID].games = len(games)
     return player_to_basic_stats
 
 
@@ -33,6 +35,7 @@ def _get_basic_stats(games: list[Game], player: Player) -> BasicStats:
         if not (game_player := game.get_player(player.id)):
             continue
 
+        basic_stats.games += 1
         for play in game_player.plays:
             if play.is_at_bat:
                 basic_stats.at_bats += 1

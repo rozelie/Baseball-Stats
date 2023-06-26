@@ -60,6 +60,7 @@ def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) ->
     for player_id, stats in player_to_stats.items():
         player = player_id_to_player[player_id]
         data["Player"].append(player.name)
+        data["G"].append(stats.basic.games)
         data["AB"].append(stats.basic.at_bats)
         data["H"].append(stats.basic.hits)
         data["W"].append(stats.basic.walks)
