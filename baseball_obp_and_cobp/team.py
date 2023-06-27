@@ -2,8 +2,8 @@
 from enum import Enum
 
 
-class TeamType(Enum):
-    """Team type, as defined in Retrosheet spec."""
+class TeamLocation(Enum):
+    """Team location, as defined in Retrosheet spec."""
 
     VISITING = 0
     HOME = 1

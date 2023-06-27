@@ -6,7 +6,7 @@ from typing import Iterator, Mapping
 
 from baseball_obp_and_cobp.play import Play
 from baseball_obp_and_cobp.player import Player
-from baseball_obp_and_cobp.team import Team, TeamType
+from baseball_obp_and_cobp.team import Team, TeamLocation
 
 
 @dataclass
@@ -167,9 +167,9 @@ def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Te
         if line.id in ["start", "sub"]:
             player = Player.from_start_line(line.values)
             # only include the team we're interested in players
-            players_team_type = TeamType(int(line.values[2]))
-            team_is_visiting_team = visiting_team == team and players_team_type == TeamType.VISITING
-            team_is_home_team = home_team == team and players_team_type == TeamType.HOME
+            players_team_location = TeamLocation(int(line.values[2]))
+            team_is_visiting_team = visiting_team == team and players_team_location == TeamLocation.VISITING
+            team_is_home_team = home_team == team and players_team_location == TeamLocation.HOME
             if (team_is_visiting_team or team_is_home_team) and player.id not in seen_players:
                 players.append(player)
                 seen_players.add(player.id)

@@ -72,6 +72,7 @@ same inning.
     - ✅ colorize team row to make it stand out more from players
     - ✅ add drop-down menu for the correlation to calculate
   - ❌ calculate SOPS: SOBP + OPS
+  - ❌ add list of sorted correlations to correlations display
 
 ## Future Work
 - ❌ track where each player batted in the line-up when they got on base
