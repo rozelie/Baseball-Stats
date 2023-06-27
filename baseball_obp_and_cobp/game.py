@@ -33,7 +33,10 @@ class Game:
     visiting_team: Team
     players: list[Player]
     inning_to_plays: Mapping[int, list[Play]]
-    player_id_to_player: dict[str, Player]
+
+    @property
+    def player_id_to_player(self) -> dict[str, Player]:
+        return {player.id: player for player in self.players}
 
     @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
@@ -43,8 +46,7 @@ class Game:
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
         plays = list(_get_teams_plays(game_lines, players))
         inning_to_plays = _get_inning_to_plays(plays)
-        player_id_to_player = {player.id: player for player in players}
-        _add_plays_to_players(plays, player_id_to_player)
+        _add_plays_to_players(plays, players)
         return cls(
             id=game_id,
             team=team,
@@ -52,7 +54,6 @@ class Game:
             visiting_team=visiting_team,
             inning_to_plays=inning_to_plays,
             players=players,
-            player_id_to_player=player_id_to_player,
         )
 
     @property
@@ -182,7 +183,8 @@ def _get_inning_to_plays(plays: list[Play]) -> Mapping[int, list[Play]]:
     return inning_to_plays
 
 
-def _add_plays_to_players(plays: list[Play], player_id_to_player: dict[str, Player]) -> None:
+def _add_plays_to_players(plays: list[Play], players: list[Player]) -> None:
+    player_id_to_player = {player.id: player for player in players}
     for play in plays:
         if player := player_id_to_player.get(play.batter_id):
             player.plays.append(play)
