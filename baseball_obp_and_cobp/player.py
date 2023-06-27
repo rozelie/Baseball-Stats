@@ -14,6 +14,10 @@ class Player:
 
     @classmethod
     def from_start_line(cls, line_values: list[str]) -> "Player":
+        """Load from 'start' line (starting lineup), as defined in Retrosheet spec.
+
+        https://www.retrosheet.org/eventfile.htm
+        """
         return cls(
             id=line_values[0],
             name=line_values[1].replace('"', ""),
