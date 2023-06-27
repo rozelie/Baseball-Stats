@@ -3,6 +3,11 @@ from enum import Enum
 
 
 class PlayResult(Enum):
+    """Play results, as defined in Retrosheet spec.
+
+    https://www.retrosheet.org/eventfile.htm ("The event field of the play record" section)
+    """
+
     SINGLE = "S"
     DOUBLE = "D"
     TRIPLE = "T"
@@ -61,6 +66,12 @@ class PlayResult(Enum):
 
 
 class PlayResultModifier(Enum):
+    """Play result modifiers, as defined in Retrosheet spec.
+
+    Grants additional metadata for play results. A play can have multiple modifiers.
+    https://www.retrosheet.org/eventfile.htm ("The event field of the play record" section)
+    """
+
     APPEAL_PLAY = "AP"
     POP_UP_BUNT = "BP"
     GROUND_BALL_BUNT = "BG"
@@ -110,6 +121,7 @@ class PlayResultModifier(Enum):
     @classmethod
     def from_play_modifier(cls, play_modifier: str) -> "PlayResultModifier":
         alpha_play_modifier = ""
+        # trim non-alphabetic characters - we are not concerned with other metadata
         for char in play_modifier:
             if char.isalpha():
                 alpha_play_modifier = f"{alpha_play_modifier}{char}"
@@ -128,6 +140,8 @@ class PlayResultModifier(Enum):
 
 @dataclass
 class Play:
+    """Internal representation of a play."""
+
     inning: int
     batter_id: str
     play_descriptor: str
@@ -136,6 +150,10 @@ class Play:
 
     @classmethod
     def from_play_line(cls, line_values: list[str]) -> "Play":
+        """Load a play from a "play" line, as defined in Retrosheet spec.
+
+        https://www.retrosheet.org/eventfile.htm ("The event field of the play record" section)
+        """
         inning, _, batter_id, _, _, play_descriptor = line_values
         result = PlayResult.from_play_descriptor(play_descriptor)
 
@@ -205,6 +223,17 @@ class Play:
         return self.result is PlayResult.HIT_BY_PITCH
 
     @property
+    def is_at_bat(self) -> bool:
+        return all(
+            [
+                not self.is_unused_in_stats,
+                not self.is_walk,
+                not self.is_hit_by_pitch,
+                not self.is_sacrifice_fly,
+            ]
+        )
+
+    @property
     def results_in_on_base(self) -> bool:
         return any([self.is_hit, self.is_walk, self.is_hit_by_pitch])
 
@@ -224,18 +253,8 @@ class Play:
         ]
 
     @property
-    def is_at_bat(self) -> bool:
-        return all(
-            [
-                not self.is_unused_in_stats,
-                not self.is_walk,
-                not self.is_hit_by_pitch,
-                not self.is_sacrifice_fly,
-            ]
-        )
-
-    @property
     def id(self) -> str:
+        """ID to be used in play-by-play explanations."""
         if self.is_hit:
             return "HIT, AB"
         elif self.is_walk:
@@ -251,6 +270,7 @@ class Play:
 
     @property
     def color(self) -> str:
+        """Color to be used in"""
         if self.is_unused_in_stats:
             return "red"
         elif self.results_in_on_base:
