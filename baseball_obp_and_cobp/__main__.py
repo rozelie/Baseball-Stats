@@ -19,18 +19,9 @@ def main() -> None:
     if not team or not year:
         return
 
-    all_games = _load_season_games(year, team)
-    if not all_games:
+    games = _get_games_selection(year, team)
+    if not games:
         return
-
-    game_ = selectors.get_game_selection(all_games)
-    if not game_:
-        return
-
-    if game_ == ENTIRE_SEASON:
-        games = all_games
-    else:
-        games = [game_]  # type: ignore
 
     player_to_stats = get_player_to_stats(games)
     display_game(
@@ -41,10 +32,22 @@ def main() -> None:
     )
 
 
+def _get_games_selection(year: int, team: Team) -> list[Game] | None:
+    all_games = _load_season_games(year, team)
+    if not all_games:
+        return None
+
+    game_ = selectors.get_game_selection(all_games)
+    if not game_:
+        return None
+
+    return all_games if game_ == ENTIRE_SEASON else [game_]  # type: ignore
+
+
 def _load_season_games(year: int, team: Team) -> list[Game] | None:
     seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
-        return list(game.load_games_for_team(list(seasons_event_files), team))
+        return list(game.load_games_for_team(seasons_event_files, team))
     except ValueError as error:
         display_error(str(error))
         return None
