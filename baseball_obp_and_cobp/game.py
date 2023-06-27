@@ -1,3 +1,4 @@
+"""Loads and parses Retrosheet game data."""
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
@@ -24,7 +25,7 @@ class GameLine:
 
 @dataclass
 class Game:
-    """Parsed Retrosheet game (event) data."""
+    """Parsed Retrosheet game (event) data for a given team."""
 
     id: str
     team: Team
@@ -32,6 +33,7 @@ class Game:
     visiting_team: Team
     players: list[Player]
     inning_to_plays: Mapping[int, list[Play]]
+    player_id_to_player: dict[str, Player]
 
     @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
@@ -40,13 +42,9 @@ class Game:
         visiting_team = _get_visiting_team(game_lines)
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
         plays = list(_get_teams_plays(game_lines, players))
+        inning_to_plays = _get_inning_to_plays(plays)
         player_id_to_player = {player.id: player for player in players}
-        inning_to_plays: Mapping[int, list[Play]] = defaultdict(list)
-        for play in plays:
-            inning_to_plays[play.inning].append(play)
-            if batter := player_id_to_player.get(play.batter_id):
-                batter.plays.append(play)
-
+        _add_plays_to_players(plays, player_id_to_player)
         return cls(
             id=game_id,
             team=team,
@@ -54,6 +52,7 @@ class Game:
             visiting_team=visiting_team,
             inning_to_plays=inning_to_plays,
             players=players,
+            player_id_to_player=player_id_to_player,
         )
 
     @property
@@ -66,10 +65,7 @@ class Game:
         return date(year=int(date_[0:4]), month=int(date_[4:6]), day=int(date_[6:8]))
 
     def get_player(self, player_id: str) -> Player | None:
-        for player in self.players:
-            if player.id == player_id:
-                return player
-        return None
+        return self.player_id_to_player.get(player_id)
 
     def get_plays_resulting_on_base_in_inning(self, inning: int) -> list[Play]:
         return [inning_play for inning_play in self.inning_to_plays[inning] if inning_play.results_in_on_base]
@@ -90,7 +86,7 @@ class Game:
         return self.inning_to_plays[inning][0] == play
 
 
-def load_games_for_team(season_event_files: list[Path], team: Team) -> Iterator[Game]:
+def load_teams_games(season_event_files: list[Path], team: Team) -> Iterator[Game]:
     for event_file in season_event_files:
         yield from [Game.from_game_lines(lines, team) for lines in _yield_game_lines(event_file, team)]
 
@@ -104,13 +100,6 @@ def get_players_in_games(games: list[Game]) -> list[Player]:
                 players.append(player)
                 seen_player_ids.add(player.id)
     return players
-
-
-def _get_files_team(path: Path) -> Team:
-    id_line = path.read_text().splitlines()[0]
-    file_id = id_line.split(",")[1]
-    team_id = "".join(c for c in file_id if c.isalpha())
-    return Team(team_id)
 
 
 def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
@@ -184,3 +173,16 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> 
             play = Play.from_play_line(line.values)
             if play.batter_id in team_player_ids:
                 yield play
+
+
+def _get_inning_to_plays(plays: list[Play]) -> Mapping[int, list[Play]]:
+    inning_to_plays: Mapping[int, list[Play]] = defaultdict(list)
+    for play in plays:
+        inning_to_plays[play.inning].append(play)
+    return inning_to_plays
+
+
+def _add_plays_to_players(plays: list[Play], player_id_to_player: dict[str, Player]) -> None:
+    for play in plays:
+        if player := player_id_to_player.get(play.batter_id):
+            player.plays.append(play)

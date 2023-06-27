@@ -47,7 +47,7 @@ def _get_games_selection(year: int, team: Team) -> list[Game] | None:
 def _load_season_games(year: int, team: Team) -> list[Game] | None:
     seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
-        return list(game.load_games_for_team(seasons_event_files, team))
+        return list(game.load_teams_games(seasons_event_files, team))
     except ValueError as error:
         display_error(str(error))
         return None
