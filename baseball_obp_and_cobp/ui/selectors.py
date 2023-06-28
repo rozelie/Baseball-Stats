@@ -59,7 +59,7 @@ def _get_team_selection() -> Team | None:
 
 
 def _get_year_selection() -> int | None:
-    options = [EMPTY_CHOICE, *reversed(range(2000, 2023))]
+    options = [*reversed(range(2000, 2023))]
     year = _get_selection("Select Year:", options=options)
     return year if year else None
 
