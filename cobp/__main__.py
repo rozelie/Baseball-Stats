@@ -1,4 +1,4 @@
-from cobp import game, retrosheet
+from . import game, retrosheet
 from cobp.game import Game
 from cobp.stats.aggregated import get_player_to_game_cobp_df, get_player_to_stats, get_player_to_stats_df
 from cobp.team import Team
