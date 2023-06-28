@@ -1,8 +1,8 @@
 import pytest
 
-from baseball_obp_and_cobp import retrosheet
+from cobp import retrosheet
 
-MODULE_PATH = "baseball_obp_and_cobp.retrosheet"
+MODULE_PATH = "cobp.retrosheet"
 
 
 @pytest.fixture

@@ -1,15 +1,11 @@
-from baseball_obp_and_cobp import game, retrosheet
-from baseball_obp_and_cobp.game import Game
-from baseball_obp_and_cobp.stats.aggregated import (
-    get_player_to_game_cobp_df,
-    get_player_to_stats,
-    get_player_to_stats_df,
-)
-from baseball_obp_and_cobp.team import Team
-from baseball_obp_and_cobp.ui import selectors
-from baseball_obp_and_cobp.ui.core import display_error, set_streamlit_config
-from baseball_obp_and_cobp.ui.selectors import ENTIRE_SEASON
-from baseball_obp_and_cobp.ui.stats import display_game
+from cobp import game, retrosheet
+from cobp.game import Game
+from cobp.stats.aggregated import get_player_to_game_cobp_df, get_player_to_stats, get_player_to_stats_df
+from cobp.team import Team
+from cobp.ui import selectors
+from cobp.ui.core import display_error, set_streamlit_config
+from cobp.ui.selectors import ENTIRE_SEASON
+from cobp.ui.stats import display_game
 
 
 def main() -> None:

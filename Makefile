@@ -1,5 +1,5 @@
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-SRC_DIR := ${ROOT_DIR}/baseball_obp_and_cobp
+SRC_DIR := ${ROOT_DIR}/cobp
 TESTS_DIR := ${ROOT_DIR}/tests
 VENV_BIN := ${ROOT_DIR}/venv/bin
 PYTHON := ${VENV_BIN}/python

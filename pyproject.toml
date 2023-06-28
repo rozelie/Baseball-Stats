@@ -3,9 +3,9 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "baseball_obp_and_cobp"
+name = "cobp"
 version = "0.0.1"
-description = "My new project"
+description = "Calculate and correlate MLB conditional on base percentage (COBP)."
 authors = [
   { name = "Ryan Ozelie", email = "ryan.ozelie@gmail.com" },
 ]

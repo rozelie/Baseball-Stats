@@ -1,8 +1,8 @@
 import pytest
 
-from baseball_obp_and_cobp.game import Game
-from baseball_obp_and_cobp.player import Player
-from baseball_obp_and_cobp.team import Team
+from cobp.game import Game
+from cobp.player import Player
+from cobp.team import Team
 
 
 @pytest.fixture

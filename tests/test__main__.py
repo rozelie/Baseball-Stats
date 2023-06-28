@@ -1,9 +1,9 @@
 import pytest
 
-from baseball_obp_and_cobp import __main__
-from baseball_obp_and_cobp.team import Team
+from cobp import __main__
+from cobp.team import Team
 
-MODULE_PATH = "baseball_obp_and_cobp.__main__"
+MODULE_PATH = "cobp.__main__"
 
 
 @pytest.fixture

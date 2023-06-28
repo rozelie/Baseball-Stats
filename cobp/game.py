@@ -5,9 +5,9 @@ from datetime import date
 from pathlib import Path
 from typing import Iterator, Mapping
 
-from baseball_obp_and_cobp.play import Play
-from baseball_obp_and_cobp.player import Player
-from baseball_obp_and_cobp.team import Team, TeamLocation
+from cobp.play import Play
+from cobp.player import Player
+from cobp.team import Team, TeamLocation
 
 
 @dataclass

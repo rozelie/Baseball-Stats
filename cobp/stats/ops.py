@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from baseball_obp_and_cobp.game import Game, get_players_in_games
-from baseball_obp_and_cobp.player import TEAM_PLAYER_ID
-from baseball_obp_and_cobp.stats.obp import PlayerToOBP
-from baseball_obp_and_cobp.stats.sp import PlayerToSP
-from baseball_obp_and_cobp.stats.stat import Stat
+from cobp.game import Game, get_players_in_games
+from cobp.player import TEAM_PLAYER_ID
+from cobp.stats.obp import PlayerToOBP
+from cobp.stats.sp import PlayerToSP
+from cobp.stats.stat import Stat
 
 
 @dataclass

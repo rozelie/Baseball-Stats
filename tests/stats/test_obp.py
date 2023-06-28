@@ -1,6 +1,6 @@
-from baseball_obp_and_cobp.play import Play, PlayResult, PlayResultModifier
-from baseball_obp_and_cobp.player import TEAM_PLAYER_ID
-from baseball_obp_and_cobp.stats import obp
+from cobp.play import Play, PlayResult, PlayResultModifier
+from cobp.player import TEAM_PLAYER_ID
+from cobp.stats import obp
 
 
 class TestOBP:

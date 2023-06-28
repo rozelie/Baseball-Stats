@@ -1,6 +1,6 @@
-# Baseball OBP and COBP
+# COBP
 
-This project calculates On-Base Percentage (OBP) and Conditional On-Base Percentage (COBP) for MLB
+This project calculates Conditional On-Base Percentage (COBP) for MLB
 players based on [retrosheet.org](retrosheet.org) event data.
 
 Data is dynamically downloaded based on user's input of a team and a year.

@@ -5,7 +5,7 @@ from zipfile import ZipFile
 
 import requests
 
-from baseball_obp_and_cobp import paths
+from cobp import paths
 
 RETROSHEET_URL = "https://www.retrosheet.org"
 

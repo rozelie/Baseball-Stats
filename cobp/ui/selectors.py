@@ -2,9 +2,9 @@ from typing import Any
 
 import streamlit as st
 
-from baseball_obp_and_cobp.game import Game
-from baseball_obp_and_cobp.player import Player
-from baseball_obp_and_cobp.team import Team
+from cobp.game import Game
+from cobp.player import Player
+from cobp.team import Team
 
 EMPTY_CHOICE = ""
 ENTIRE_SEASON = "Entire Season"

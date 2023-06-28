@@ -1,11 +1,11 @@
 import pandas as pd
 import streamlit as st
 
-from baseball_obp_and_cobp.game import Game, get_players_in_games
-from baseball_obp_and_cobp.player import Player
-from baseball_obp_and_cobp.stats.aggregated import PlayerStats, PlayerToStats
-from baseball_obp_and_cobp.ui import formatters
-from baseball_obp_and_cobp.ui.selectors import get_correlation_method, get_player_selection, get_stat_to_correlate
+from cobp.game import Game, get_players_in_games
+from cobp.player import Player
+from cobp.stats.aggregated import PlayerStats, PlayerToStats
+from cobp.ui import formatters
+from cobp.ui.selectors import get_correlation_method, get_player_selection, get_stat_to_correlate
 
 
 def display_game(

@@ -4,14 +4,14 @@ from typing import Mapping
 
 import pandas as pd
 
-from baseball_obp_and_cobp.game import Game, get_players_in_games
-from baseball_obp_and_cobp.player import TEAM_PLAYER_ID, Player
-from baseball_obp_and_cobp.stats.ba import BA, get_player_to_ba
-from baseball_obp_and_cobp.stats.basic import BasicStats, get_player_to_basic_stats
-from baseball_obp_and_cobp.stats.cops import COPS, get_player_to_cops
-from baseball_obp_and_cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_obp, get_player_to_sobp
-from baseball_obp_and_cobp.stats.ops import OPS, get_player_to_ops
-from baseball_obp_and_cobp.stats.sp import SP, get_player_to_sp
+from cobp.game import Game, get_players_in_games
+from cobp.player import TEAM_PLAYER_ID, Player
+from cobp.stats.ba import BA, get_player_to_ba
+from cobp.stats.basic import BasicStats, get_player_to_basic_stats
+from cobp.stats.cops import COPS, get_player_to_cops
+from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_obp, get_player_to_sobp
+from cobp.stats.ops import OPS, get_player_to_ops
+from cobp.stats.sp import SP, get_player_to_sp
 
 
 @dataclass
