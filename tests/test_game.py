@@ -1,7 +1,5 @@
 from textwrap import dedent
 
-import pytest
-
 from cobp import game
 from cobp.game import GameLine
 from cobp.play import Play, PlayResult
