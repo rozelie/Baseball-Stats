@@ -19,6 +19,12 @@ setup:
 run:
 	PYTHONPATH="${ROOT_DIR}" PYTHONUNBUFFERED=1 streamlit run ${ENTRYPOINT}
 
+docker_build:
+	docker build -t cobp .
+
+docker_run:
+	docker run -p 8501:8501 cobp
+
 test:
 	PYTHONPATH="${ROOT_DIR}" PYTHONUNBUFFERED=1 ${PYTHON} -m pytest ${TESTS_DIR}
 
