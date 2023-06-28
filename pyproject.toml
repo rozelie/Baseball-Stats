@@ -21,8 +21,17 @@ requires-python = ">=3.11"
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
-[tool.setuptools.dynamic.optional-dependencies]
-dev = {file = ["requirements_dev.txt"]}
+[project.optional-dependencies]
+dev = [
+  "pytest==7.3.1",
+  "pytest-mock==3.11.1",
+  "black==23.3.0",
+  "isort==5.12.0",
+  "mypy==1.3.0",
+  "ruff==0.0.269",
+  "types-requests==2.31.0.1",
+  "coverage==7.2.7",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/rozelie/baseball_obp_and_cobp"
