@@ -22,7 +22,7 @@ requires-python = ">=3.11"
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.dynamic.optional-dependencies]
-dependencies = {file = ["requirements_dev.txt"]}
+dev = {file = ["requirements_dev.txt"]}
 
 [project.urls]
 "Homepage" = "https://github.com/rozelie/baseball_obp_and_cobp"
