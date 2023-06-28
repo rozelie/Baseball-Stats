@@ -1,5 +1,6 @@
 """Loads and parses Retrosheet game data."""
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -112,7 +113,7 @@ def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
         game_line = GameLine.from_line(line)
         if game_line.id == "id":
             if current_game_lines:
-                yield current_game_lines
+                yield deepcopy(current_game_lines)
                 current_game_lines.clear()
 
             visiting_team = lines[i + 2].split(",")[-1]
@@ -123,7 +124,7 @@ def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
             current_game_lines.append(game_line)
 
     if current_game_lines:
-        yield current_game_lines
+        yield deepcopy(current_game_lines)
 
 
 def _get_game_id(game_lines: list[GameLine]) -> str:
