@@ -39,44 +39,21 @@ same inning.
     - Cub's 2022 data
 
 # Todo
-- calculate on-base percentages (OBP) conditional on-base percentage (COBP) for one team, for one season
-  - ✅ data retrieval, retrosheet.org suggested
-  - ✅ calculate per-game OBP
-  - ✅ calculate per-game COBP
-  - ✅ tests
-- ✅ provide user-friendly interface, allowing selection of a particular team over specified seasons
-- ✅ allow seasonal calculations
-  - ❌ seasonal tests
-- ✅ calculate sequential on-base percentage (SOBP): computed as regular OBP, but only for any batters that come to the plate after at least one other batter gets on base
-  - ✅ tests
-- ✅ calculate batting average (BA): `BA = H / AB`
-  - ✅ tests
-- ✅ calculate aggregated team stats
-  - ❌ tests
-- ✅ calculate slugging percentage (SP): `SP = (1*1B + 2*2B + 3*3B + 4*HR) / AB`
-  - ✅ tests
-- ✅ calculate OPS: `OBP + SP`
-  - ❌ tests
-- ✅ calculate COPS: `COBP + SP`
-  - ❌ tests
-- ❌ calculate correlations
-  - ✅ correlate COBPs for each player (e.g., correlate Batter A’s COBP with B’s, C’s, etc.)
-    - ❌ tests
-  - ✅ calculate at game level rather than inning level
-  - ❌ correlate COBPs with runs scored
-    - ❌ tests
-  - ❌ correlate COBPs with wins
-    - ❌ tests
-  - ✅ display fixes
-    - ✅ same player correlations should show a `-` with no coloring
-    - ✅ colorize team row to make it stand out more from players
-    - ✅ add drop-down menu for the correlation to calculate
-  - ❌ calculate SOPS: SOBP + OPS
-  - ❌ add list of sorted correlations to correlations display
+- test seasonal calculations
+- test aggregated team stats
+- test OPS
+- test COPS
+- calculate correlations
+  - test COBPs player correlations
+  - correlate COBPs with runs scored
+    - tests
+  - correlate COBPs with wins
+    - tests
+  - calculate SOPS: SOBP + OPS
+  - add list of sorted correlations to correlations display
+- track where each player batted in the line-up when they got on base
+- if available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
 
-## Future Work
-- ❌ track where each player batted in the line-up when they got on base
-- ❌ if available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
 
 ### Credits
 - Project skeleton generated via `cookiecutter https://github.com/rozelie/Python-Project-Cookiecutter`
