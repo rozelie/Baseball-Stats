@@ -19,14 +19,14 @@ class TestBA:
         assert ba_.ba == 0.0
 
 
-def test_get_player_to_ba(mock_game, mock_player, mock_player_2):
+def test_get_player_to_ba(mock_game, mock_player, mock_player_2, mock_play_builder):
     mock_player.plays = [
-        Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.SINGLE, modifiers=[]),
-        Play(inning=2, batter_id=mock_player.id, play_descriptor="", result=PlayResult.STRIKEOUT, modifiers=[]),
+        mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id, inning=1),
+        mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player.id, inning=2),
     ]
     mock_player_2.plays = [
-        Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.CAUGHT_STEALING, modifiers=[]),
-        Play(inning=2, batter_id=mock_player.id, play_descriptor="", result=PlayResult.WALK, modifiers=[]),
+        mock_play_builder(result=PlayResult.CAUGHT_STEALING, batter_id=mock_player_2.id, inning=1),
+        mock_play_builder(result=PlayResult.WALK, batter_id=mock_player_2.id, inning=2),
     ]
     mock_game.players = [mock_player, mock_player_2]
     games = [mock_game]

@@ -26,22 +26,21 @@ class TestOBP:
         assert obp_.obp == 0.0
 
 
-def test_get_player_to_obp(mock_game, mock_player, mock_player_2):
+def test_get_player_to_obp(mock_game, mock_player, mock_player_2, mock_play_builder):
     mock_player.plays = [
-        Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.SINGLE, modifiers=[]),
-        Play(inning=2, batter_id=mock_player.id, play_descriptor="", result=PlayResult.WALK, modifiers=[]),
-        Play(inning=3, batter_id=mock_player.id, play_descriptor="", result=PlayResult.HIT_BY_PITCH, modifiers=[]),
-        Play(
-            inning=4,
-            batter_id=mock_player.id,
-            play_descriptor="",
+        mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id, inning=1),
+        mock_play_builder(result=PlayResult.WALK, batter_id=mock_player.id, inning=2),
+        mock_play_builder(result=PlayResult.HIT_BY_PITCH, batter_id=mock_player.id, inning=3),
+        mock_play_builder(
             result=PlayResult.FIELDED_OUT,
             modifiers=[PlayResultModifier.SACRIFICE_FLY],
+            batter_id=mock_player.id,
+            inning=4,
         ),
     ]
     mock_player_2.plays = [
-        Play(inning=1, batter_id=mock_player_2.id, play_descriptor="", result=PlayResult.STRIKEOUT, modifiers=[]),
-        Play(inning=1, batter_id=mock_player_2.id, play_descriptor="", result=PlayResult.NO_PLAY, modifiers=[]),
+        mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player_2.id, inning=1),
+        mock_play_builder(result=PlayResult.NO_PLAY, batter_id=mock_player_2.id, inning=2),
     ]
     mock_game.players = [mock_player, mock_player_2]
     games = [mock_game]
@@ -54,9 +53,9 @@ def test_get_player_to_obp(mock_game, mock_player, mock_player_2):
     assert player_to_obp[TEAM_PLAYER_ID].obp == 0.6
 
 
-def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_player_2):
-    play_1 = Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.SINGLE, modifiers=[])
-    play_2 = Play(inning=1, batter_id=mock_player_2.id, play_descriptor="", result=PlayResult.STRIKEOUT, modifiers=[])
+def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_player_2, mock_play_builder):
+    play_1 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id)
+    play_2 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player_2.id)
     mock_player.plays = [play_1]
     mock_player_2.plays = [play_2]
     mock_game.players = [mock_player, mock_player_2]
@@ -71,9 +70,11 @@ def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_pla
     assert player_to_cobp[TEAM_PLAYER_ID].obp == 0.5
 
 
-def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(mock_game, mock_player, mock_player_2):
-    play_1 = Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.STRIKEOUT, modifiers=[])
-    play_2 = Play(inning=1, batter_id=mock_player_2.id, play_descriptor="", result=PlayResult.STRIKEOUT, modifiers=[])
+def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
+    mock_game, mock_player, mock_player_2, mock_play_builder
+):
+    play_1 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player.id)
+    play_2 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player_2.id)
     mock_player.plays = [play_1]
     mock_player_2.plays = [play_2]
     mock_game.players = [mock_player, mock_player_2]
@@ -89,9 +90,11 @@ def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(mock_game, mock_p
     assert player_to_cobp[TEAM_PLAYER_ID].obp == 0.0
 
 
-def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(mock_game, mock_player, mock_player_2):
-    play_1 = Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.SINGLE, modifiers=[])
-    play_2 = Play(inning=1, batter_id=mock_player_2.id, play_descriptor="", result=PlayResult.SINGLE, modifiers=[])
+def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
+    mock_game, mock_player, mock_player_2, mock_play_builder
+):
+    play_1 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id)
+    play_2 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player_2.id)
     mock_player.plays = [play_1]
     mock_player_2.plays = [play_2]
     mock_game.players = [mock_player, mock_player_2]
@@ -107,9 +110,11 @@ def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(mock_game, moc
     assert player_to_sobp[TEAM_PLAYER_ID].obp == 1.0
 
 
-def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(mock_game, mock_player, mock_player_2):
-    play_1 = Play(inning=1, batter_id=mock_player.id, play_descriptor="", result=PlayResult.STRIKEOUT, modifiers=[])
-    play_2 = Play(inning=1, batter_id=mock_player_2.id, play_descriptor="", result=PlayResult.SINGLE, modifiers=[])
+def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(
+    mock_game, mock_player, mock_player_2, mock_play_builder
+):
+    play_1 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player.id)
+    play_2 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player_2.id)
     mock_player.plays = [play_1]
     mock_player_2.plays = [play_2]
     mock_game.players = [mock_player, mock_player_2]

@@ -104,10 +104,10 @@ def get_players_in_games(games: list[Game]) -> list[Player]:
     return players
 
 
-def _yield_game_lines(path: Path, team: Team) -> Iterator[list[GameLine]]:
+def _yield_game_lines(events_file_path: Path, team: Team) -> Iterator[list[GameLine]]:
     """Yield the lines corresponding to each game in the Retrosheet events file."""
     current_game_lines: list[GameLine] = []
-    lines = path.read_text().splitlines()
+    lines = events_file_path.read_text().splitlines()
     team_is_in_game = False
     for i, line in enumerate(lines):
         game_line = GameLine.from_line(line)
