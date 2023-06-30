@@ -576,3 +576,6 @@ MigrationBackup/
 
 # virtualenvs
 venv
+
+# ruff
+.ruff_cache
