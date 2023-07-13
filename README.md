@@ -39,21 +39,44 @@ same inning.
     - Cub's 2022 data
 
 # Todo
-- test seasonal calculations
-- test aggregated team stats
-- test OPS
-- test COPS
-- calculate correlations
-  - test COBPs player correlations
+- add ability to download data to CSV/excel
+
+- stats
+  - per team per season
+    - mean, median, min, max, std. dev of all other stats
+    - win percentage
+    - efficiency: `R / H + BB + HBP`
+  - Wins Above Replacement (WAR)
+    - can find from other sources
+  - LOOP
+    - OBP when lead-off an inning
+    - only considered when another player gets an on-base in the same inning
+  - runs (R)
+  - RBI
+  - runs created (RC)
+    - SB: stolen bases
+    - CS: caught stealing
+    - SP = `TB / AB`, TB = `AB * SP`
+    - RC: `((0.55 * SB) + TB) * (BB - CS + H) / AB + BB`
+
+  
+- correlations
   - correlate COBPs with runs scored
-    - tests
   - correlate COBPs with wins
-    - tests
   - calculate SOPS: SOBP + OPS
   - add list of sorted correlations to correlations display
-- track where each player batted in the line-up when they got on base
-- if available from a different data source, correlate each player’s COBP with their respective WAR values (Wins Above Replacement)
+  - calculate correlation matrix between all other stats at the player and team level for a season
 
+- deployment
+  - publish yearly data to S3 to be able to be retrieved in deployed instance
+  - build out Terraform infrastructure
+
+- testing
+  - seasonal calculations
+  - aggregated team stats
+  - OPS
+  - COPS
+  - COBPs player correlations
 
 ### Credits
 - Project skeleton generated via `cookiecutter https://github.com/rozelie/Python-Project-Cookiecutter`
