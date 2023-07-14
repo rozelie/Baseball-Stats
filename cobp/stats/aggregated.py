@@ -70,42 +70,63 @@ def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) ->
         data["D"].append(stats.basic.doubles)
         data["T"].append(stats.basic.triples)
         data["HR"].append(stats.basic.home_runs)
-        data["OBP"].append(stats.obp.obp)
-        data["COBP"].append(stats.cobp.obp)
-        data["SOBP"].append(stats.sobp.obp)
-        data["BA"].append(stats.ba.ba)
-        data["SP"].append(stats.sp.sp)
-        data["OPS"].append(stats.ops.ops)
-        data["COPS"].append(stats.cops.cops)
+        data["OBP"].append(stats.obp.value)
+        data["COBP"].append(stats.cobp.value)
+        data["SOBP"].append(stats.sobp.value)
+        data["BA"].append(stats.ba.value)
+        data["SP"].append(stats.sp.value)
+        data["OPS"].append(stats.ops.value)
+        data["COPS"].append(stats.cops.value)
 
     return pd.DataFrame(data=data)
 
 
-def get_player_to_game_cobp_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
+# def get_player_to_game_cobp_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
+#     player_id_to_player = _get_all_players_id_to_player(games)
+#     data: Mapping[str, list[str | float]] = defaultdict(list)
+#     for game_id, player_game_cobp in _get_game_to_player_stat(games, player_to_stats, "cobp", "game_to_obp").items():
+#         data["Game"].append(game_id)
+#         for player_id, game_cobp in player_game_cobp.items():
+#             player = player_id_to_player[player_id]
+#             data[player.name].append(game_cobp)
+#
+#     return pd.DataFrame(data=data)
+
+
+def get_player_to_game_stat_df(
+    games: list[Game], player_to_stats: PlayerToStats, stat_name: str, game_to_stat_name: str
+) -> pd.DataFrame:
     player_id_to_player = _get_all_players_id_to_player(games)
     data: Mapping[str, list[str | float]] = defaultdict(list)
-    for game_id, player_game_cobp in _get_game_to_player_cobp(games, player_to_stats).items():
+    for game_id, player_game_stat in _get_game_to_player_stat(
+        games, player_to_stats, stat_name, game_to_stat_name
+    ).items():
         data["Game"].append(game_id)
-        for player_id, game_cobp in player_game_cobp.items():
+        for player_id, game_stat in player_game_stat.items():
             player = player_id_to_player[player_id]
-            data[player.name].append(game_cobp)
+            data[player.name].append(game_stat)
 
     return pd.DataFrame(data=data)
 
 
-def _get_game_to_player_cobp(games: list[Game], player_to_stats: PlayerToStats) -> Mapping[str, Mapping[str, float]]:
-    game_to_player_cobp: Mapping[str, Mapping[str, float]] = defaultdict(dict)
+def _get_game_to_player_stat(
+    games: list[Game], player_to_stats: PlayerToStats, stat_name: str, game_to_stat_name: str
+) -> Mapping[str, Mapping[str, float]]:
+    game_to_player_stat: Mapping[str, Mapping[str, float]] = defaultdict(dict)
     player_id_to_player = _get_all_players_id_to_player(games, include_team=False)
     for player_id, player in player_id_to_player.items():
         if player_to_stats[player_id].basic.at_bats == 0:
             continue
 
+        player_stats = player_to_stats[player_id]
+        player_stat = getattr(player_stats, stat_name)
         for game in games:
-            player_game_cobp = player_to_stats[player_id].cobp.game_to_obp.get(game.id)
-            player_game_cobp_ = player_game_cobp.obp if player_game_cobp else None
-            game_to_player_cobp[game.id][player_id] = player_game_cobp_  # type: ignore
+            player_game_to_stat = getattr(player_stat, game_to_stat_name)
+            player_game_stat = player_game_to_stat.get(game.id)
+            player_game_stat_value = player_game_stat.value if player_game_stat else None
+            game_to_player_stat[game.id][player_id] = player_game_stat_value  # type: ignore
 
-    return game_to_player_cobp
+    return game_to_player_stat
 
 
 def _get_all_players_id_to_player(games: list[Game], include_team: bool = True) -> dict[str, Player]:

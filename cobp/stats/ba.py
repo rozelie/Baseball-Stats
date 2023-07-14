@@ -12,10 +12,10 @@ class BA(Stat):
     at_bats: int = 0
 
     def add_arithmetic(self) -> None:
-        self.explanation.append(f"*H={self.hits} / AB={self.at_bats} == {round(self.ba, 3)}*")
+        self.explanation.append(f"*H={self.hits} / AB={self.at_bats} == {round(self.value, 3)}*")
 
     @property
-    def ba(self) -> float:
+    def value(self) -> float:
         try:
             return self.hits / self.at_bats
         except ZeroDivisionError:

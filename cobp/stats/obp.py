@@ -30,7 +30,7 @@ class OBP(Stat):
         return self.at_bats + self.walks + self.hit_by_pitches + self.sacrifice_flys
 
     @property
-    def obp(self) -> float:
+    def value(self) -> float:
         try:
             return self.numerator / self.denominator
         except ZeroDivisionError:

@@ -1,7 +1,7 @@
 from cobp import game
 from cobp.data import retrosheet
 from cobp.game import Game
-from cobp.stats.aggregated import get_player_to_game_cobp_df, get_player_to_stats, get_player_to_stats_df
+from cobp.stats.aggregated import get_player_to_stats, get_player_to_stats_df
 from cobp.team import Team
 from cobp.ui import selectors
 from cobp.ui.core import display_error, set_streamlit_config
@@ -25,7 +25,6 @@ def main() -> None:
         games=games,
         player_to_stats=player_to_stats,
         player_to_stats_df=get_player_to_stats_df(games, player_to_stats),
-        player_to_game_cobp_df=get_player_to_game_cobp_df(games, player_to_stats),
     )
 
 

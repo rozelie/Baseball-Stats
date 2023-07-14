@@ -16,7 +16,7 @@ class OPS(Stat):
         self.explanation.append(f"*OBP={round(self.obp, 3)} + SP={round(self.sp, 3)}*")
 
     @property
-    def ops(self):
+    def value(self):
         return self.obp + self.sp
 
 
@@ -28,13 +28,13 @@ def get_player_to_ops(games: list[Game], player_to_obp: PlayerToOBP, player_to_s
     for player in get_players_in_games(games):
         obp = 0.0
         if obp_ := player_to_obp.get(player.id):
-            obp = obp_.obp
+            obp = obp_.value
 
         sp = 0.0
         if sp_ := player_to_sp.get(player.id):
-            sp = sp_.sp
+            sp = sp_.value
 
         player_to_cops[player.id] = OPS(obp=obp, sp=sp)
 
-    player_to_cops[TEAM_PLAYER_ID] = OPS(obp=player_to_obp[TEAM_PLAYER_ID].obp, sp=player_to_sp[TEAM_PLAYER_ID].sp)
+    player_to_cops[TEAM_PLAYER_ID] = OPS(obp=player_to_obp[TEAM_PLAYER_ID].value, sp=player_to_sp[TEAM_PLAYER_ID].value)
     return player_to_cops

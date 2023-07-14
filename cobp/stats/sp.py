@@ -29,7 +29,7 @@ class SP(Stat):
         self.explanation.extend([numerator, denominator])
 
     @property
-    def sp(self) -> float:
+    def value(self) -> float:
         try:
             return self.numerator / self.denominator
         except ZeroDivisionError:
