@@ -1,8 +1,8 @@
 import pytest
 
-from cobp import retrosheet
+from cobp.data import retrosheet
 
-MODULE_PATH = "cobp.retrosheet"
+MODULE_PATH = "cobp.data.retrosheet"
 
 
 @pytest.fixture

@@ -39,8 +39,6 @@ same inning.
     - Cub's 2022 data
 
 # Todo
-- add ability to download data to CSV/excel
-
 - stats
   - per team per season
     - mean, median, min, max, std. dev of all other stats

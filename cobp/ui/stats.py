@@ -4,7 +4,7 @@ import streamlit as st
 from cobp.game import Game, get_players_in_games
 from cobp.player import Player
 from cobp.stats.aggregated import PlayerStats, PlayerToStats
-from cobp.ui import formatters
+from cobp.ui import download, formatters
 from cobp.ui.selectors import get_correlation_method, get_player_selection, get_stat_to_correlate
 
 
@@ -31,11 +31,13 @@ def display_game(
 
 
 def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
-    st.header(f"{games[0].team.pretty_name} Stats")
+    team_pretty_name = games[0].team.pretty_name
+    st.header(f"{team_pretty_name} Stats")
     # ignore players without any at bats as they will have 0 values for all stats
     filtered_df = player_to_stats_df[player_to_stats_df["AB"] > 0]
     formatted_df = filtered_df.style.format(formatters.get_stats_floats_format())
     formatted_df = formatted_df.apply(formatters.highlight_team_row, axis=1)
+    download.download_df_button(filtered_df, f"{team_pretty_name}.csv")
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
