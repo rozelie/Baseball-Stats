@@ -7,6 +7,7 @@ import pandas as pd
 
 from cobp.game import Game
 from cobp.player import TEAM_PLAYER_ID
+from cobp.stats import supports
 from cobp.stats.aggregated import PlayerToStats
 
 
@@ -21,9 +22,9 @@ class SummaryStats:
 
 def get_team_seasonal_summary_stats_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
     data: Mapping[str, list[str | float]] = defaultdict(list)
-    for stat_name in ["obp", "cobp", "sobp", "sp"]:
-        summary_stats = _get_team_seasonal_summary_stats_for_stat(games, player_to_stats, stat_name)
-        data["Stat"].append(stat_name.upper())
+    for stat in supports.SUMMARY_STATS:
+        summary_stats = _get_team_seasonal_summary_stats_for_stat(games, player_to_stats, stat)
+        data["Stat"].append(stat.upper())
         data["Mean"].append(summary_stats.mean)
         data["Median"].append(summary_stats.median)
         data["Std. Dev"].append(summary_stats.standard_deviation)
@@ -34,11 +35,11 @@ def get_team_seasonal_summary_stats_df(games: list[Game], player_to_stats: Playe
 
 
 def _get_team_seasonal_summary_stats_for_stat(
-    games: list[Game], player_to_stats: PlayerToStats, stat_name: str
+    games: list[Game], player_to_stats: PlayerToStats, stat: str
 ) -> SummaryStats:
     team_stats = player_to_stats[TEAM_PLAYER_ID]
     stat_values: list[float] = []
-    team_stat = getattr(team_stats, stat_name)
+    team_stat = getattr(team_stats, stat)
     for game in games:
         team_game_stat = team_stat.game_to_stat.get(game.id)
         if team_game_stat:
