@@ -47,7 +47,7 @@ def get_correlation_method() -> str:
 
 
 def get_stat_to_correlate() -> str | None:
-    selection = _get_selection("Stat To Correlate:", options=[EMPTY_CHOICE, "COBP"])
+    selection = _get_selection("Stat To Correlate:", options=[EMPTY_CHOICE, "OBP", "COBP", "SOBP", "SP"])
     return selection if selection != EMPTY_CHOICE else None
 
 

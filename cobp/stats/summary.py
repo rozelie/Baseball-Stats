@@ -21,7 +21,7 @@ class SummaryStats:
 
 def get_team_seasonal_summary_stats_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
     data: Mapping[str, list[str | float]] = defaultdict(list)
-    for stat_name in ["cobp"]:
+    for stat_name in ["obp", "cobp", "sobp", "sp"]:
         summary_stats = _get_team_seasonal_summary_stats_for_stat(games, player_to_stats, stat_name)
         data["Stat"].append(stat_name.upper())
         data["Mean"].append(summary_stats.mean)

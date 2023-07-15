@@ -46,12 +46,10 @@ def _display_summary_stats(games: list[Game], player_to_stats: PlayerToStats) ->
 def _display_correlations(games: list[Game], player_to_stats: PlayerToStats) -> None:
     st.header("Correlations")
     if stat_to_correlate := get_stat_to_correlate():
-        for stat_name in ["cobp"]:
-            if stat_to_correlate == stat_name.upper():
-                player_to_game_stat_df = get_player_to_game_stat_df(games, player_to_stats, stat_name)
-                player_to_game_stat_no_game_df = player_to_game_stat_df.drop(columns=["Game"])
-                _display_correlations_df(stat_to_correlate, player_to_game_stat_no_game_df)
-                _display_df_toggle(f"Player {stat_to_correlate} Per Game", player_to_game_stat_df)
+        player_to_game_stat_df = get_player_to_game_stat_df(games, player_to_stats, stat_to_correlate.lower())
+        player_to_game_stat_no_game_df = player_to_game_stat_df.drop(columns=["Game"])
+        _display_correlations_df(stat_to_correlate, player_to_game_stat_no_game_df)
+        _display_df_toggle(f"Player {stat_to_correlate} Per Game", player_to_game_stat_df)
 
 
 def _display_correlations_df(stat_name: str, player_to_game_value_df: pd.DataFrame) -> None:
