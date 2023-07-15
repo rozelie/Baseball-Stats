@@ -36,11 +36,6 @@ def get_player_to_stats_df(mocker):
     return mocker.patch(f"{MODULE_PATH}.get_player_to_stats_df")
 
 
-@pytest.fixture
-def get_player_to_game_cobp_df(mocker):
-    return mocker.patch(f"{MODULE_PATH}.get_player_to_game_cobp_df")
-
-
 def test_main__happy_path(
     set_streamlit_config,
     get_team_and_year_selection,
@@ -48,7 +43,6 @@ def test_main__happy_path(
     get_player_to_stats,
     display_game,
     get_player_to_stats_df,
-    get_player_to_game_cobp_df,
 ):
     get_team_and_year_selection.return_value = Team.ARIZONA_DIAMONDBACKS, 2022
 
@@ -60,7 +54,6 @@ def test_main__happy_path(
         games=_get_games_selection.return_value,
         player_to_stats=get_player_to_stats.return_value,
         player_to_stats_df=get_player_to_stats_df.return_value,
-        player_to_game_cobp_df=get_player_to_game_cobp_df.return_value,
     )
 
 

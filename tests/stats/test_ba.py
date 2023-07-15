@@ -1,4 +1,4 @@
-from cobp.play import Play, PlayResult
+from cobp.play import PlayResult
 from cobp.player import TEAM_PLAYER_ID
 from cobp.stats import ba
 
@@ -10,13 +10,13 @@ class TestBA:
         ba_.at_bats = 2
 
         # H / AB == 1 / 2
-        assert ba_.ba == 0.5
+        assert ba_.value == 0.5
 
     def test_ba__handles_zero_denominator(self):
         ba_ = ba.BA()
         ba_.at_bats = 0
 
-        assert ba_.ba == 0.0
+        assert ba_.value == 0.0
 
 
 def test_get_player_to_ba(mock_game, mock_player, mock_player_2, mock_play_builder):
@@ -34,9 +34,9 @@ def test_get_player_to_ba(mock_game, mock_player, mock_player_2, mock_play_build
     player_to_ba = ba.get_player_to_ba(games)
 
     assert len(player_to_ba) == 3
-    assert player_to_ba[mock_player.id].ba == 0.5
-    assert player_to_ba[mock_player_2.id].ba == 0.0
-    assert player_to_ba[TEAM_PLAYER_ID].ba == 0.5
+    assert player_to_ba[mock_player.id].value == 0.5
+    assert player_to_ba[mock_player_2.id].value == 0.0
+    assert player_to_ba[TEAM_PLAYER_ID].value == 0.5
 
 
 def test__get_ba_handles_player_not_in_game(mock_game, mock_player):

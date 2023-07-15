@@ -2,7 +2,7 @@ from textwrap import dedent
 
 from cobp import game
 from cobp.game import GameLine
-from cobp.play import Play, PlayResult
+from cobp.play import PlayResult
 from cobp.team import Team
 
 MODULE_PATH = "baseball_obp_and_cobp.game"

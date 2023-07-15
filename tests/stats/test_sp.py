@@ -1,4 +1,4 @@
-from cobp.play import Play, PlayResult
+from cobp.play import PlayResult
 from cobp.player import TEAM_PLAYER_ID
 from cobp.stats import sp
 
@@ -14,13 +14,13 @@ class TestSP:
 
         # numerator (1 * 1 + 2 * 1 + 3 * 1 + 4 * 1) == 10
         # denominator (5) == 5
-        assert sp_.sp == 2.0
+        assert sp_.value == 2.0
 
     def test_sp__handles_zero_denominator(self):
         sp_ = sp.SP()
         sp_.at_bats = 0
 
-        assert sp_.sp == 0.0
+        assert sp_.value == 0.0
 
 
 def test_get_player_to_sp(mock_game, mock_player, mock_player_2, mock_play_builder):
@@ -40,9 +40,9 @@ def test_get_player_to_sp(mock_game, mock_player, mock_player_2, mock_play_build
     player_to_sp = sp.get_player_to_sp(games)
 
     assert len(player_to_sp) == 3
-    assert player_to_sp[mock_player.id].sp == 2.0
-    assert player_to_sp[mock_player_2.id].sp == 0.0
-    assert round(player_to_sp[TEAM_PLAYER_ID].sp, 1) == 1.7
+    assert player_to_sp[mock_player.id].value == 2.0
+    assert player_to_sp[mock_player_2.id].value == 0.0
+    assert round(player_to_sp[TEAM_PLAYER_ID].value, 1) == 1.7
 
 
 def test__get_sp_handles_player_not_in_game(mock_game, mock_player):

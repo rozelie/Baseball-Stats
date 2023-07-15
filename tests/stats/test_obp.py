@@ -1,4 +1,4 @@
-from cobp.play import Play, PlayResult, PlayResultModifier
+from cobp.play import PlayResult, PlayResultModifier
 from cobp.player import TEAM_PLAYER_ID
 from cobp.stats import obp
 
@@ -14,7 +14,7 @@ class TestOBP:
 
         # numerator (1 + 1 + 1) == 3
         # denominator (1 + 1 + 1 + 1) == 4
-        assert obp_.obp == 0.75
+        assert obp_.value == 0.75
 
     def test_obp__handles_zero_denominator(self):
         obp_ = obp.OBP()
@@ -23,7 +23,7 @@ class TestOBP:
         obp_.hit_by_pitches = 0
         obp_.sacrifice_flys = 0
 
-        assert obp_.obp == 0.0
+        assert obp_.value == 0.0
 
 
 def test_get_player_to_obp(mock_game, mock_player, mock_player_2, mock_play_builder):
@@ -48,9 +48,9 @@ def test_get_player_to_obp(mock_game, mock_player, mock_player_2, mock_play_buil
     player_to_obp = obp.get_player_to_obp(games)
 
     assert len(player_to_obp) == 3
-    assert player_to_obp[mock_player.id].obp == 0.75
-    assert player_to_obp[mock_player_2.id].obp == 0.0
-    assert player_to_obp[TEAM_PLAYER_ID].obp == 0.6
+    assert player_to_obp[mock_player.id].value == 0.75
+    assert player_to_obp[mock_player_2.id].value == 0.0
+    assert player_to_obp[TEAM_PLAYER_ID].value == 0.6
 
 
 def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_player_2, mock_play_builder):
@@ -65,9 +65,9 @@ def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_pla
     player_to_cobp = obp.get_player_to_cobp(games)
 
     assert len(player_to_cobp) == 3
-    assert player_to_cobp[mock_player.id].obp == 1
-    assert player_to_cobp[mock_player_2.id].obp == 0.0
-    assert player_to_cobp[TEAM_PLAYER_ID].obp == 0.5
+    assert player_to_cobp[mock_player.id].value == 1
+    assert player_to_cobp[mock_player_2.id].value == 0.0
+    assert player_to_cobp[TEAM_PLAYER_ID].value == 0.5
 
 
 def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
@@ -83,11 +83,11 @@ def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
 
     player_to_cobp = obp.get_player_to_cobp(games)
 
-    assert player_to_cobp[mock_player.id].obp == 0.0
+    assert player_to_cobp[mock_player.id].value == 0.0
     assert player_to_cobp[mock_player.id].at_bats == 0
-    assert player_to_cobp[mock_player_2.id].obp == 0.0
+    assert player_to_cobp[mock_player_2.id].value == 0.0
     assert player_to_cobp[mock_player_2.id].at_bats == 0
-    assert player_to_cobp[TEAM_PLAYER_ID].obp == 0.0
+    assert player_to_cobp[TEAM_PLAYER_ID].value == 0.0
 
 
 def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
@@ -104,10 +104,10 @@ def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
     player_to_sobp = obp.get_player_to_sobp(games)
 
     assert len(player_to_sobp) == 3
-    assert player_to_sobp[mock_player.id].obp == 0.0
+    assert player_to_sobp[mock_player.id].value == 0.0
     assert player_to_sobp[mock_player.id].at_bats == 0
-    assert player_to_sobp[mock_player_2.id].obp == 1.0
-    assert player_to_sobp[TEAM_PLAYER_ID].obp == 1.0
+    assert player_to_sobp[mock_player_2.id].value == 1.0
+    assert player_to_sobp[TEAM_PLAYER_ID].value == 1.0
 
 
 def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(
@@ -123,11 +123,11 @@ def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(
 
     player_to_sobp = obp.get_player_to_sobp(games)
 
-    assert player_to_sobp[mock_player.id].obp == 0.0
+    assert player_to_sobp[mock_player.id].value == 0.0
     assert player_to_sobp[mock_player.id].at_bats == 0
-    assert player_to_sobp[mock_player_2.id].obp == 0.0
+    assert player_to_sobp[mock_player_2.id].value == 0.0
     assert player_to_sobp[mock_player_2.id].at_bats == 0
-    assert player_to_sobp[TEAM_PLAYER_ID].obp == 0.0
+    assert player_to_sobp[TEAM_PLAYER_ID].value == 0.0
 
 
 def test__get_obp_handles_player_not_in_game(mock_game, mock_player):
