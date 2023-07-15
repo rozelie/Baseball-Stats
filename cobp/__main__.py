@@ -9,14 +9,20 @@ from cobp.ui.selectors import ENTIRE_SEASON
 from cobp.ui.stats import display_game
 
 
-def main() -> None:
+def main(team: Team | None = None, year: int | None = None, all_games: bool | None = None) -> None:
     """Project entrypoint."""
     set_streamlit_config()
-    team, year = selectors.get_team_and_year_selection()
+    if not team or not year:
+        team, year = selectors.get_team_and_year_selection()
+
     if not team or not year:
         return
 
-    games = _get_games_selection(year, team)
+    all_games_ = _load_season_games(year, team)
+    if not all_games_:
+        return
+
+    games = all_games_ if all_games else _get_games_selection(all_games_)
     if not games:
         return
 
@@ -28,11 +34,7 @@ def main() -> None:
     )
 
 
-def _get_games_selection(year: int, team: Team) -> list[Game] | None:
-    all_games = _load_season_games(year, team)
-    if not all_games:
-        return None
-
+def _get_games_selection(all_games: list[Game]) -> list[Game] | None:
     game_ = selectors.get_game_selection(all_games)
     if not game_:
         return None
@@ -50,4 +52,8 @@ def _load_season_games(year: int, team: Team) -> list[Game] | None:
 
 
 if __name__ == "__main__":
-    main()
+    main(
+        team=None,
+        year=None,
+        all_games=None,
+    )
