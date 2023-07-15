@@ -2,8 +2,8 @@ import pandas as pd
 import streamlit as st
 
 from cobp.game import Game, get_players_in_games
-from cobp.player import Player
 from cobp.stats.aggregated import PlayerStats, PlayerToStats, get_player_to_game_stat_df
+from cobp.stats.summary import get_team_seasonal_summary_stats_df
 from cobp.ui import download, formatters
 from cobp.ui.selectors import get_correlation_method, get_player_selection, get_stat_to_correlate
 
@@ -15,6 +15,7 @@ def display_game(
 ) -> None:
     _display_stats(games, player_to_stats_df)
     if len(games) > 1:
+        _display_summary_stats(games, player_to_stats)
         _display_correlations(games, player_to_stats)
 
     if len(games) == 1:
@@ -35,14 +36,19 @@ def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
+def _display_summary_stats(games: list[Game], player_to_stats: PlayerToStats) -> None:
+    st.header("Summary Stats")
+    team_seasonal_summary_stats_df = get_team_seasonal_summary_stats_df(games, player_to_stats)
+    formatted_df = team_seasonal_summary_stats_df.style.format(formatters.format_floats)
+    st.dataframe(formatted_df, hide_index=True, use_container_width=True)
+
+
 def _display_correlations(games: list[Game], player_to_stats: PlayerToStats) -> None:
     st.header("Correlations")
     if stat_to_correlate := get_stat_to_correlate():
-        for stat_name, game_to_stat_name in [("cobp", "game_to_obp")]:
+        for stat_name in ["cobp"]:
             if stat_to_correlate == stat_name.upper():
-                player_to_game_stat_df = get_player_to_game_stat_df(
-                    games, player_to_stats, stat_name, game_to_stat_name
-                )
+                player_to_game_stat_df = get_player_to_game_stat_df(games, player_to_stats, stat_name)
                 player_to_game_stat_no_game_df = player_to_game_stat_df.drop(columns=["Game"])
                 _display_correlations_df(stat_to_correlate, player_to_game_stat_no_game_df)
                 _display_df_toggle(f"Player {stat_to_correlate} Per Game", player_to_game_stat_df)
@@ -88,7 +94,7 @@ def _display_player_stats_explanations_toggle(games: list[Game], player_to_stats
         player = get_player_selection(get_players_in_games(games))
         if player:
             st.markdown(":green[GREEN]: On-Base | :orange[ORANGE]: At Bat | :red[RED]: N/A")
-            _display_player_stats_explanation_row(player, player_to_stats[player.id])
+            _display_player_stats_explanation_row(player_to_stats[player.id])
 
 
 def _display_footer() -> None:
@@ -103,22 +109,22 @@ def _display_footer() -> None:
     st.caption(retrosheet_notice)
 
 
-def _display_player_stats_explanation_row(player: Player, stats: PlayerStats) -> None:
+def _display_player_stats_explanation_row(stats: PlayerStats) -> None:
     obp_column, cobp_column, sobp_column, ba_column, sp_column, ops_column, cops_column = st.columns(7)
     with obp_column:
-        _display_stat("OBP", stats.obp.obp, stats.obp.explanation)
+        _display_stat("OBP", stats.obp.value, stats.obp.explanation)
     with cobp_column:
-        _display_stat("COBP", stats.cobp.obp, stats.cobp.explanation)
+        _display_stat("COBP", stats.cobp.value, stats.cobp.explanation)
     with sobp_column:
-        _display_stat("SOBP", stats.sobp.obp, stats.sobp.explanation)
+        _display_stat("SOBP", stats.sobp.value, stats.sobp.explanation)
     with ba_column:
-        _display_stat("BA", stats.ba.ba, stats.ba.explanation)
+        _display_stat("BA", stats.ba.value, stats.ba.explanation)
     with sp_column:
-        _display_stat("SP", stats.sp.sp, stats.sp.explanation)
+        _display_stat("SP", stats.sp.value, stats.sp.explanation)
     with ops_column:
-        _display_stat("OPS", stats.ops.ops, stats.ops.explanation)
+        _display_stat("OPS", stats.ops.value, stats.ops.explanation)
     with cops_column:
-        _display_stat("COPS", stats.cops.cops, stats.cops.explanation)
+        _display_stat("COPS", stats.cops.value, stats.cops.explanation)
     st.divider()
 
 

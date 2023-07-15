@@ -81,26 +81,10 @@ def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) ->
     return pd.DataFrame(data=data)
 
 
-# def get_player_to_game_cobp_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
-#     player_id_to_player = _get_all_players_id_to_player(games)
-#     data: Mapping[str, list[str | float]] = defaultdict(list)
-#     for game_id, player_game_cobp in _get_game_to_player_stat(games, player_to_stats, "cobp", "game_to_obp").items():
-#         data["Game"].append(game_id)
-#         for player_id, game_cobp in player_game_cobp.items():
-#             player = player_id_to_player[player_id]
-#             data[player.name].append(game_cobp)
-#
-#     return pd.DataFrame(data=data)
-
-
-def get_player_to_game_stat_df(
-    games: list[Game], player_to_stats: PlayerToStats, stat_name: str, game_to_stat_name: str
-) -> pd.DataFrame:
+def get_player_to_game_stat_df(games: list[Game], player_to_stats: PlayerToStats, stat_name: str) -> pd.DataFrame:
     player_id_to_player = _get_all_players_id_to_player(games)
     data: Mapping[str, list[str | float]] = defaultdict(list)
-    for game_id, player_game_stat in _get_game_to_player_stat(
-        games, player_to_stats, stat_name, game_to_stat_name
-    ).items():
+    for game_id, player_game_stat in _get_game_to_player_stat(games, player_to_stats, stat_name).items():
         data["Game"].append(game_id)
         for player_id, game_stat in player_game_stat.items():
             player = player_id_to_player[player_id]
@@ -110,7 +94,7 @@ def get_player_to_game_stat_df(
 
 
 def _get_game_to_player_stat(
-    games: list[Game], player_to_stats: PlayerToStats, stat_name: str, game_to_stat_name: str
+    games: list[Game], player_to_stats: PlayerToStats, stat_name: str
 ) -> Mapping[str, Mapping[str, float]]:
     game_to_player_stat: Mapping[str, Mapping[str, float]] = defaultdict(dict)
     player_id_to_player = _get_all_players_id_to_player(games, include_team=False)
@@ -121,8 +105,7 @@ def _get_game_to_player_stat(
         player_stats = player_to_stats[player_id]
         player_stat = getattr(player_stats, stat_name)
         for game in games:
-            player_game_to_stat = getattr(player_stat, game_to_stat_name)
-            player_game_stat = player_game_to_stat.get(game.id)
+            player_game_stat = player_stat.game_to_stat.get(game.id)
             player_game_stat_value = player_game_stat.value if player_game_stat else None
             game_to_player_stat[game.id][player_id] = player_game_stat_value  # type: ignore
 

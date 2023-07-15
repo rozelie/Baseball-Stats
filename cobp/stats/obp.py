@@ -14,7 +14,7 @@ class OBP(Stat):
     hit_by_pitches: int = 0
     at_bats: int = 0
     sacrifice_flys: int = 0
-    game_to_obp: dict[str, "OBP"] = field(default_factory=dict)
+    game_to_stat: dict[str, "OBP"] = field(default_factory=dict)
 
     def add_arithmetic(self) -> None:
         numerator = f"*H={self.hits} + W={self.walks} + HBP={self.hit_by_pitches} == {self.numerator}*"
@@ -132,15 +132,25 @@ def _get_teams_obp(player_to_obp: PlayerToOBP) -> OBP:
         team_obp.walks += obp.walks
         team_obp.hits += obp.hits
         team_obp.sacrifice_flys += obp.sacrifice_flys
+        for game_id, game_obp in obp.game_to_stat.items():
+            if game_id not in team_obp.game_to_stat:
+                team_obp.game_to_stat[game_id] = OBP()
+
+            team_game_obp = team_obp.game_to_stat[game_id]
+            team_game_obp.at_bats += game_obp.at_bats
+            team_game_obp.hit_by_pitches += game_obp.hit_by_pitches
+            team_game_obp.walks += game_obp.walks
+            team_game_obp.hits += game_obp.hits
+            team_game_obp.sacrifice_flys += game_obp.sacrifice_flys
 
     return team_obp
 
 
 def _increment_obp_counters(game: Game, play: Play, obp: OBP) -> None:
-    if game.id not in obp.game_to_obp:
-        obp.game_to_obp[game.id] = OBP()
+    if game.id not in obp.game_to_stat:
+        obp.game_to_stat[game.id] = OBP()
 
-    game_obp = obp.game_to_obp[game.id]
+    game_obp = obp.game_to_stat[game.id]
     if play.is_at_bat:
         obp.at_bats += 1
         game_obp.at_bats += 1
