@@ -4,7 +4,7 @@ TESTS_DIR := ${ROOT_DIR}/tests
 VENV_BIN := ${ROOT_DIR}/venv/bin
 PYTHON := ${VENV_BIN}/python
 ENTRYPOINT := ${SRC_DIR}/__main__.py
-include .env
+-include .env
 
 install:
 	${PYTHON} -m pip install .
