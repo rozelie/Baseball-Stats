@@ -1,3 +1,4 @@
+import sys
 from cobp import game
 from cobp.data import retrosheet
 from cobp.game import Game
@@ -7,6 +8,9 @@ from cobp.ui import selectors
 from cobp.ui.core import display_error, set_streamlit_config
 from cobp.ui.selectors import ENTIRE_SEASON
 from cobp.ui.stats import display_game
+import logging
+
+logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG, stream=sys.stdout)
 
 
 def main(team: Team | None = None, year: int | None = None, all_games: bool | None = None) -> None:
@@ -53,7 +57,7 @@ def _load_season_games(year: int, team: Team) -> list[Game] | None:
 
 if __name__ == "__main__":
     main(
-        team=None,
-        year=None,
-        all_games=None,
+        # team=Team.CHICAGO_CUBS,
+        # year=2022,
+        # all_games=True,
     )

@@ -1,5 +1,31 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
+
+from cobp.bases import BaseToPlayerId, Base
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+@dataclass
+class Advance:
+    """Captures a player advancing bases."""
+    starting_base: Base
+    ending_base: Base
+
+    @property
+    def scores(self) -> bool:
+        return self.ending_base == Base.HOME
+
+    @classmethod
+    def from_advance(cls, advance_descriptor: str) -> "Advance":
+        starting_base, ending_base = advance_descriptor.split("-")
+        # parenthesis are used to encode extra info we are not interested in - ignore this data
+        if "(" in ending_base:
+            ending_base = ending_base.split("(")[0]
+
+        return cls(Base(starting_base), Base(ending_base))
+
 
 
 class PlayResult(Enum):
@@ -146,14 +172,19 @@ class Play:
     batter_id: str
     play_descriptor: str
     result: PlayResult
+    previous_base_state: BaseToPlayerId
+    resulting_base_state: BaseToPlayerId
     modifiers: list[PlayResultModifier]
+    advances: list[Advance]
 
     @classmethod
-    def from_play_line(cls, line_values: list[str]) -> "Play":
+    def from_play_line(cls, line_values: list[str], base_state: dict[str, str | None]) -> "Play":
         """Load a play from a "play" line, as defined in Retrosheet spec.
 
         https://www.retrosheet.org/eventfile.htm ("The event field of the play record" section)
         """
+        # logger.debug(f"Loading play from line: {line_values}")
+        previous_base_state = deepcopy(base_state)
         inning, _, batter_id, _, _, play_descriptor = line_values
         result = PlayResult.from_play_descriptor(play_descriptor)
 
@@ -161,12 +192,34 @@ class Play:
         if "/" in play_descriptor:
             modifiers = [PlayResultModifier.from_play_modifier(modifier) for modifier in play_descriptor.split("/")[1:]]
 
+        advances = []
+        outs = []
+        if "." in play_descriptor:
+            advance_or_out_descriptors = play_descriptor.split(".")[1].split(";")
+            advance_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" not in descriptor]
+            out_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" in descriptor]
+            advances = [Advance.from_advance(advance) for advance in advance_descriptors]
+            # 2X3 implies player from second base was put out going to third base
+            outs = [out.split("X")[0] for out in out_descriptors]
+
+        # advances from the batter are not explicitly coded
+        if result in [PlayResult.WALK, PlayResult.HIT_BY_PITCH, PlayResult.SINGLE]:
+            advances.append(Advance(starting_base=Base.BATTER_AT_HOME, ending_base=Base.FIRST_BASE))
+        elif result == PlayResult.DOUBLE:
+            advances.append(Advance(starting_base=Base.BATTER_AT_HOME, ending_base=Base.SECOND_BASE))
+        elif result == PlayResult.TRIPLE:
+            advances.append(Advance(starting_base=Base.BATTER_AT_HOME, ending_base=Base.THIRD_BASE))
+
         return cls(
             inning=int(inning),
             batter_id=batter_id,
             play_descriptor=play_descriptor,
             result=result,
             modifiers=modifiers,
+            advances=advances,
+            previous_base_state=previous_base_state,
+            # resulting_base_state=_get_resulting_base_state(previous_base_state, batter_id, advances, outs),
+            resulting_base_state={},
         )
 
     @property
@@ -277,3 +330,22 @@ class Play:
             return "green"
         else:
             return "orange"
+
+
+def _get_resulting_base_state(previous_base_state: BaseToPlayerId, batter_id: str, advances: list[Advance], outs: list[str]) -> BaseToPlayerId:
+    resulting_base_state = deepcopy(previous_base_state)
+    logger.debug(f"Calculating resulting base state: {advances=} | {outs=} | {previous_base_state=}")
+    for advance in advances:
+        if advance.starting_base == Base.BATTER_AT_HOME:
+            resulting_base_state[advance.ending_base] = batter_id
+            continue
+
+        resulting_base_state[advance.ending_base] = previous_base_state[advance.starting_base]
+        if advance.starting_base in resulting_base_state:
+            del resulting_base_state[advance.starting_base]
+
+    for out in outs:
+        del resulting_base_state[out]
+
+    logger.debug(f"Resulting base state: {resulting_base_state}")
+    return resulting_base_state
