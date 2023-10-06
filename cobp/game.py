@@ -3,14 +3,13 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date
+from logging import getLogger
 from pathlib import Path
 from typing import Iterator, Mapping
 
-from cobp.play import Play
+from cobp.play import BaseToPlayerId, Play
 from cobp.player import Player
 from cobp.team import Team, TeamLocation
-from logging import getLogger
-
 
 logger = getLogger(__name__)
 
@@ -26,8 +25,6 @@ class GameLine:
     def from_line(cls, line: str) -> "GameLine":
         split_line = line.split(",")
         return cls(split_line[0], split_line[1:])
-
-
 
 
 @dataclass
@@ -54,7 +51,7 @@ class Game:
     @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
         game_id = _get_game_id(game_lines)
-        logger.debug(f"Loading {game_id=}")
+        # logger.debug(f"Loading {game_id=}")
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
@@ -187,17 +184,13 @@ def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Te
 def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> list[Play]:
     team_player_ids = {player.id for player in team_players}
     current_inning = 1
-    current_base_state = {}
+    current_base_state: BaseToPlayerId = {}
     current_team = None
     teams_plays = []
     for line in game_lines:
         if line.id == "play":
             inning = int(line.values[0])
             team = line.values[1]
-            # TODO: remove me
-            if inning != 3:
-                continue
-
             if inning != current_inning or current_team != team:
                 current_inning = inning
                 current_base_state = {}
@@ -219,10 +212,11 @@ def _get_inning_to_plays(plays: list[Play]) -> Mapping[int, list[Play]]:
 
 
 def _get_inning_to_scores(inning_to_plays: Mapping[int, list[Play]]) -> Mapping[int, tuple[int, int]]:
-    inning_to_scores = {}
-    for inning, plays in inning_to_plays.items():
-        ...
+    inning_to_scores: Mapping[int, tuple[int, int]] = {}
+    # for inning, plays in inning_to_plays.items():
+    #     ...
     return inning_to_scores
+
 
 def _add_plays_to_players(plays: list[Play], players: list[Player]) -> None:
     player_id_to_player = {player.id: player for player in players}

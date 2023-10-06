@@ -26,11 +26,14 @@ def mock_play_builder(mock_player):
         play_descriptor: str = "",
     ):
         return Play(
-            result=result,
-            modifiers=modifiers or [],
             inning=inning,
             batter_id=batter_id,
             play_descriptor=play_descriptor,
+            result=result,
+            previous_base_state={},
+            resulting_base_state={},
+            modifiers=modifiers or [],
+            advances=[],
         )
 
     return play_builder
@@ -43,6 +46,8 @@ def mock_game():
         team=Team.CHICAGO_CUBS,
         home_team=Team.CHICAGO_CUBS,
         visiting_team=Team.CINCINNATI_REDS,
+        home_team_score=0,
+        visiting_team_score=0,
         players=[],
         inning_to_plays={},
     )

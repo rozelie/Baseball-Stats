@@ -2,6 +2,7 @@ from enum import Enum
 
 BaseToPlayerId = dict[str, str | None]
 
+
 class Base(Enum):
     BATTER_AT_HOME = "B"
     FIRST_BASE = "1"

@@ -1,4 +1,6 @@
+import logging
 import sys
+
 from cobp import game
 from cobp.data import retrosheet
 from cobp.game import Game
@@ -8,7 +10,6 @@ from cobp.ui import selectors
 from cobp.ui.core import display_error, set_streamlit_config
 from cobp.ui.selectors import ENTIRE_SEASON
 from cobp.ui.stats import display_game
-import logging
 
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG, stream=sys.stdout)
 

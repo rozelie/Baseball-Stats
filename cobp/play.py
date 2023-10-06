@@ -1,15 +1,17 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
-
-from cobp.bases import BaseToPlayerId, Base
 from logging import getLogger
 
+from cobp.bases import Base, BaseToPlayerId
+
 logger = getLogger(__name__)
+
 
 @dataclass
 class Advance:
     """Captures a player advancing bases."""
+
     starting_base: Base
     ending_base: Base
 
@@ -25,7 +27,6 @@ class Advance:
             ending_base = ending_base.split("(")[0]
 
         return cls(Base(starting_base), Base(ending_base))
-
 
 
 class PlayResult(Enum):
@@ -193,14 +194,15 @@ class Play:
             modifiers = [PlayResultModifier.from_play_modifier(modifier) for modifier in play_descriptor.split("/")[1:]]
 
         advances = []
-        outs = []
+        # @TODO: implement outs
+        # outs = []
         if "." in play_descriptor:
             advance_or_out_descriptors = play_descriptor.split(".")[1].split(";")
             advance_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" not in descriptor]
-            out_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" in descriptor]
+            # out_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" in descriptor]
             advances = [Advance.from_advance(advance) for advance in advance_descriptors]
             # 2X3 implies player from second base was put out going to third base
-            outs = [out.split("X")[0] for out in out_descriptors]
+            # outs = [out.split("X")[0] for out in out_descriptors]
 
         # advances from the batter are not explicitly coded
         if result in [PlayResult.WALK, PlayResult.HIT_BY_PITCH, PlayResult.SINGLE]:
@@ -332,17 +334,19 @@ class Play:
             return "orange"
 
 
-def _get_resulting_base_state(previous_base_state: BaseToPlayerId, batter_id: str, advances: list[Advance], outs: list[str]) -> BaseToPlayerId:
+def _get_resulting_base_state(
+    previous_base_state: BaseToPlayerId, batter_id: str, advances: list[Advance], outs: list[str]
+) -> BaseToPlayerId:
     resulting_base_state = deepcopy(previous_base_state)
     logger.debug(f"Calculating resulting base state: {advances=} | {outs=} | {previous_base_state=}")
     for advance in advances:
         if advance.starting_base == Base.BATTER_AT_HOME:
-            resulting_base_state[advance.ending_base] = batter_id
+            resulting_base_state[advance.ending_base.value] = batter_id
             continue
 
-        resulting_base_state[advance.ending_base] = previous_base_state[advance.starting_base]
-        if advance.starting_base in resulting_base_state:
-            del resulting_base_state[advance.starting_base]
+        resulting_base_state[advance.ending_base.value] = previous_base_state[advance.starting_base.value]
+        if advance.starting_base.value in resulting_base_state:
+            del resulting_base_state[advance.starting_base.value]
 
     for out in outs:
         del resulting_base_state[out]
