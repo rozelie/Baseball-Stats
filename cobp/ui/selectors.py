@@ -8,9 +8,13 @@ from cobp.team import Team
 
 EMPTY_CHOICE = ""
 ENTIRE_SEASON = "Entire Season"
+FULL_PERIOD = "Full Period"
+ALL_TEAMS = "All Teams"
+FIRST_AVAILABLE_YEAR = 2000
+LAST_AVAILABLE_YEAR = 2023
 
 
-def get_team_and_year_selection() -> tuple[Team | None, int | None]:
+def get_team_and_year_selection() -> tuple[Team | str | None, int | str | None]:
     team_column, year_column = st.columns(2)
     with team_column:
         team = _get_team_selection()
@@ -51,15 +55,17 @@ def get_stat_to_correlate() -> str | None:
     return selection if selection != EMPTY_CHOICE else None
 
 
-def _get_team_selection() -> Team | None:
+def _get_team_selection() -> Team | str | None:
     team_pretty_name_to_team = {t.pretty_name: t for t in Team}
-    options = [EMPTY_CHOICE, *sorted(team_pretty_name_to_team.keys())]
-    selected_team_pretty_name = _get_selection("Select Team:", options=options)
-    return team_pretty_name_to_team.get(selected_team_pretty_name)
+    options = [EMPTY_CHOICE, ALL_TEAMS, *sorted(team_pretty_name_to_team.keys())]
+    selected_team = _get_selection("Select Team:", options=options)
+    if selected_team == ALL_TEAMS:
+        return ALL_TEAMS
+    return team_pretty_name_to_team.get(selected_team)
 
 
-def _get_year_selection() -> int | None:
-    options = [*reversed(range(2000, 2023))]
+def _get_year_selection() -> int | str | None:
+    options = [EMPTY_CHOICE, FULL_PERIOD, *reversed(range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR))]
     year = _get_selection("Select Year:", options=options)
     return year if year else None
 

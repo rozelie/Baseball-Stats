@@ -12,6 +12,7 @@ from cobp.stats.cops import COPS, get_player_to_cops
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_obp, get_player_to_sobp
 from cobp.stats.ops import OPS, get_player_to_ops
 from cobp.stats.sp import SP, get_player_to_sp
+from cobp.team import Team
 
 
 @dataclass
@@ -54,10 +55,20 @@ def get_player_to_stats(games: list[Game]) -> PlayerToStats:
     }
 
 
-def get_player_to_stats_df(games: list[Game], player_to_stats: PlayerToStats) -> pd.DataFrame:
+def get_player_to_stats_df(
+    games: list[Game],
+    player_to_stats: PlayerToStats,
+    team: Team | None = None,
+    year: int | None = None,
+) -> pd.DataFrame:
     player_id_to_player = _get_all_players_id_to_player(games)
-    data: Mapping[str, list[str | float]] = defaultdict(list)
+    data: Mapping[str, list[str | float | int]] = defaultdict(list)
     for player_id, stats in player_to_stats.items():
+        if team:
+            data["Team"].append(team.name)
+        if year:
+            data["Year"].append(year)
+
         player = player_id_to_player[player_id]
         data["Player"].append(player.name)
         data["G"].append(stats.basic.games)
