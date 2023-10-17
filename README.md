@@ -32,6 +32,12 @@ make run    # runs Streamlit application
   - define and describe statistics in class docstrings
     - dynamically update README.md with statistics defintions
 
+- data download
+  - Add "Full Period" option to "Select Year" dropdown
+  - Add "All Teams" option to "Select Team" dropdown
+  - If "All Teams" is selected, only give an option for a data download
+    - same data as current data download, but add year and team name columns
+
 - stats
   - per team per season
     - win percentage
@@ -67,6 +73,9 @@ make run    # runs Streamlit application
   - OPS
   - COPS
   - COBPs player correlations
+
+- cosmetic
+  - update red/green correlation colors to be the cell background with white text
 
 # Credits
 - Project skeleton generated via `cookiecutter https://github.com/rozelie/Python-Project-Cookiecutter`
