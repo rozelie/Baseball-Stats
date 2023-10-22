@@ -21,7 +21,7 @@ def get_year_selection() -> int | str | None:
 
 
 def get_team_selection(year: int | str) -> Team | str | None:
-    years_teams = TEAMS if year == ALL_TEAMS else get_teams_for_year(year)  # type: ignore
+    years_teams = TEAMS if year == FULL_PERIOD else get_teams_for_year(year)  # type: ignore
     team_pretty_name_to_team = {t.pretty_name: t for t in years_teams}
     options = [EMPTY_CHOICE, ALL_TEAMS, *sorted(team_pretty_name_to_team.keys())]
     selected_team = _get_selection("Select Team:", options=options)
