@@ -26,6 +26,10 @@ class Advance:
         if "(" in ending_base:
             ending_base = ending_base.split("(")[0]
 
+        # TODO: figure out what the # represents and if it is needed
+        if "#" in ending_base:
+            ending_base = ending_base.replace("#", "")
+
         return cls(Base(starting_base), Base(ending_base))
 
 
