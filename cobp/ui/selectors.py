@@ -4,23 +4,30 @@ import streamlit as st
 
 from cobp.game import Game
 from cobp.player import Player
-from cobp.team import Team
+from cobp.team import TEAMS, Team, get_teams_for_year
 
 EMPTY_CHOICE = ""
 ENTIRE_SEASON = "Entire Season"
 FULL_PERIOD = "Full Period"
 ALL_TEAMS = "All Teams"
 FIRST_AVAILABLE_YEAR = 2000
-LAST_AVAILABLE_YEAR = 2023
+LAST_AVAILABLE_YEAR = 2022
 
 
-def get_team_and_year_selection() -> tuple[Team | str | None, int | str | None]:
-    team_column, year_column = st.columns(2)
-    with team_column:
-        team = _get_team_selection()
-    with year_column:
-        year = _get_year_selection()
-    return team, year
+def get_year_selection() -> int | str | None:
+    options = [EMPTY_CHOICE, FULL_PERIOD, *reversed(range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR + 1))]
+    year = _get_selection("Select Year:", options=options)
+    return year if year else None
+
+
+def get_team_selection(year: int | str) -> Team | str | None:
+    years_teams = TEAMS if year == ALL_TEAMS else get_teams_for_year(year)  # type: ignore
+    team_pretty_name_to_team = {t.pretty_name: t for t in years_teams}
+    options = [EMPTY_CHOICE, ALL_TEAMS, *sorted(team_pretty_name_to_team.keys())]
+    selected_team = _get_selection("Select Team:", options=options)
+    if selected_team == ALL_TEAMS:
+        return ALL_TEAMS
+    return team_pretty_name_to_team.get(selected_team)
 
 
 def get_game_selection(games: list[Game]) -> Game | str | None:
@@ -53,21 +60,6 @@ def get_correlation_method() -> str:
 def get_stat_to_correlate() -> str | None:
     selection = _get_selection("Stat To Correlate:", options=[EMPTY_CHOICE, "OBP", "COBP", "SOBP", "SP"])
     return selection if selection != EMPTY_CHOICE else None
-
-
-def _get_team_selection() -> Team | str | None:
-    team_pretty_name_to_team = {t.pretty_name: t for t in Team}
-    options = [EMPTY_CHOICE, ALL_TEAMS, *sorted(team_pretty_name_to_team.keys())]
-    selected_team = _get_selection("Select Team:", options=options)
-    if selected_team == ALL_TEAMS:
-        return ALL_TEAMS
-    return team_pretty_name_to_team.get(selected_team)
-
-
-def _get_year_selection() -> int | str | None:
-    options = [EMPTY_CHOICE, FULL_PERIOD, *reversed(range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR))]
-    year = _get_selection("Select Year:", options=options)
-    return year if year else None
 
 
 def _get_selection(prompt: str, options: list[Any]) -> Any:

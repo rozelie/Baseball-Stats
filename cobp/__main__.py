@@ -4,15 +4,16 @@ from dataclasses import dataclass
 
 import pandas as pd
 import streamlit as st
+from streamlit.delta_generator import DeltaGenerator
 
 from cobp import game
 from cobp.data import retrosheet
 from cobp.game import Game
 from cobp.stats.aggregated import PlayerToStats, get_player_to_stats, get_player_to_stats_df
-from cobp.team import Team
+from cobp.team import Team, get_teams_for_year
 from cobp.ui import download, selectors
-from cobp.ui.core import display_error, set_streamlit_config
-from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FULL_PERIOD
+from cobp.ui.core import display_error, display_header, set_streamlit_config
+from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FULL_PERIOD, LAST_AVAILABLE_YEAR
 from cobp.ui.stats import display_game
 
 REFRESH_NEEDED = "refresh_needed"
@@ -29,8 +30,12 @@ class AggregateSelection:
 def main(team: Team | str | None = None, year: int | str | None = None, all_games: bool | None = None) -> None:
     """Project entrypoint."""
     set_streamlit_config()
-    if not team or not year:
-        team, year = selectors.get_team_and_year_selection()
+    display_header()
+    if not year:
+        year = selectors.get_year_selection()
+
+    if year and not team:
+        team = selectors.get_team_selection(year)
 
     if not team or not year:
         return
@@ -42,35 +47,60 @@ def main(team: Team | str | None = None, year: int | str | None = None, all_game
     if team == ALL_TEAMS and not year == FULL_PERIOD:
         df = pd.DataFrame()
         progress = st.progress(0)
-        num_teams = len(Team)
-        for i, team_ in enumerate(Team):
-            progress.progress(i / num_teams, text=f"Loading {team_.pretty_name} {year} data...")
-            team_games: list[Game] = _load_season_games(year, team_)  # type: ignore
-            team_player_to_stats = get_player_to_stats(team_games)
-            team_player_to_stats_df = get_player_to_stats_df(
-                team_games,
-                team_player_to_stats,
+        teams_for_year = get_teams_for_year(year)  # type: ignore
+        for i, team_ in enumerate(teams_for_year):
+            df = _add_teams_yearly_stats_to_df(
+                progress=progress,
+                current_iteration=i,
+                total_iterations=len(teams_for_year),
                 team=team_,
+                year=year,  # type: ignore
+                df=df,
             )
-            df = pd.concat([df, team_player_to_stats_df])
 
         progress.empty()
         download.download_df_button(df, f"{year}_all_teams.csv")
         st.session_state[REFRESH_NEEDED] = True
 
     elif not team == ALL_TEAMS and year == FULL_PERIOD:
-        st.text("Work in progress - coming soon")
-        # year_to_all_games = {}
-        # for year_ in range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR + 1):
-        #     year_to_all_games[year] = _load_season_games(year_, team)
+        df = pd.DataFrame()
+        progress = st.progress(0)
+        for i, year_ in enumerate(reversed(range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR + 1))):
+            df = _add_teams_yearly_stats_to_df(
+                progress=progress,
+                current_iteration=i,
+                total_iterations=LAST_AVAILABLE_YEAR - FIRST_AVAILABLE_YEAR,
+                team=team,  # type: ignore
+                year=year_,
+                df=df,
+            )
+
+        progress.empty()
+        download.download_df_button(
+            df, f"{FIRST_AVAILABLE_YEAR}_to_{LAST_AVAILABLE_YEAR}_{team.pretty_name}.csv"  # type: ignore
+        )
+        st.session_state[REFRESH_NEEDED] = True
 
     elif team == ALL_TEAMS and year == FULL_PERIOD:
-        st.text("Work in progress - coming soon")
-        # team_year_to_all_games = {}
-        # for team_ in Team:
-        #     for year_ in range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR + 1):
-        #         team_year_to_all_games[(team_, year_)] = _load_season_games(year_, team_)
+        df = pd.DataFrame()
+        progress = st.progress(0)
+        current_iteration = 0
+        for year_ in reversed(range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR + 1)):
+            teams_for_year = get_teams_for_year(year)  # type: ignore
+            for team_ in teams_for_year:
+                df = _add_teams_yearly_stats_to_df(
+                    progress=progress,
+                    current_iteration=current_iteration,
+                    total_iterations=LAST_AVAILABLE_YEAR - FIRST_AVAILABLE_YEAR,
+                    team=team_,
+                    year=year_,
+                    df=df,
+                )
+            current_iteration += 1
 
+        progress.empty()
+        download.download_df_button(df, f"{FIRST_AVAILABLE_YEAR}_to_{LAST_AVAILABLE_YEAR}_all_teams.csv")
+        st.session_state[REFRESH_NEEDED] = True
     else:
         all_games_ = _load_season_games(year, team)  # type: ignore
         if not all_games_:
@@ -103,6 +133,26 @@ def _load_season_games(year: int, team: Team) -> list[Game]:
     except ValueError as error:
         display_error(str(error))
         return []
+
+
+def _add_teams_yearly_stats_to_df(
+    progress: DeltaGenerator,
+    current_iteration: int,
+    total_iterations: int,
+    team: Team,
+    year: int,
+    df: pd.DataFrame,
+) -> pd.DataFrame:
+    progress.progress(current_iteration / total_iterations, text=f"Loading {team.pretty_name}'s {year} data...")
+    team_games: list[Game] = _load_season_games(year, team)
+    team_player_to_stats = get_player_to_stats(team_games)
+    team_player_to_stats_df = get_player_to_stats_df(
+        team_games,
+        team_player_to_stats,
+        team=team,
+        year=year,
+    )
+    return pd.concat([df, team_player_to_stats_df])
 
 
 if __name__ == "__main__":

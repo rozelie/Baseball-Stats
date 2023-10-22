@@ -9,7 +9,7 @@ from typing import Iterator, Mapping
 
 from cobp.play import BaseToPlayerId, Play
 from cobp.player import Player
-from cobp.team import Team, TeamLocation
+from cobp.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, TeamLocation
 
 logger = getLogger(__name__)
 
@@ -131,7 +131,7 @@ def _yield_game_lines(events_file_path: Path, team: Team) -> Iterator[list[GameL
 
             visiting_team = lines[i + 2].split(",")[-1]
             home_team = lines[i + 3].split(",")[-1]
-            team_is_in_game = team.value in [visiting_team, home_team]
+            team_is_in_game = team.retrosheet_id in [visiting_team, home_team]
 
         if team_is_in_game:
             current_game_lines.append(game_line)
@@ -151,7 +151,7 @@ def _get_game_id(game_lines: list[GameLine]) -> str:
 def _get_home_team(game_lines: list[GameLine]) -> Team:
     for line in game_lines:
         if line.id == "info" and line.values[0] == "hometeam":
-            return Team(line.values[1])
+            return TEAM_RETROSHEET_ID_TO_TEAM[line.values[1]]
 
     raise Exception("Unable to locate home team")
 
@@ -159,7 +159,7 @@ def _get_home_team(game_lines: list[GameLine]) -> Team:
 def _get_visiting_team(game_lines: list[GameLine]) -> Team:
     for line in game_lines:
         if line.id == "info" and line.values[0] == "visteam":
-            return Team(line.values[1])
+            return TEAM_RETROSHEET_ID_TO_TEAM[line.values[1]]
 
     raise Exception("Unable to locate visiting team")
 
