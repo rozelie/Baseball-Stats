@@ -3,7 +3,7 @@ import pytest
 from cobp.game import Game
 from cobp.play import Play, PlayResult, PlayResultModifier
 from cobp.player import Player
-from cobp.team import Team
+from cobp.team import TEAMS, Team
 
 
 @pytest.fixture
@@ -43,9 +43,9 @@ def mock_play_builder(mock_player):
 def mock_game():
     return Game(
         id="CHN202204080",
-        team=Team.CHICAGO_CUBS,
-        home_team=Team.CHICAGO_CUBS,
-        visiting_team=Team.CINCINNATI_REDS,
+        team=TEAMS[0],
+        home_team=TEAMS[0],
+        visiting_team=TEAMS[1],
         home_team_score=0,
         visiting_team_score=0,
         players=[],

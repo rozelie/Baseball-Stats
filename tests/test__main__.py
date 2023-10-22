@@ -1,7 +1,7 @@
 import pytest
 
 from cobp import __main__
-from cobp.team import Team
+from cobp.team import TEAM_RETROSHEET_ID_TO_TEAM, Team
 
 MODULE_PATH = "cobp.__main__"
 
@@ -12,8 +12,13 @@ def set_streamlit_config(mocker):
 
 
 @pytest.fixture
-def get_team_and_year_selection(mocker):
-    return mocker.patch(f"{MODULE_PATH}.selectors.get_team_and_year_selection")
+def get_year_selection(mocker):
+    return mocker.patch(f"{MODULE_PATH}.selectors.get_year_selection")
+
+
+@pytest.fixture
+def get_team_selection(mocker):
+    return mocker.patch(f"{MODULE_PATH}.selectors.get_team_selection")
 
 
 @pytest.fixture
@@ -38,13 +43,15 @@ def get_player_to_stats_df(mocker):
 
 def test_main__happy_path(
     set_streamlit_config,
-    get_team_and_year_selection,
+    get_team_selection,
+    get_year_selection,
     _get_games_selection,
     get_player_to_stats,
     display_game,
     get_player_to_stats_df,
 ):
-    get_team_and_year_selection.return_value = Team.ARIZONA_DIAMONDBACKS, 2022
+    get_team_selection.return_value = TEAM_RETROSHEET_ID_TO_TEAM["ARI"]
+    get_year_selection.return_value = 2022
 
     __main__.main()
 
@@ -58,9 +65,10 @@ def test_main__happy_path(
 
 
 def test_main__returns_early_on_no_team_or_year_entry(
-    set_streamlit_config, get_team_and_year_selection, _get_games_selection
+    set_streamlit_config, get_team_selection, get_year_selection, _get_games_selection
 ):
-    get_team_and_year_selection.return_value = None, 2022
+    get_team_selection.return_value = None
+    get_year_selection.return_value = 2022
 
     __main__.main()
 
@@ -68,9 +76,10 @@ def test_main__returns_early_on_no_team_or_year_entry(
 
 
 def test_main__returns_early_on_no_games(
-    set_streamlit_config, get_team_and_year_selection, _get_games_selection, get_player_to_stats
+    set_streamlit_config, get_team_selection, get_year_selection, _get_games_selection, get_player_to_stats
 ):
-    get_team_and_year_selection.return_value = Team.ARIZONA_DIAMONDBACKS, 2022
+    get_team_selection.return_value = TEAM_RETROSHEET_ID_TO_TEAM["ARI"]
+    get_year_selection.return_value = 2022
     _get_games_selection.return_value = None
 
     __main__.main()

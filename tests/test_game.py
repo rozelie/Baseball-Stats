@@ -3,7 +3,7 @@ from textwrap import dedent
 from cobp import game
 from cobp.game import GameLine
 from cobp.play import PlayResult
-from cobp.team import Team
+from cobp.team import TEAM_RETROSHEET_ID_TO_TEAM, Team
 
 MODULE_PATH = "baseball_obp_and_cobp.game"
 
@@ -64,7 +64,7 @@ def test__yield_game_lines(mocker):
     info,site,CHI01
     """
     path.read_text.return_value = dedent(game_1) + dedent(game_2) + dedent(team_not_in_game)
-    team = Team.ANAHEIM_ANGELS
+    team = TEAM_RETROSHEET_ID_TO_TEAM["ANA"]
 
     game_lines = list(game._yield_game_lines(path, team))
 
@@ -98,8 +98,8 @@ def test__get_teams_players():
         """
     )
     player_game_lines = [GameLine.from_line(line) for line in players.splitlines()]
-    team = Team.ANAHEIM_ANGELS
-    visiting_team = Team.CHICAGO_CUBS
+    team = TEAM_RETROSHEET_ID_TO_TEAM["ANA"]
+    visiting_team = TEAM_RETROSHEET_ID_TO_TEAM["CHN"]
     home_team = team
 
     teams_players = game._get_teams_players(player_game_lines, team, visiting_team, home_team)
