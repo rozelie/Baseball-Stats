@@ -1,4 +1,3 @@
-# from dataclasses import dataclass
 from traceback import format_exc
 
 import pandas as pd
@@ -14,12 +13,6 @@ from cobp.ui import download, selectors
 from cobp.ui.core import display_error
 from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FULL_PERIOD, LAST_AVAILABLE_YEAR
 from cobp.ui.stats import display_game
-
-# @dataclass
-# class AggregateSelection:
-#     team: Team
-#     year: int
-#     player_to_stats: PlayerToStats
 
 
 def display_results(team: Team | str, year: int | str) -> None:
