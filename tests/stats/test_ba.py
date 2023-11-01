@@ -1,5 +1,5 @@
-from cobp.play import PlayResult
-from cobp.player import TEAM_PLAYER_ID
+from cobp.models.play import PlayResult
+from cobp.models.player import TEAM_PLAYER_ID
 from cobp.stats import ba
 
 

@@ -1,8 +1,8 @@
 """Calculate BA stats from game data."""
 from dataclasses import dataclass
 
-from cobp.game import Game, get_players_in_games
-from cobp.player import TEAM_PLAYER_ID, Player
+from cobp.models.game import Game, get_players_in_games
+from cobp.models.player import TEAM_PLAYER_ID, Player
 from cobp.stats.stat import Stat
 
 

@@ -4,11 +4,12 @@ import pandas as pd
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 
-from cobp import game, session
+from cobp import session
 from cobp.data import retrosheet
-from cobp.game import Game
+from cobp.models import game
+from cobp.models.game import Game
+from cobp.models.team import Team, get_teams_for_year
 from cobp.stats.aggregated import get_player_to_stats, get_player_to_stats_df
-from cobp.team import Team, get_teams_for_year
 from cobp.ui import download, selectors
 from cobp.ui.core import display_error
 from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FULL_PERIOD, LAST_AVAILABLE_YEAR

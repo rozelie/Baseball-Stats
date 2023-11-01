@@ -1,9 +1,9 @@
 import pytest
 
-from cobp.game import Game
-from cobp.play import Play, PlayResult, PlayResultModifier
-from cobp.player import Player
-from cobp.team import TEAMS, Team
+from cobp.models.game import Game
+from cobp.models.play import Play, PlayResult, PlayResultModifier
+from cobp.models.player import Player
+from cobp.models.team import TEAMS, Team
 
 
 @pytest.fixture

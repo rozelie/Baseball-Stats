@@ -4,15 +4,15 @@ from typing import Mapping
 
 import pandas as pd
 
-from cobp.game import Game, get_players_in_games
-from cobp.player import TEAM_PLAYER_ID, Player
+from cobp.models.game import Game, get_players_in_games
+from cobp.models.player import TEAM_PLAYER_ID, Player
+from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
 from cobp.stats.cops import COPS, get_player_to_cops
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_obp, get_player_to_sobp
 from cobp.stats.ops import OPS, get_player_to_ops
 from cobp.stats.sp import SP, get_player_to_sp
-from cobp.team import Team
 
 
 @dataclass

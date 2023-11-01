@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from cobp.game import Game, get_players_in_games
+from cobp.models.game import Game, get_players_in_games
 from cobp.stats.aggregated import PlayerStats, PlayerToStats, get_player_to_game_stat_df
 from cobp.stats.summary import get_team_seasonal_summary_stats_df
 from cobp.ui import download, formatters

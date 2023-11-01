@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from cobp.play import Play
+from cobp.models.play import Play
 
 
 @dataclass

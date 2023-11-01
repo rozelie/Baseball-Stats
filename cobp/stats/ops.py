@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from cobp.game import Game, get_players_in_games
-from cobp.player import TEAM_PLAYER_ID
+from cobp.models.game import Game, get_players_in_games
+from cobp.models.player import TEAM_PLAYER_ID
 from cobp.stats.obp import PlayerToOBP
 from cobp.stats.sp import PlayerToSP
 from cobp.stats.stat import Stat

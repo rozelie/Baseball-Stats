@@ -7,9 +7,9 @@ from logging import getLogger
 from pathlib import Path
 from typing import Iterator, Mapping
 
-from cobp.play import BaseToPlayerId, Play
-from cobp.player import Player
-from cobp.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, TeamLocation
+from cobp.models.play import BaseToPlayerId, Play
+from cobp.models.player import Player
+from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, TeamLocation
 
 logger = getLogger(__name__)
 

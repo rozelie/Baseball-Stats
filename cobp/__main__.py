@@ -8,7 +8,7 @@ import sys
 import streamlit as st
 
 from cobp import results, session
-from cobp.team import Team
+from cobp.models.team import Team
 from cobp.ui import selectors
 from cobp.ui.core import display_header, set_streamlit_config
 

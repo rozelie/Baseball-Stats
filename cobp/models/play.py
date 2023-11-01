@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from logging import getLogger
 
-from cobp.bases import Base, BaseToPlayerId
+from cobp.models.bases import Base, BaseToPlayerId
 
 logger = getLogger(__name__)
 

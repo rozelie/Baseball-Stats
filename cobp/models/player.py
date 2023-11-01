@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from cobp.play import Play
+from cobp.models.play import Play
 
 TEAM_PLAYER_ID = "Team"
 

@@ -5,8 +5,8 @@ from typing import Mapping
 
 import pandas as pd
 
-from cobp.game import Game
-from cobp.player import TEAM_PLAYER_ID
+from cobp.models.game import Game
+from cobp.models.player import TEAM_PLAYER_ID
 from cobp.stats import supports
 from cobp.stats.aggregated import PlayerToStats
 
