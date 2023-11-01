@@ -15,7 +15,7 @@ from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FU
 from cobp.ui.stats import display_game
 
 
-def display_results(team: Team | str, year: int | str) -> None:
+def display(team: Team | str, year: int | str) -> None:
     if team == ALL_TEAMS and not year == FULL_PERIOD:
         _display_download_for_all_teams_for_year(year)  # type: ignore
     elif not team == ALL_TEAMS and year == FULL_PERIOD:

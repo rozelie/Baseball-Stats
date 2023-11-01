@@ -31,7 +31,7 @@ def main(team: Team | str | None = None, year: int | str | None = None) -> None:
         st.text("Please refresh to continue")
         return
 
-    results.display_results(team, year)
+    results.display(team, year)
 
 
 if __name__ == "__main__":
