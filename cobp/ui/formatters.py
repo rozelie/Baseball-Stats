@@ -10,7 +10,7 @@ def highlight_team_row(row: pd.Series) -> list[str] | None:
 
 
 def get_stats_floats_format() -> dict[str, str]:
-    return {stat: "{:.3f}" for stat in ["OBP", "COBP", "SOBP", "BA", "SP", "OPS", "COPS"]}
+    return {stat: "{:.3f}" for stat in ["OBP", "COBP", "LOOP", "SOBP", "BA", "SP", "OPS", "COPS"]}
 
 
 def colorize_correlations(cell_value: float | str) -> str | None:

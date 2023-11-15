@@ -10,7 +10,7 @@ from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
 from cobp.stats.cops import COPS, get_player_to_cops
-from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_obp, get_player_to_sobp
+from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_loop, get_player_to_obp, get_player_to_sobp
 from cobp.stats.ops import OPS, get_player_to_ops
 from cobp.stats.sp import SP, get_player_to_sp
 
@@ -20,6 +20,7 @@ class PlayerStats:
     obp: OBP
     cobp: OBP
     sobp: OBP
+    loop: OBP
     ba: BA
     sp: SP
     ops: OPS
@@ -34,6 +35,7 @@ def get_player_to_stats(games: list[Game]) -> PlayerToStats:
     player_to_obp = get_player_to_obp(games)
     player_to_cobp = get_player_to_cobp(games)
     player_to_sobp = get_player_to_sobp(games)
+    player_to_loop = get_player_to_loop(games)
     player_to_ba = get_player_to_ba(games)
     player_to_sp = get_player_to_sp(games)
     player_to_ops = get_player_to_ops(games, player_to_obp, player_to_sp)
@@ -45,6 +47,7 @@ def get_player_to_stats(games: list[Game]) -> PlayerToStats:
             obp=player_to_obp.get(player.id) or OBP(),
             cobp=player_to_cobp.get(player.id) or OBP(),
             sobp=player_to_sobp.get(player.id) or OBP(),
+            loop=player_to_loop.get(player.id) or OBP(),
             ba=player_to_ba.get(player.id) or BA(),
             sp=player_to_sp.get(player.id) or SP(),
             ops=player_to_ops.get(player.id) or OPS(),
@@ -83,6 +86,7 @@ def get_player_to_stats_df(
         data["HR"].append(stats.basic.home_runs)
         data["OBP"].append(stats.obp.value)
         data["COBP"].append(stats.cobp.value)
+        data["LOOP"].append(stats.loop.value)
         data["SOBP"].append(stats.sobp.value)
         data["BA"].append(stats.ba.value)
         data["SP"].append(stats.sp.value)

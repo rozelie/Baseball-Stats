@@ -61,6 +61,13 @@ def get_player_to_sobp(games: list[Game]) -> PlayerToOBP:
     return player_to_sobp
 
 
+def get_player_to_loop(games: list[Game]) -> PlayerToOBP:
+    players = get_players_in_games(games)
+    player_to_loop = {player.id: _get_loop(games, player) for player in players}
+    player_to_loop[TEAM_PLAYER_ID] = _get_teams_obp(player_to_loop)
+    return player_to_loop
+
+
 def _get_obp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
     for game in games:
@@ -115,6 +122,27 @@ def _get_sobp(games: list[Game], player: Player) -> OBP:
                 continue
             if game.play_is_first_of_inning(play.inning, play):
                 obp.add_play(play, resultant="N/A (player is first batter in inning)", color="red")
+                continue
+
+            obp.add_play(play)
+            _increment_obp_counters(game, play, obp)
+
+    obp.add_arithmetic()
+    return obp
+
+
+def _get_loop(games: list[Game], player: Player) -> OBP:
+    obp = OBP()
+    for game in games:
+        if not (game_player := game.get_player(player.id)):
+            continue
+
+        for play in game_player.plays:
+            if play.is_unused_in_stats:
+                continue
+
+            if not game.play_is_first_of_inning(play.inning, play):
+                obp.add_play(play, resultant="N/A (player is not first batter in inning)", color="red")
                 continue
 
             obp.add_play(play)

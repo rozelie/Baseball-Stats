@@ -32,7 +32,6 @@ make run    # runs Streamlit application
 - Data Download
   - LOOP (between COBP and SOBP columns)
     - OBP when lead-off an inning
-    - only considered when another player gets an on-base in the same inning
   - LOOPS column (LOOPS = LOOP + OPS)
   - SOPS column (SOPS = SOBP + OPS)
   - Runs column (between HR and OBP)
