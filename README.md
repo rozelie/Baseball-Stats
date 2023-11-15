@@ -28,15 +28,20 @@ make run    # runs Streamlit application
 - linting: `make lint`
 
 # Todo
+## For MVP
+- Data Download
+  - LOOP (between COBP and SOBP columns)
+    - OBP when lead-off an inning
+    - only considered when another player gets an on-base in the same inning
+  - LOOPS column (LOOPS = LOOP + OPS)
+  - SOPS column (SOPS = SOBP + OPS)
+  - Runs column (between HR and OBP)
+  - RBIs column (between HR and OBP)
+
+## Later
 - documentation
   - define and describe statistics in class docstrings
     - dynamically update README.md with statistics defintions
-
-- data download
-  - Add "Full Period" option to "Select Year" dropdown
-  - Add "All Teams" option to "Select Team" dropdown
-  - If "All Teams" is selected, only give an option for a data download
-    - same data as current data download, but add year and team name columns
 
 - stats
   - per team per season
@@ -44,17 +49,11 @@ make run    # runs Streamlit application
     - efficiency: `R / H + BB + HBP`
   - Wins Above Replacement (WAR)
     - can find from other sources
-  - LOOP
-    - OBP when lead-off an inning
-    - only considered when another player gets an on-base in the same inning
-  - runs (R)
-  - RBI
   - runs created (RC)
     - SB: stolen bases
     - CS: caught stealing
     - SP = `TB / AB`, TB = `AB * SP`
     - RC: `((0.55 * SB) + TB) * (BB - CS + H) / AB + BB`
-
   
 - correlations
   - correlate COBPs with runs scored
@@ -62,10 +61,6 @@ make run    # runs Streamlit application
   - calculate SOPS: SOBP + OPS
   - add list of sorted correlations to correlations display
   - calculate correlation matrix between all other stats at the player and team level for a season
-
-- deployment
-  - publish yearly data to S3 to be able to be retrieved in deployed instance
-  - build out Terraform infrastructure
 
 - testing
   - seasonal calculations
