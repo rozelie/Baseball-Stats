@@ -51,7 +51,6 @@ class Game:
     @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
         game_id = _get_game_id(game_lines)
-        # logger.debug(f"Loading {game_id=}")
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))

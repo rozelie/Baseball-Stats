@@ -129,7 +129,7 @@ def _add_teams_yearly_stats_to_df(
     year: int,
     df: pd.DataFrame,
 ) -> pd.DataFrame:
-    progress.progress(current_iteration / total_iterations, text=f"Loading {year }{team.pretty_name} data...")
+    progress.progress(current_iteration / total_iterations, text=f"Loading {year} {team.pretty_name} data...")
     team_games: list[Game] = _load_season_games(year, team)
     team_player_to_stats = get_player_to_stats(team_games)
     team_player_to_stats_df = get_player_to_stats_df(
