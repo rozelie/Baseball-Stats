@@ -27,6 +27,14 @@ class PlayerStats:
     cops: COPS
     basic: BasicStats
 
+    @property
+    def loops(self) -> float:
+        return self.loop.value + self.ops.value
+
+    @property
+    def sops(self) -> float:
+        return self.sobp.value + self.ops.value
+
 
 PlayerToStats = dict[str, PlayerStats]
 
@@ -92,6 +100,8 @@ def get_player_to_stats_df(
         data["SP"].append(stats.sp.value)
         data["OPS"].append(stats.ops.value)
         data["COPS"].append(stats.cops.value)
+        data["LOOPS"].append(stats.loops)
+        data["SOPS"].append(stats.sops)
 
     return pd.DataFrame(data=data)
 

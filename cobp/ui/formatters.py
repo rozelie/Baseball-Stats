@@ -1,6 +1,19 @@
 import numpy as np
 import pandas as pd
 
+FLOAT_COLUMNS = [
+    "OBP",
+    "COBP",
+    "LOOP",
+    "SOBP",
+    "BA",
+    "SP",
+    "OPS",
+    "COPS",
+    "LOOPS",
+    "SOPS",
+]
+
 
 def highlight_team_row(row: pd.Series) -> list[str] | None:
     player = row.iloc[0]
@@ -10,7 +23,7 @@ def highlight_team_row(row: pd.Series) -> list[str] | None:
 
 
 def get_stats_floats_format() -> dict[str, str]:
-    return {stat: "{:.3f}" for stat in ["OBP", "COBP", "LOOP", "SOBP", "BA", "SP", "OPS", "COPS"]}
+    return {stat: "{:.3f}" for stat in FLOAT_COLUMNS}
 
 
 def colorize_correlations(cell_value: float | str) -> str | None:

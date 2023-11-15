@@ -30,12 +30,8 @@ make run    # runs Streamlit application
 # Todo
 ## For MVP
 - Data Download
-  - LOOP (between COBP and SOBP columns)
-    - OBP when lead-off an inning
-  - LOOPS column (LOOPS = LOOP + OPS)
-  - SOPS column (SOPS = SOBP + OPS)
-  - Runs column (between HR and OBP)
-  - RBIs column (between HR and OBP)
+  - Runs column
+  - RBIs column
 
 ## Later
 - documentation

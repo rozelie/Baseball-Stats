@@ -16,7 +16,7 @@ class OPS(Stat):
         self.explanation.append(f"*OBP={round(self.obp, 3)} + SP={round(self.sp, 3)}*")
 
     @property
-    def value(self):
+    def value(self) -> float:
         return self.obp + self.sp
 
 
