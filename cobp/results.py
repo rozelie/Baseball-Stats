@@ -1,3 +1,4 @@
+"""Generates and displays results based on user input."""
 from traceback import format_exc
 
 import pandas as pd
