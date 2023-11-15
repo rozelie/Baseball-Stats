@@ -1,3 +1,5 @@
+import logging
+import time
 from io import BytesIO
 from pathlib import Path
 from typing import Iterator
@@ -8,6 +10,7 @@ import requests
 from cobp import paths
 
 RETROSHEET_URL = "https://www.retrosheet.org"
+logger = logging.getLogger(__name__)
 
 
 def get_seasons_event_files(year: int) -> list[Path]:
@@ -23,8 +26,20 @@ def get_seasons_event_files(year: int) -> list[Path]:
 
 
 def _get_years_event_files_zip(year: int) -> ZipFile:
-    response = requests.get(f"{RETROSHEET_URL}/events/{year}eve.zip")
-    response.raise_for_status()
+    attempts = 0
+    sleep_seconds_between_failure = 1.0
+    while True:
+        attempts += 1
+        try:
+            response = requests.get(f"{RETROSHEET_URL}/events/{year}eve.zip")
+            response.raise_for_status()
+            break
+        except requests.exceptions.RequestException:
+            if attempts >= 3:
+                raise
+            logger.exception(f"Retrosheet request failed - sleeping for {sleep_seconds_between_failure}s and retrying")
+            time.sleep(sleep_seconds_between_failure)
+
     return ZipFile(BytesIO(response.content))
 
 
