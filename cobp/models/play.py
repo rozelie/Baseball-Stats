@@ -28,6 +28,7 @@ class Play:
 
         https://www.retrosheet.org/eventfile.htm ("The event field of the play record" section)
         """
+        logger.debug(f"Processing play: {line_values}")
         previous_base_state = deepcopy(base_state)
         inning, _, batter_id, _, _, play_descriptor = line_values
         result = PlayResult.from_play_descriptor(play_descriptor)

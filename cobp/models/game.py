@@ -48,6 +48,9 @@ class Game:
         game_id = _get_game_id(game_lines)
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
+        logger.debug(
+            f"Processing game: {game_id=} | home={home_team.pretty_name} | visiting={visiting_team.pretty_name}"
+        )
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
         plays = list(_get_teams_plays(game_lines, players))
         inning_to_plays = _get_inning_to_plays(plays)

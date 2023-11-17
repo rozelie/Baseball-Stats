@@ -3,7 +3,6 @@
 Runs the streamlit application and handles high-level control flow.
 """
 import logging
-import sys
 
 import streamlit as st
 
@@ -12,13 +11,16 @@ from cobp.models.team import Team
 from cobp.ui import selectors
 from cobp.ui.core import display_header, set_streamlit_config
 
-logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG, stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 
 def main(team: Team | str | None = None, year: int | str | None = None) -> None:
     """Run the streamlit application."""
     set_streamlit_config()
     display_header()
+
+    if team or year:
+        logger.info(f"Executing: {team=} | {year=}...")
 
     year = year or selectors.get_year_selection()
     if year and not team:
@@ -32,6 +34,7 @@ def main(team: Team | str | None = None, year: int | str | None = None) -> None:
         return
 
     results.display(team, year)
+    logger.info(f"Execution finished for: {team=} | {year=}")
 
 
 if __name__ == "__main__":
