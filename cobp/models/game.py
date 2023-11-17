@@ -7,7 +7,8 @@ from logging import getLogger
 from pathlib import Path
 from typing import Iterator, Mapping
 
-from cobp.models.play import BaseToPlayerId, Play
+from cobp.models.base import BaseToPlayerId
+from cobp.models.play import Play
 from cobp.models.player import Player
 from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, TeamLocation
 
@@ -35,14 +36,8 @@ class Game:
     team: Team
     home_team: Team
     visiting_team: Team
-    home_team_score: int
-    visiting_team_score: int
     players: list[Player]
     inning_to_plays: Mapping[int, list[Play]]
-
-    @property
-    def winning_team(self) -> Team:
-        return self.home_team if self.home_team_score > self.visiting_team_score else self.visiting_team
 
     @property
     def player_id_to_player(self) -> dict[str, Player]:
@@ -56,7 +51,6 @@ class Game:
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
         plays = list(_get_teams_plays(game_lines, players))
         inning_to_plays = _get_inning_to_plays(plays)
-        inning_to_scores = _get_inning_to_scores(inning_to_plays)
         _add_plays_to_players(plays, players)
         return cls(
             id=game_id,
@@ -64,8 +58,6 @@ class Game:
             home_team=home_team,
             visiting_team=visiting_team,
             inning_to_plays=inning_to_plays,
-            home_team_score=sum(score[0] for score in inning_to_scores.values()),
-            visiting_team_score=sum(score[1] for score in inning_to_scores.values()),
             players=players,
         )
 
@@ -208,13 +200,6 @@ def _get_inning_to_plays(plays: list[Play]) -> Mapping[int, list[Play]]:
     for play in plays:
         inning_to_plays[play.inning].append(play)
     return inning_to_plays
-
-
-def _get_inning_to_scores(inning_to_plays: Mapping[int, list[Play]]) -> Mapping[int, tuple[int, int]]:
-    inning_to_scores: Mapping[int, tuple[int, int]] = {}
-    # for inning, plays in inning_to_plays.items():
-    #     ...
-    return inning_to_scores
 
 
 def _add_plays_to_players(plays: list[Play], players: list[Player]) -> None:

@@ -2,7 +2,7 @@ from textwrap import dedent
 
 from cobp.models import game
 from cobp.models.game import GameLine
-from cobp.models.play import PlayResult
+from cobp.models.play_result import PlayResult
 from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team
 
 MODULE_PATH = "baseball_obp_and_cobp.models.game"

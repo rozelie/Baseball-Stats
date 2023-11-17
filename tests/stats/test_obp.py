@@ -1,4 +1,5 @@
-from cobp.models.play import PlayResult, PlayResultModifier
+from cobp.models.play_modifier import PlayModifier
+from cobp.models.play_result import PlayResult
 from cobp.models.player import TEAM_PLAYER_ID
 from cobp.stats import obp
 
@@ -33,7 +34,7 @@ def test_get_player_to_obp(mock_game, mock_player, mock_player_2, mock_play_buil
         mock_play_builder(result=PlayResult.HIT_BY_PITCH, batter_id=mock_player.id, inning=3),
         mock_play_builder(
             result=PlayResult.FIELDED_OUT,
-            modifiers=[PlayResultModifier.SACRIFICE_FLY],
+            modifiers=[PlayModifier.SACRIFICE_FLY],
             batter_id=mock_player.id,
             inning=4,
         ),

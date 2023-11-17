@@ -1,4 +1,4 @@
-from cobp.models.play import PlayResult
+from cobp.models.play_result import PlayResult
 from cobp.models.player import TEAM_PLAYER_ID
 from cobp.stats import ba
 

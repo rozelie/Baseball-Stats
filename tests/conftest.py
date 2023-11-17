@@ -1,9 +1,11 @@
 import pytest
 
 from cobp.models.game import Game
-from cobp.models.play import Play, PlayResult, PlayResultModifier
+from cobp.models.play import Play
+from cobp.models.play_modifier import PlayModifier
+from cobp.models.play_result import PlayResult
 from cobp.models.player import Player
-from cobp.models.team import TEAMS, Team
+from cobp.models.team import TEAMS
 
 
 @pytest.fixture
@@ -20,7 +22,7 @@ def mock_player_2():
 def mock_play_builder(mock_player):
     def play_builder(
         result: PlayResult,
-        modifiers: list[PlayResultModifier] | None = None,
+        modifiers: list[PlayModifier] | None = None,
         inning: int = 1,
         batter_id: str = mock_player.id,
         play_descriptor: str = "",
@@ -46,8 +48,6 @@ def mock_game():
         team=TEAMS[0],
         home_team=TEAMS[0],
         visiting_team=TEAMS[1],
-        home_team_score=0,
-        visiting_team_score=0,
         players=[],
         inning_to_plays={},
     )
