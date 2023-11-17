@@ -43,7 +43,7 @@ def test_main__happy_path(
     __main__.main()
 
     set_streamlit_config.assert_called_once()
-    results_display.assert_called_once_with(TEAM_RETROSHEET_ID_TO_TEAM["ARI"], 2022)
+    results_display.assert_called_once_with(TEAM_RETROSHEET_ID_TO_TEAM["ARI"], 2022, None)
 
 
 def test_main__returns_early_on_no_team_or_year_entry(

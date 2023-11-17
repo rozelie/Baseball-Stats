@@ -1,5 +1,6 @@
 import pytest
 
+from cobp.models.delta import PlayDelta
 from cobp.models.game import Game
 from cobp.models.play import Play
 from cobp.models.play_modifier import PlayModifier
@@ -26,6 +27,7 @@ def mock_play_builder(mock_player):
         inning: int = 1,
         batter_id: str = mock_player.id,
         play_descriptor: str = "",
+        delta: PlayDelta | None = None,
     ):
         return Play(
             inning=inning,
@@ -33,9 +35,13 @@ def mock_play_builder(mock_player):
             play_descriptor=play_descriptor,
             result=result,
             previous_base_state={},
-            resulting_base_state={},
             modifiers=modifiers or [],
-            advances=[],
+            delta=delta
+            or PlayDelta(
+                resulting_base_state={},
+                player_ids_scoring_a_run=[],
+                batter_rbis=0,
+            ),
         )
 
     return play_builder

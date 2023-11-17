@@ -48,9 +48,7 @@ class Game:
         game_id = _get_game_id(game_lines)
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
-        logger.debug(
-            f"Processing game: {game_id=} | home={home_team.pretty_name} | visiting={visiting_team.pretty_name}"
-        )
+        logger.debug(f"Loading game: {game_id=} | home={home_team.pretty_name} | visiting={visiting_team.pretty_name}")
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
         plays = list(_get_teams_plays(game_lines, players))
         inning_to_plays = _get_inning_to_plays(plays)
@@ -176,6 +174,9 @@ def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Te
 
 
 def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> list[Play]:
+    if ENV.ONLY_INNING:
+        logger.warning("ONLY_INNING is set so only partial results will be returned.")
+
     team_player_ids = {player.id for player in team_players}
     current_inning = 1
     current_base_state: BaseToPlayerId = {}
@@ -184,6 +185,9 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> 
     for line in game_lines:
         if line.id == "play":
             inning = int(line.values[0])
+            if ENV.ONLY_INNING and inning != ENV.ONLY_INNING:
+                continue
+
             team = line.values[1]
             if inning != current_inning or current_team != team:
                 current_inning = inning

@@ -191,4 +191,6 @@ TEAM_RETROSHEET_ID_TO_TEAM = {team.retrosheet_id: team for team in TEAMS}
 
 def get_teams_for_year(year: int) -> list[Team]:
     logger.debug(f"Retrieving teams for {year=}...")
-    return [team for team in TEAMS if team.is_active_in_year(year)]
+    teams = [team for team in TEAMS if team.is_active_in_year(year)]
+    logger.debug(f"Retrieved {len(teams)} teams")
+    return teams

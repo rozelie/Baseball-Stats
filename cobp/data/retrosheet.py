@@ -14,12 +14,15 @@ logger = logging.getLogger(__name__)
 
 
 def get_seasons_event_files(year: int) -> list[Path]:
+    logger.info(f"Retrieving events files for season of {year}...")
     data_year_dir = paths.DATA_DIR / str(year)
     seasons_events_file = list(_get_seasons_events_file(data_year_dir, year))
     # if we have all 30 teams data, return it rather than re-download
     if seasons_events_file and len(seasons_events_file) == 30:
+        logger.info("Season event files already downloaded.")
         return seasons_events_file
 
+    logger.info("Downloading season event files...")
     seasons_event_files_zip = _get_years_event_files_zip(year)
     _extract_event_files_zip(data_year_dir, seasons_event_files_zip)
     return list(_get_seasons_events_file(data_year_dir, year))

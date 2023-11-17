@@ -19,6 +19,10 @@ class Env(BaseSettings):
     )
 
     LOGGING_LEVEL: str = Field(default="INFO")
+    GAME_ID: str | None = Field(default=None)
+    TEAM: str | None = Field(default=None)
+    YEAR: int | None = Field(default=None)
+    ONLY_INNING: int | None = Field(default=None)
 
 
 ENV = Env()
@@ -26,7 +30,7 @@ print("Environment:")
 print(ENV.model_dump())
 
 logging.basicConfig(
-    format="%(asctime)s %(levelname)s %(module)s - %(message)s",
+    format="%(asctime)s %(levelname)s %(module)s:%(lineno)d - %(message)s",
     level=LOGGING_LEVEL_TO_VALUE[ENV.LOGGING_LEVEL.upper()],
     stream=sys.stdout,
 )

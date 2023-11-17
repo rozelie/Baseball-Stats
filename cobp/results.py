@@ -1,4 +1,5 @@
 """Generates and displays results based on user input."""
+import logging
 from traceback import format_exc
 
 import pandas as pd
@@ -7,6 +8,7 @@ from streamlit.delta_generator import DeltaGenerator
 
 from cobp import session
 from cobp.data import retrosheet
+from cobp.env import ENV
 from cobp.models import game
 from cobp.models.game import Game
 from cobp.models.team import Team, get_teams_for_year
@@ -16,8 +18,11 @@ from cobp.ui.core import display_error
 from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FULL_PERIOD, LAST_AVAILABLE_YEAR
 from cobp.ui.stats import display_game
 
+logger = logging.getLogger(__name__)
 
-def display(team: Team | str, year: int | str) -> None:
+
+def display(team: Team | str, year: int | str, game_id: str | None) -> None:
+    logger.info(f"Building results for team={team} | {year=} | {game_id=}")
     if team == ALL_TEAMS and not year == FULL_PERIOD:
         _display_download_for_all_teams_for_year(year)  # type: ignore
     elif not team == ALL_TEAMS and year == FULL_PERIOD:
@@ -25,15 +30,26 @@ def display(team: Team | str, year: int | str) -> None:
     elif team == ALL_TEAMS and year == FULL_PERIOD:
         _display_download_for_all_teams_for_all_years()
     else:
-        _display_stats_for_team_in_year(year, team)  # type: ignore
+        _display_stats_for_team_in_year(year, team, game_id)  # type: ignore
 
 
-def _load_season_games(year: int, team: Team) -> list[Game]:
+def _load_season_games(
+    year: int,
+    team: Team,
+    basic_info_only: bool = False,
+    game_ids: list[str] | None = None,
+) -> list[Game]:
     seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
-        return list(game.load_teams_games(seasons_event_files, team))
+        if basic_info_only:
+            games = list(game.load_teams_games_basic_info(seasons_event_files, team))
+        else:
+            games = list(game.load_teams_games(seasons_event_files, team, game_ids))
+
+        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
+        return games
     except ValueError:
-        display_error(f"Error in loading {year} {team.pretty_name}'s data: {format_exc()}")
+        display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
         return []
 
 
@@ -96,20 +112,27 @@ def _display_download_for_all_teams_for_all_years() -> None:
     session.set_state(session.StateKey.REFRESH_NEEDED, True)
 
 
-def _display_stats_for_team_in_year(year: int, team: Team) -> None:
-    all_games = _load_season_games(year, team)
-    if not all_games:
-        return
-
-    games = _get_games_selection(all_games)
+def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) -> None:
+    games = _load_season_games(year, team, basic_info_only=True)
     if not games:
         return
 
-    player_to_stats = get_player_to_stats(games)
+    if game_id:
+        game_ids = [game_id]
+    elif ENV.YEAR:
+        game_ids = [game.id for game in games]
+    else:
+        game_selection = _get_games_selection(games)
+        if not game_selection:
+            return
+        game_ids = [game.id for game in game_selection]
+
+    loaded_games = _load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
+    player_to_stats = get_player_to_stats(loaded_games)
     display_game(
-        games=games,
+        games=loaded_games,
         player_to_stats=player_to_stats,
-        player_to_stats_df=get_player_to_stats_df(games, player_to_stats),
+        player_to_stats_df=get_player_to_stats_df(loaded_games, player_to_stats),
     )
 
 
