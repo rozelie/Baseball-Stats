@@ -22,6 +22,7 @@ class PlayResult(Enum):
     FIELDERS_CHOICE = "FC"
     ERROR = "E"
     ERROR_ON_FOUL_FLY_BALL = "FLE"
+    ERROR_ASSUME_BATTER_ADVANCES_TO_FIRST = "EABATF"
     NO_PLAY = "NP"
     CAUGHT_STEALING = "CS"
     STOLEN_BASE = "SB"
@@ -54,8 +55,13 @@ class PlayResult(Enum):
             alpha_play_main_descriptor = alpha_play_main_descriptor.replace("H", "")
 
         if not alpha_play_main_descriptor:
-            # descriptor is a number, which specifies a fielder causing the out
-            return cls.FIELDED_OUT
+            # descriptor is a number, which specifies a fielder causing the out...
+            # UNLESS it's in the format of <number>E<number> (an error happened) which we only get to assume
+            # the batter advances to first
+            if "E" not in play_main_descriptor:
+                return cls.FIELDED_OUT
+            else:
+                return cls.ERROR_ASSUME_BATTER_ADVANCES_TO_FIRST
 
         for result in cls:
             if result.value == alpha_play_main_descriptor:

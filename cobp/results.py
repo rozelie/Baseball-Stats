@@ -33,26 +33,6 @@ def display(team: Team | str, year: int | str, game_id: str | None) -> None:
         _display_stats_for_team_in_year(year, team, game_id)  # type: ignore
 
 
-def _load_season_games(
-    year: int,
-    team: Team,
-    basic_info_only: bool = False,
-    game_ids: list[str] | None = None,
-) -> list[Game]:
-    seasons_event_files = retrosheet.get_seasons_event_files(year)
-    try:
-        if basic_info_only:
-            games = list(game.load_teams_games_basic_info(seasons_event_files, team))
-        else:
-            games = list(game.load_teams_games(seasons_event_files, team, game_ids))
-
-        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
-        return games
-    except ValueError:
-        display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
-        return []
-
-
 def _display_download_for_all_teams_for_year(year: int) -> None:
     df = pd.DataFrame()
     progress = st.progress(0)
@@ -162,3 +142,23 @@ def _add_teams_yearly_stats_to_df(
         year=year,
     )
     return pd.concat([df, team_player_to_stats_df])
+
+
+def _load_season_games(
+    year: int,
+    team: Team,
+    basic_info_only: bool = False,
+    game_ids: list[str] | None = None,
+) -> list[Game]:
+    seasons_event_files = retrosheet.get_seasons_event_files(year)
+    try:
+        if basic_info_only:
+            games = list(game.load_teams_games_basic_info(seasons_event_files, team))
+        else:
+            games = list(game.load_teams_games(seasons_event_files, team, game_ids))
+
+        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
+        return games
+    except ValueError:
+        display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
+        raise

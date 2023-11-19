@@ -72,3 +72,9 @@ class PlayModifier(Enum):
             return cls.FIELDER_VALUES
 
         return cls.UNKNOWN
+
+
+def get_modifiers_from_play(play_descriptor: str) -> list[PlayModifier]:
+    if "/" in play_descriptor:
+        return [PlayModifier.from_play_modifier(modifier) for modifier in play_descriptor.split("/")[1:]]
+    return []

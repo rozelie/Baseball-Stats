@@ -7,6 +7,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import Iterator, Mapping
 
+from cobp.env import ENV
 from cobp.models.base import BaseToPlayerId
 from cobp.models.play import Play
 from cobp.models.player import Player
@@ -44,11 +45,25 @@ class Game:
         return {player.id: player for player in self.players}
 
     @classmethod
+    def from_game_lines_basic_info_only(cls, game_lines: list[GameLine], team: Team) -> "Game":
+        game_id = _get_game_id(game_lines)
+        home_team = _get_home_team(game_lines)
+        visiting_team = _get_visiting_team(game_lines)
+        return cls(
+            id=game_id,
+            team=team,
+            home_team=home_team,
+            visiting_team=visiting_team,
+            players=[],
+            inning_to_plays={},
+        )
+
+    @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
         game_id = _get_game_id(game_lines)
         home_team = _get_home_team(game_lines)
         visiting_team = _get_visiting_team(game_lines)
-        logger.debug(f"Loading game: {game_id=} | home={home_team.pretty_name} | visiting={visiting_team.pretty_name}")
+        logger.info(f"Loading game: {game_id=} | home={home_team.pretty_name} | visiting={visiting_team.pretty_name}")
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
         plays = list(_get_teams_plays(game_lines, players))
         inning_to_plays = _get_inning_to_plays(plays)
@@ -58,8 +73,8 @@ class Game:
             team=team,
             home_team=home_team,
             visiting_team=visiting_team,
-            inning_to_plays=inning_to_plays,
             players=players,
+            inning_to_plays=inning_to_plays,
         )
 
     @property
@@ -93,9 +108,19 @@ class Game:
         return self.inning_to_plays[inning][0] == play
 
 
-def load_teams_games(season_event_files: list[Path], team: Team) -> Iterator[Game]:
+def load_teams_games(season_event_files: list[Path], team: Team, game_ids: list[str] | None) -> Iterator[Game]:
+    logger.info(f"Loading {len(game_ids) if game_ids else 'all season'} games for {team.pretty_name}...")
     for event_file in season_event_files:
-        yield from [Game.from_game_lines(lines, team) for lines in _yield_game_lines(event_file, team)]
+        for game_lines in _yield_game_lines(event_file, team):
+            game_id = _get_game_id(game_lines)
+            if (not game_ids) or (game_id in game_ids):
+                yield Game.from_game_lines(game_lines, team)
+
+
+def load_teams_games_basic_info(season_event_files: list[Path], team: Team) -> Iterator[Game]:
+    logger.info(f"Loading {team.pretty_name}'s game basic info...")
+    for event_file in season_event_files:
+        yield from [Game.from_game_lines_basic_info_only(lines, team) for lines in _yield_game_lines(event_file, team)]
 
 
 def get_players_in_games(games: list[Game]) -> list[Player]:
@@ -182,8 +207,15 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> 
     current_base_state: BaseToPlayerId = {}
     current_team = None
     teams_plays = []
+    radj_set = False
     for line in game_lines:
-        if line.id == "play":
+        # handle runner adjustments
+        if line.id == "radj":
+            runner_id, base = line.values
+            current_base_state[base] = runner_id
+            radj_set = True
+
+        elif line.id == "play":
             inning = int(line.values[0])
             if ENV.ONLY_INNING and inning != ENV.ONLY_INNING:
                 continue
@@ -191,11 +223,16 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> 
             team = line.values[1]
             if inning != current_inning or current_team != team:
                 current_inning = inning
-                current_base_state = {}
                 current_team = team
 
+                # setting a runner on second base in extra-innings is defined prior or after
+                # the inning's plays (thanks Retrosheet) so we need to account for this
+                if not radj_set:
+                    current_base_state = {}
+
+            radj_set = False
             play = Play.from_play_line(line.values, current_base_state)
-            current_base_state = play.resulting_base_state
+            current_base_state = play.delta.resulting_base_state
             if play.batter_id in team_player_ids:
                 teams_plays.append(play)
 

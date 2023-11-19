@@ -23,6 +23,7 @@ def mock_player_2():
 def mock_play_builder(mock_player):
     def play_builder(
         result: PlayResult,
+        base_running_play_result: PlayResult | None = None,
         modifiers: list[PlayModifier] | None = None,
         inning: int = 1,
         batter_id: str = mock_player.id,
@@ -34,6 +35,7 @@ def mock_play_builder(mock_player):
             batter_id=batter_id,
             play_descriptor=play_descriptor,
             result=result,
+            base_running_play_result=base_running_play_result,
             previous_base_state={},
             modifiers=modifiers or [],
             delta=delta
