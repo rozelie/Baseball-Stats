@@ -180,6 +180,7 @@ def _add_batter_advances(result: PlayResult, advances: list[Advance]) -> None:
         PlayResult.INTENTIONAL_WALK,
         PlayResult.INTENTIONAL_WALK_2,
         PlayResult.HIT_BY_PITCH,
+        PlayResult.ERROR,
         PlayResult.ERROR_ASSUME_BATTER_ADVANCES_TO_FIRST,
     ]:
         advances.append(Advance(Base.BATTER_AT_HOME, Base.FIRST_BASE))
