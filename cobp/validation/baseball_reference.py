@@ -1,6 +1,5 @@
 import logging
 
-
 from cobp.models.game import Game
 
 logger = logging.getLogger(__name__)

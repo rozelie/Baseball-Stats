@@ -50,6 +50,9 @@ def deduce_play_delta(
             # home run results in no changes to the base state for the batter
             if advance.starting_base == Base.BATTER_AT_HOME and advance.ending_base == Base.HOME:
                 player_ids_scoring_a_run.append(player_id)
+                # RBIs include the batter himself
+                if advance.is_rbi_credited:
+                    batter_rbis += 1
                 continue
 
             # determine batters advance
@@ -59,8 +62,10 @@ def deduce_play_delta(
 
             # non-batter advances to home
             if advance.ending_base == Base.HOME:
-                player_ids_scoring_a_run.append(player_id)
-                if not advance.is_stolen_base:
+                if not advance.is_unearned:
+                    player_ids_scoring_a_run.append(player_id)
+
+                if advance.is_rbi_credited:
                     batter_rbis += 1
 
                 del resulting_base_state[advance.starting_base.value]
