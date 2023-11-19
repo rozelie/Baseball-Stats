@@ -16,6 +16,8 @@ class BasicStats:
     doubles: int = 0
     triples: int = 0
     home_runs: int = 0
+    runs: int = 0
+    runs_batted_in: int = 0
 
 
 PlayerToBasicStats = dict[str, BasicStats]
@@ -23,13 +25,13 @@ PlayerToBasicStats = dict[str, BasicStats]
 
 def get_player_to_basic_stats(games: list[Game]) -> PlayerToBasicStats:
     players = get_players_in_games(games)
-    player_to_basic_stats = {player.id: _get_basic_stats(games, player) for player in players}
+    player_to_basic_stats = {player.id: _get_players_basic_stats(games, player) for player in players}
     player_to_basic_stats[TEAM_PLAYER_ID] = _get_teams_basic_stats(player_to_basic_stats)
     player_to_basic_stats[TEAM_PLAYER_ID].games = len(games)
     return player_to_basic_stats
 
 
-def _get_basic_stats(games: list[Game], player: Player) -> BasicStats:
+def _get_players_basic_stats(games: list[Game], player: Player) -> BasicStats:
     basic_stats = BasicStats()
     for game in games:
         if not (game_player := game.get_player(player.id)):
@@ -55,6 +57,9 @@ def _get_basic_stats(games: list[Game], player: Player) -> BasicStats:
                 basic_stats.triples += 1
             if play.is_home_run:
                 basic_stats.home_runs += 1
+            if player.id in play.delta.player_ids_scoring_a_run:
+                basic_stats.runs += 1
+            basic_stats.runs_batted_in += play.delta.batter_rbis
 
     return basic_stats
 
@@ -71,5 +76,7 @@ def _get_teams_basic_stats(player_to_basic_stats: PlayerToBasicStats) -> BasicSt
         team_basic_stats.doubles += basic_stat.doubles
         team_basic_stats.triples += basic_stat.triples
         team_basic_stats.home_runs += basic_stat.home_runs
+        team_basic_stats.runs_batted_in += basic_stat.runs_batted_in
+        team_basic_stats.runs += basic_stat.runs
 
     return team_basic_stats

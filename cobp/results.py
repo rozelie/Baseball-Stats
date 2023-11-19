@@ -17,8 +17,33 @@ from cobp.ui import download, selectors
 from cobp.ui.core import display_error
 from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FULL_PERIOD, LAST_AVAILABLE_YEAR
 from cobp.ui.stats import display_game
+from cobp.validation.baseball_reference import cross_reference_baseball_reference_game_data
 
 logger = logging.getLogger(__name__)
+
+
+def load_season_games(
+    year: int,
+    team: Team,
+    basic_info_only: bool = False,
+    game_ids: list[str] | None = None,
+) -> list[Game]:
+    seasons_event_files = retrosheet.get_seasons_event_files(year)
+    try:
+        if basic_info_only:
+            games = list(game.load_teams_games_basic_info(seasons_event_files, team))
+        else:
+            games = list(game.load_teams_games(seasons_event_files, team, game_ids))
+
+        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
+        if ENV.CROSS_REFERENCE_BASEBALL_REFERENCE:
+            for game_ in games:
+                cross_reference_baseball_reference_game_data(game_)
+
+        return games
+    except ValueError:
+        display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
+        raise
 
 
 def display(team: Team | str, year: int | str, game_id: str | None) -> None:
@@ -93,7 +118,7 @@ def _display_download_for_all_teams_for_all_years() -> None:
 
 
 def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) -> None:
-    games = _load_season_games(year, team, basic_info_only=True)
+    games = load_season_games(year, team, basic_info_only=True)
     if not games:
         return
 
@@ -107,7 +132,7 @@ def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) 
             return
         game_ids = [game.id for game in game_selection]
 
-    loaded_games = _load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
+    loaded_games = load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
     player_to_stats = get_player_to_stats(loaded_games)
     display_game(
         games=loaded_games,
@@ -133,7 +158,7 @@ def _add_teams_yearly_stats_to_df(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     progress.progress(current_iteration / total_iterations, text=f"Loading {year} {team.pretty_name} data...")
-    team_games: list[Game] = _load_season_games(year, team)
+    team_games: list[Game] = load_season_games(year, team)
     team_player_to_stats = get_player_to_stats(team_games)
     team_player_to_stats_df = get_player_to_stats_df(
         team_games,
@@ -142,23 +167,3 @@ def _add_teams_yearly_stats_to_df(
         year=year,
     )
     return pd.concat([df, team_player_to_stats_df])
-
-
-def _load_season_games(
-    year: int,
-    team: Team,
-    basic_info_only: bool = False,
-    game_ids: list[str] | None = None,
-) -> list[Game]:
-    seasons_event_files = retrosheet.get_seasons_event_files(year)
-    try:
-        if basic_info_only:
-            games = list(game.load_teams_games_basic_info(seasons_event_files, team))
-        else:
-            games = list(game.load_teams_games(seasons_event_files, team, game_ids))
-
-        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
-        return games
-    except ValueError:
-        display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
-        raise

@@ -92,6 +92,8 @@ def get_player_to_stats_df(
         data["D"].append(stats.basic.doubles)
         data["T"].append(stats.basic.triples)
         data["HR"].append(stats.basic.home_runs)
+        data["R"].append(stats.basic.runs)
+        data["RBI"].append(stats.basic.runs_batted_in)
         data["OBP"].append(stats.obp.value)
         data["COBP"].append(stats.cobp.value)
         data["LOOP"].append(stats.loop.value)
