@@ -190,6 +190,7 @@ def _add_batter_advances(result: PlayResult, advances: list[Advance]) -> None:
         PlayResult.HIT_BY_PITCH,
         PlayResult.ERROR,
         PlayResult.ERROR_ASSUME_BATTER_ADVANCES_TO_FIRST,
+        PlayResult.CATCHER_INTERFERENCE,
     ]:
         advances.append(Advance(Base.BATTER_AT_HOME, Base.FIRST_BASE))
     elif result in [PlayResult.DOUBLE, PlayResult.GROUND_RULE_DOUBLE]:
