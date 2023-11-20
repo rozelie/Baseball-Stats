@@ -62,9 +62,7 @@ def deduce_play_delta(
 
             # non-batter advances to home
             if advance.ending_base == Base.HOME:
-                if not advance.is_unearned:
-                    player_ids_scoring_a_run.append(player_id)
-
+                player_ids_scoring_a_run.append(player_id)
                 if advance.is_rbi_credited:
                     batter_rbis += 1
 
