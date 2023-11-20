@@ -194,3 +194,11 @@ def get_teams_for_year(year: int) -> list[Team]:
     teams = [team for team in TEAMS if team.is_active_in_year(year)]
     logger.debug(f"Retrieved {len(teams)} teams")
     return teams
+
+
+def get_team_for_year(team: str, year: int) -> Team:
+    for team_ in get_teams_for_year(year):
+        if team == team_.retrosheet_id:
+            return team_
+
+    raise ValueError(f"Unable to find team for year: {team=} | {year=}")

@@ -8,7 +8,7 @@ import streamlit as st
 
 from cobp import results, session
 from cobp.env import ENV
-from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team
+from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, get_team_for_year
 from cobp.ui import selectors
 from cobp.ui.core import display_header, set_streamlit_config
 
@@ -25,10 +25,10 @@ def main(
     display_header()
 
     if team and team == ENV.TEAM:
-        team = TEAM_RETROSHEET_ID_TO_TEAM[ENV.TEAM]
+        team = get_team_for_year(team, year)  # type: ignore
 
     if game_id:
-        team, year = _get_team_and_year_from_game_id(game_id)
+        team, year = _get_team_and_year_from_game_id(game_id, team)  # type: ignore
 
     if team or year:
         logger.info(f"Executing: {team=} | {year=}...")
@@ -48,10 +48,11 @@ def main(
     logger.info(f"Execution finished for: {team=} | {year=}")
 
 
-def _get_team_and_year_from_game_id(game_id: str) -> tuple[Team, int]:
+def _get_team_and_year_from_game_id(game_id: str, team: Team | None) -> tuple[Team, int]:
     team_id = "".join([c for c in game_id if c.isalpha()])
     date_ = "".join([c for c in game_id if c.isnumeric()])
-    return TEAM_RETROSHEET_ID_TO_TEAM[team_id], int(date_[0:4])
+    year = int(date_[0:4])
+    return team or get_team_for_year(team_id, year), year
 
 
 if __name__ == "__main__":

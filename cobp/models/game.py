@@ -11,7 +11,8 @@ from cobp.env import ENV
 from cobp.models.base import BaseToPlayerId
 from cobp.models.play import Play
 from cobp.models.player import Player
-from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, TeamLocation
+from cobp.models.substitution import Substitution
+from cobp.models.team import Team, TeamLocation, get_team_for_year
 
 logger = getLogger(__name__)
 
@@ -45,10 +46,10 @@ class Game:
         return {player.id: player for player in self.players}
 
     @classmethod
-    def from_game_lines_basic_info_only(cls, game_lines: list[GameLine], team: Team) -> "Game":
+    def from_game_lines_basic_info_only(cls, game_lines: list[GameLine], team: Team, year: int) -> "Game":
         game_id = _get_game_id(game_lines)
-        home_team = _get_home_team(game_lines)
-        visiting_team = _get_visiting_team(game_lines)
+        home_team = _get_home_team(game_lines, year)
+        visiting_team = _get_visiting_team(game_lines, year)
         return cls(
             id=game_id,
             team=team,
@@ -59,13 +60,14 @@ class Game:
         )
 
     @classmethod
-    def from_game_lines(cls, game_lines: list[GameLine], team: Team) -> "Game":
+    def from_game_lines(cls, game_lines: list[GameLine], team: Team, year: int) -> "Game":
         game_id = _get_game_id(game_lines)
-        home_team = _get_home_team(game_lines)
-        visiting_team = _get_visiting_team(game_lines)
-        logger.info(f"Loading game: {game_id=} | home={home_team.pretty_name} | visiting={visiting_team.pretty_name}")
+        logger.info(f"Loading game: {game_id=} | {team=}")
+        home_team = _get_home_team(game_lines, year)
+        visiting_team = _get_visiting_team(game_lines, year)
+        team_number = 0 if team == visiting_team else 1
         players = list(_get_teams_players(game_lines, team, visiting_team, home_team))
-        plays = list(_get_teams_plays(game_lines, players))
+        plays = list(_get_teams_plays(game_lines, players, team_number))
         inning_to_plays = _get_inning_to_plays(plays)
         _add_plays_to_players(plays, players)
         return cls(
@@ -108,19 +110,23 @@ class Game:
         return self.inning_to_plays[inning][0] == play
 
 
-def load_teams_games(season_event_files: list[Path], team: Team, game_ids: list[str] | None) -> Iterator[Game]:
+def load_teams_games(
+    season_event_files: list[Path], team: Team, game_ids: list[str] | None, year: int
+) -> Iterator[Game]:
     logger.info(f"Loading {len(game_ids) if game_ids else 'all season'} games for {team.pretty_name}...")
     for event_file in season_event_files:
         for game_lines in _yield_game_lines(event_file, team):
             game_id = _get_game_id(game_lines)
             if (not game_ids) or (game_id in game_ids):
-                yield Game.from_game_lines(game_lines, team)
+                yield Game.from_game_lines(game_lines, team, year)
 
 
-def load_teams_games_basic_info(season_event_files: list[Path], team: Team) -> Iterator[Game]:
+def load_teams_games_basic_info(season_event_files: list[Path], team: Team, year: int) -> Iterator[Game]:
     logger.info(f"Loading {team.pretty_name}'s game basic info...")
     for event_file in season_event_files:
-        yield from [Game.from_game_lines_basic_info_only(lines, team) for lines in _yield_game_lines(event_file, team)]
+        yield from [
+            Game.from_game_lines_basic_info_only(lines, team, year) for lines in _yield_game_lines(event_file, team)
+        ]
 
 
 def get_players_in_games(games: list[Game]) -> list[Player]:
@@ -165,24 +171,25 @@ def _get_game_id(game_lines: list[GameLine]) -> str:
     raise Exception("Unable to locate the game's id")
 
 
-def _get_home_team(game_lines: list[GameLine]) -> Team:
+def _get_home_team(game_lines: list[GameLine], year: int) -> Team:
     for line in game_lines:
         if line.id == "info" and line.values[0] == "hometeam":
-            return TEAM_RETROSHEET_ID_TO_TEAM[line.values[1]]
+            return get_team_for_year(line.values[1], year)
 
     raise Exception("Unable to locate home team")
 
 
-def _get_visiting_team(game_lines: list[GameLine]) -> Team:
+def _get_visiting_team(game_lines: list[GameLine], year: int) -> Team:
     for line in game_lines:
         if line.id == "info" and line.values[0] == "visteam":
-            return TEAM_RETROSHEET_ID_TO_TEAM[line.values[1]]
+            return get_team_for_year(line.values[1], year)
 
     raise Exception("Unable to locate visiting team")
 
 
 def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Team, home_team: Team) -> list[Player]:
     seen_players = set()
+    seen_lineup_positions = set()
     players = []
     for line in game_lines:
         if line.id in ["start", "sub"]:
@@ -192,26 +199,65 @@ def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Te
             team_is_visiting_team = visiting_team == team and players_team_location == TeamLocation.VISITING
             team_is_home_team = home_team == team and players_team_location == TeamLocation.HOME
             if (team_is_visiting_team or team_is_home_team) and player.id not in seen_players:
+                # Since lineup positions are ordered when iterating and substitions are encoded
+                # with the lineup position they are replacing, we set the subs' lineup position to be 0
+                # as we do not want to overwrite the original lineup to be able to determine substitutions later
+                if player.lineup_position not in seen_lineup_positions:
+                    seen_lineup_positions.add(player.lineup_position)
+                else:
+                    player.lineup_position = 0
+
                 players.append(player)
                 seen_players.add(player.id)
 
     return players
 
 
-def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> list[Play]:
+def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player], team_number: int) -> list[Play]:
     if ENV.ONLY_INNING:
         logger.warning("ONLY_INNING is set so only partial results will be returned.")
 
     team_player_ids = {player.id for player in team_players}
     current_inning = 1
     current_base_state: BaseToPlayerId = {}
-    current_team = None
     teams_plays = []
     radj_set = False
     for line in game_lines:
+        # handle substitutions
+        if line.id == "sub":
+            substitution = Substitution.from_sub_descriptor(line.values)
+            if substitution.player_id not in team_player_ids:
+                continue
+
+            substitution_player = _get_player_by_id(substitution.player_id, team_players)
+            substituted_player = _get_player_from_batting_position(
+                substitution.replacing_player_of_batting_order,
+                team_players,
+            )
+            if substitution_player.id == substituted_player.id:
+                # player is just switching field positions which can ignore
+                continue
+
+            logger.debug(
+                f"Handling substitution: {line.values=} | sub={substitution_player.id} | subbed={substituted_player.id}"
+            )
+            if substitution.replacing_player_of_batting_order != 0:
+                logger.debug("Sub replaces player in batting order - switching lineup positions")
+                substitution_player.lineup_position = substituted_player.lineup_position
+                substituted_player.lineup_position = 0
+
+            if substitution.is_pinch_runner:
+                logger.debug("Sub is pinch runner - swapping player in base state")
+                base_to_replace_player = _get_players_base_position(substituted_player.id, current_base_state)
+                current_base_state[base_to_replace_player] = substitution.player_id
+
         # handle runner adjustments
         if line.id == "radj":
             runner_id, base = line.values
+            if runner_id not in team_player_ids:
+                continue
+
+            logger.debug(f"Handling runner adjustments: {line.values} | {base=} | {runner_id=}")
             current_base_state[base] = runner_id
             radj_set = True
 
@@ -220,11 +266,12 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player]) -> 
             if ENV.ONLY_INNING and inning != ENV.ONLY_INNING:
                 continue
 
-            team = line.values[1]
-            if inning != current_inning or current_team != team:
-                current_inning = inning
-                current_team = team
+            team = int(line.values[1])
+            if team != team_number:
+                continue
 
+            if inning != current_inning:
+                current_inning = inning
                 # setting a runner on second base in extra-innings is defined prior or after
                 # the inning's plays (thanks Retrosheet) so we need to account for this
                 if not radj_set:
@@ -251,3 +298,27 @@ def _add_plays_to_players(plays: list[Play], players: list[Player]) -> None:
     for play in plays:
         if player := player_id_to_player.get(play.batter_id):
             player.plays.append(play)
+
+
+def _get_player_from_batting_position(batting_position: int, team_players: list[Player]) -> Player:
+    for player in team_players:
+        if player.lineup_position == batting_position:
+            return player
+
+    raise ValueError(f"Unable to find player in batting position: {batting_position=}")
+
+
+def _get_players_base_position(player_id: str, base_state: BaseToPlayerId) -> str:
+    for base, base_player_id in base_state.items():
+        if player_id == base_player_id:
+            return base
+
+    raise ValueError(f"Unable to find players base position: {player_id=} | {base_state=}")
+
+
+def _get_player_by_id(player_id: str, team_players: list[Player]) -> Player:
+    for player in team_players:
+        if player.id == player_id:
+            return player
+
+    raise ValueError(f"Unable to find player on team: {player_id=}")

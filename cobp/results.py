@@ -31,9 +31,9 @@ def load_season_games(
     seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
         if basic_info_only:
-            games = list(game.load_teams_games_basic_info(seasons_event_files, team))
+            games = list(game.load_teams_games_basic_info(seasons_event_files, team, year))
         else:
-            games = list(game.load_teams_games(seasons_event_files, team, game_ids))
+            games = list(game.load_teams_games(seasons_event_files, team, game_ids, year))
 
         logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
         if ENV.CROSS_REFERENCE_BASEBALL_REFERENCE:

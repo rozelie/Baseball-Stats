@@ -32,8 +32,9 @@ make run    # runs Streamlit application
 - Data Download
   - Runs column
   - RBIs column
-- Add baseball-reference link to single-game results
-  - URL format: https://www.baseball-reference.com/boxes/KCA/KCA202207250.shtml
+- Add baseball-reference link to results
+  - single game URL format: https://www.baseball-reference.com/boxes/KCA/KCA202207250.shtml
+  - season URL format: https://www.baseball-reference.com/teams/CHC/2022.shtml
 
 ## Later
 - documentation
