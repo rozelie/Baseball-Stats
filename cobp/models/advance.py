@@ -94,7 +94,16 @@ def _add_non_batter_advances(
     # data after '.' is for advances that are NOT from the batter
     if "." in play_descriptor:
         # S9/L9S.2-H;1-3 => runner on 2nd advanced to home, runner on 1st advanced to 3rd
-        advance_or_out_descriptors = play_descriptor.split(".")[1].split(";")
+        advance_or_out_descriptors = play_descriptor.split(".")
+        if len(advance_or_out_descriptors) == 2:
+            advance_or_out_descriptors = advance_or_out_descriptors[1].split(";")
+        elif len(advance_or_out_descriptors) > 2:
+            # handle rare cases like 'FC3/DP/G3S.3XH(32);1X2(8).B-1' where batter advance is explicit
+            advance_or_out_descriptors_nested = [x.split(";") for x in advance_or_out_descriptors[1:]]
+            advance_or_out_descriptors = [y for x in advance_or_out_descriptors_nested for y in x]  # flatten list
+        else:
+            raise ValueError(f"Unable to parse non-batter advances from play descriptor: {play_descriptor=}")
+
         advance_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" not in descriptor]
         advances.extend([Advance.from_advance(advance) for advance in advance_descriptors])
         _add_advances_from_errored_out(advance_or_out_descriptors, advances)
