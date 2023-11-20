@@ -8,7 +8,7 @@ import streamlit as st
 
 from cobp import results, session
 from cobp.env import ENV
-from cobp.models.team import TEAM_RETROSHEET_ID_TO_TEAM, Team, get_team_for_year
+from cobp.models.team import Team, get_team_for_year
 from cobp.ui import selectors
 from cobp.ui.core import display_header, set_streamlit_config
 
