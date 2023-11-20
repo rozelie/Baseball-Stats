@@ -11,7 +11,6 @@ class Advance:
 
     starting_base: Base
     ending_base: Base
-    is_unearned: bool = False
     is_rbi_credited: bool = True
 
     @property
@@ -32,10 +31,7 @@ class Advance:
         return cls(
             Base(starting_base),
             Base(ending_base),
-            # not including this for the time-being as this seems to discount
-            # a lot of actual earned runs and RBIs
-            # is_unearned="UR" in advance_descriptor,
-            # is_rbi_credited="NR" not in advance_descriptor,
+            is_rbi_credited="NR" not in advance_descriptor,
         )
 
     @classmethod
@@ -67,11 +63,11 @@ class Advance:
             raise ValueError(f"Unable to parse caught stealing error as advance: {caught_stealing_descriptor=}")
 
         if stolen_base == Base.HOME:
-            return cls(Base.THIRD_BASE, Base.HOME, is_unearned=True, is_rbi_credited=False)
+            return cls(Base.THIRD_BASE, Base.HOME, is_rbi_credited=False)
         elif stolen_base == Base.THIRD_BASE:
-            return cls(Base.SECOND_BASE, Base.THIRD_BASE, is_unearned=True, is_rbi_credited=False)
+            return cls(Base.SECOND_BASE, Base.THIRD_BASE, is_rbi_credited=False)
         elif stolen_base == Base.SECOND_BASE:
-            return cls(Base.FIRST_BASE, Base.SECOND_BASE, is_unearned=True, is_rbi_credited=False)
+            return cls(Base.FIRST_BASE, Base.SECOND_BASE, is_rbi_credited=False)
         else:
             raise ValueError(f"Unable to parse caught stealing error as advance: {caught_stealing_descriptor=}")
 
