@@ -39,6 +39,9 @@ class Advance:
         # ignore unused metadata following a '.'
         if "." in stolen_base:
             stolen_base = stolen_base.split(".")[0]
+        # ignore unused metadata following a '/'
+        if "/" in stolen_base:
+            stolen_base = stolen_base.split("/")[0]
 
         base_stolen = Base(stolen_base.replace("SB", ""))
         # it seems Retrosheet does not explicitly show what base a runner came from during a steal
