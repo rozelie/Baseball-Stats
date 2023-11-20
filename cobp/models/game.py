@@ -7,7 +7,6 @@ from logging import getLogger
 from pathlib import Path
 from typing import Iterator, Mapping
 
-from cobp.env import ENV
 from cobp.models.base import BaseToPlayerId
 from cobp.models.play import Play
 from cobp.models.player import Player
@@ -214,9 +213,6 @@ def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Te
 
 
 def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player], team_number: int) -> list[Play]:
-    if ENV.ONLY_INNING:
-        logger.warning("ONLY_INNING is set so only partial results will be returned.")
-
     team_player_ids = {player.id for player in team_players}
     current_inning = 1
     current_base_state: BaseToPlayerId = {}
@@ -263,9 +259,6 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player], tea
 
         elif line.id == "play":
             inning = int(line.values[0])
-            if ENV.ONLY_INNING and inning != ENV.ONLY_INNING:
-                continue
-
             team = int(line.values[1])
             if team != team_number:
                 continue

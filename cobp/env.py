@@ -22,7 +22,6 @@ class Env(BaseSettings):
     GAME_ID: str | None = Field(default=None)
     TEAM: str | None = Field(default=None)
     YEAR: int | None = Field(default=None)
-    ONLY_INNING: int | None = Field(default=None)
     CROSS_REFERENCE_BASEBALL_REFERENCE: bool = Field(default=False)
 
 
