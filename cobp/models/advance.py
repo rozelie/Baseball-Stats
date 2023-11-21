@@ -12,6 +12,7 @@ class Advance:
     starting_base: Base
     ending_base: Base
     is_rbi_credited: bool = True
+    player_advances_backwards: bool = False
 
     @property
     def scores(self) -> bool:
@@ -32,16 +33,15 @@ class Advance:
             Base(starting_base),
             Base(ending_base),
             is_rbi_credited="NR" not in advance_descriptor,
+            player_advances_backwards=ending_base < starting_base,
         )
 
     @classmethod
     def from_stolen_base(cls, stolen_base: str) -> "Advance":
-        # ignore unused metadata following a '.'
-        if "." in stolen_base:
-            stolen_base = stolen_base.split(".")[0]
-        # ignore unused metadata following a '/'
-        if "/" in stolen_base:
-            stolen_base = stolen_base.split("/")[0]
+        # ignore unused metadata following certain characters
+        for char in [".", "/", "("]:
+            if char in stolen_base:
+                stolen_base = stolen_base.split(char)[0]
 
         base_stolen = Base(stolen_base.replace("SB", ""))
         # it seems Retrosheet does not explicitly show what base a runner came from during a steal
@@ -80,7 +80,7 @@ def get_advances_from_play(
 ) -> list[Advance]:
     advances: list[Advance] = []
     _add_non_batter_advances(play_descriptor, result, base_running_play_result, advances, outs)
-    _add_batter_advances(result, advances)
+    _add_batter_advances(result, advances, outs)
     return advances
 
 
@@ -130,6 +130,11 @@ def _add_stealing_advances(
         base_running_play_descriptor = play_descriptor.split("+")[1]
         for stolen_base in base_running_play_descriptor.split(";"):
             _add_stolen_base_advance_if_applicable(stolen_base, advances, outs)
+    elif base_running_play_result == PlayResult.CAUGHT_STEALING:
+        base_running_play_descriptor = play_descriptor.split("+")[1]
+        for caught_stealing in base_running_play_descriptor.split(";"):
+            if is_errored_out_but_advance_still_happens(caught_stealing):
+                advances.append(Advance.from_caught_stealing_error(caught_stealing))
 
     if result == PlayResult.STOLEN_BASE:
         for stolen_base in play_descriptor.split(";"):
@@ -174,7 +179,7 @@ def _is_out_already_accounted_for_after_stolen_base(outs: list[Out], stolen_base
     return any([out.starting_base == stolen_base_advance.starting_base for out in outs])
 
 
-def _add_batter_advances(result: PlayResult, advances: list[Advance]) -> None:
+def _add_batter_advances(result: PlayResult, advances: list[Advance], outs: list[Out]) -> None:
     # there are certain cases where the batter's advancement is encoded in non-batter advances
     # examples:
     # - batter hits a single, but a wild pitch allows him to advance to second base (S7/G6+.B-2)
@@ -182,16 +187,22 @@ def _add_batter_advances(result: PlayResult, advances: list[Advance]) -> None:
         return
 
     # advances from the batter are (typically) not explicitly coded so we deduce them here
-    if result in [
-        PlayResult.SINGLE,
-        PlayResult.WALK,
-        PlayResult.INTENTIONAL_WALK,
-        PlayResult.INTENTIONAL_WALK_2,
-        PlayResult.HIT_BY_PITCH,
-        PlayResult.ERROR,
-        PlayResult.ERROR_ASSUME_BATTER_ADVANCES_TO_FIRST,
-        PlayResult.CATCHER_INTERFERENCE,
-    ]:
+    is_batter_not_fielded_out = PlayResult.FIELDED_OUT and any([out.is_explicit_out for out in outs])
+    if (
+        result
+        in [
+            PlayResult.SINGLE,
+            PlayResult.WALK,
+            PlayResult.INTENTIONAL_WALK,
+            PlayResult.INTENTIONAL_WALK_2,
+            PlayResult.HIT_BY_PITCH,
+            PlayResult.ERROR,
+            PlayResult.ERROR_ASSUME_BATTER_ADVANCES_TO_FIRST,
+            PlayResult.CATCHER_INTERFERENCE,
+            PlayResult.FIELDERS_CHOICE,
+        ]
+        or is_batter_not_fielded_out
+    ):
         advances.append(Advance(Base.BATTER_AT_HOME, Base.FIRST_BASE))
     elif result in [PlayResult.DOUBLE, PlayResult.GROUND_RULE_DOUBLE]:
         advances.append(Advance(Base.BATTER_AT_HOME, Base.SECOND_BASE))

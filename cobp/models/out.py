@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from cobp.models.base import Base
+from cobp.models.play_modifier import PlayModifier
 from cobp.models.play_result import PlayResult
 
 
@@ -10,6 +11,7 @@ class Out:
 
     starting_base: Base
     out_on_base: Base
+    is_explicit_out: bool = False
 
     @classmethod
     def from_out(cls, out_descriptor: str) -> "Out":
@@ -42,7 +44,7 @@ class Out:
             raise ValueError(f"Unable to parse caught stealing as out: {caught_stealing_descriptor=}")
 
 
-def get_outs_from_play(play_descriptor: str, result: PlayResult) -> list[Out]:
+def get_outs_from_play(play_descriptor: str, result: PlayResult, modifiers: list[PlayModifier]) -> list[Out]:
     # data after '.' is for outs that are NOT from the batter
     outs = []
     if "." in play_descriptor:
@@ -56,6 +58,20 @@ def get_outs_from_play(play_descriptor: str, result: PlayResult) -> list[Out]:
     if result in [PlayResult.CAUGHT_STEALING, PlayResult.PICKED_OFF_CAUGHT_STEALING]:
         if "E" not in play_descriptor:
             outs.append(Out.from_caught_stealing(play_descriptor))
+
+    # deduce who has been fielded out
+    if result == PlayResult.FIELDED_OUT:
+        # e.g. get 52(3) from 52(3)/FO/G
+        fielded_out = play_descriptor.split("/")[0] if "/" in play_descriptor else play_descriptor
+        if "(" in fielded_out:
+            # e.g. get 3 from 52(3)
+            base_fielded_out = Base(fielded_out.split("(")[1][0])
+            if base_fielded_out == Base.THIRD_BASE:
+                outs.append(Out(Base.THIRD_BASE, Base.THIRD_BASE, is_explicit_out=True))
+            elif base_fielded_out == Base.SECOND_BASE:
+                outs.append(Out(Base.SECOND_BASE, Base.SECOND_BASE, is_explicit_out=True))
+            elif base_fielded_out == Base.FIRST_BASE:
+                outs.append(Out(Base.FIRST_BASE, Base.FIRST_BASE, is_explicit_out=True))
 
     return outs
 

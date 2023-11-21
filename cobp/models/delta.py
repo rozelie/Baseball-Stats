@@ -23,11 +23,8 @@ def deduce_play_delta(
     resulting_base_state = deepcopy(previous_base_state)
     player_ids_scoring_a_run = []
     batter_rbis = 0
-    ordered_deltas: list[Out | Advance] = list(
-        reversed(sorted([*advances, *outs], key=lambda x: x.starting_base))  # type: ignore
-    )
+    ordered_deltas = _order_deltas(advances, outs)
     logger.debug(f"Deducing play delta: deltas=\n{pformat(ordered_deltas)}...")
-
     for delta in ordered_deltas:
         if isinstance(delta, Out):
             out = delta
@@ -80,3 +77,21 @@ def deduce_play_delta(
     )
     logger.debug(f"Deduced play delta: {play_delta=}")
     return play_delta
+
+
+def _order_deltas(advances: list[Advance], outs: list[Out]) -> list[Advance | Out]:
+    # order deltas, but ensuring rare backward advances occur last
+    # there is only one case that I know of:
+    # - MIL201304190: CS2(15).2-1 in the bottom of the 8th
+    # - https://www.businessinsider.com/video-brewers-jean-segura-stole-second-and-then-stole-first-2013-4
+    ordered_deltas: list[Out | Advance] = []
+    for delta in list(reversed(sorted([*advances, *outs], key=lambda x: x.starting_base))):  # type: ignore
+        if isinstance(delta, Advance) and delta.player_advances_backwards:
+            continue
+        ordered_deltas.append(delta)  # type: ignore
+
+    backward_advances = [a for a in advances if a.player_advances_backwards]
+    if backward_advances:
+        ordered_deltas = [*ordered_deltas, *backward_advances]
+
+    return ordered_deltas
