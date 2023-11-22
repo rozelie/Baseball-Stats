@@ -16,7 +16,12 @@ class Out:
     @classmethod
     def from_out(cls, out_descriptor: str) -> "Out":
         # 2X3 implies player from second base was put out going to third base
-        start_base, out_on_base = out_descriptor.split("X")
+        try:
+            start_base, out_on_base = out_descriptor.split("X")
+        except ValueError:
+            # handle rare cases where 'X' appears in metadata
+            # e.g. '2X3(5X)'
+            start_base, out_on_base, _ = out_descriptor.split("X")
 
         # parenthesis are used to encode extra info we are not interested in - ignore this data
         if "(" in out_on_base:
@@ -80,3 +85,9 @@ def is_errored_out_but_advance_still_happens(out_descriptor: str) -> bool:
     # Retrosheet has this ridiculous case where rarely it will encode an out that didn't actually
     # happen due to an error
     return "(" in out_descriptor and "E" in out_descriptor
+
+
+a = get_outs_from_play(
+    "FC5.2X3(5X);B-1#",
+    PlayResult.FIELDERS_CHOICE,
+)

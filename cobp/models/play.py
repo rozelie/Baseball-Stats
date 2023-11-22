@@ -41,7 +41,7 @@ class Play:
         logger.debug(f"Processing play: {line_values} | {result=} | {base_running_play_result=} | {base_state=}")
 
         modifiers = get_modifiers_from_play(play_descriptor)
-        outs = get_outs_from_play(play_descriptor, result, modifiers)
+        outs = get_outs_from_play(play_descriptor, result)
         advances = get_advances_from_play(play_descriptor, result, base_running_play_result, outs)
         delta = deduce_play_delta(previous_base_state, batter_id, advances, outs)
         return cls(
