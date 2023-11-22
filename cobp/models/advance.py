@@ -133,8 +133,21 @@ def _add_stealing_advances(
     elif base_running_play_result == PlayResult.CAUGHT_STEALING:
         base_running_play_descriptor = play_descriptor.split("+")[1]
         for caught_stealing in base_running_play_descriptor.split(";"):
-            if is_errored_out_but_advance_still_happens(caught_stealing):
-                advances.append(Advance.from_caught_stealing_error(caught_stealing))
+            if "." in caught_stealing:
+                caught_stealing = caught_stealing.split(".")[0]
+
+            # Handle cases where the advance is explicit but caught stealing is also encoded
+            # e.g. CS2(2E4).3-H(UR);1-2
+            if not caught_stealing.startswith("CS"):
+                continue
+
+            advance = Advance.from_caught_stealing_error(caught_stealing)
+            # handle cases like: K+CS2(2E6).1-1
+            # where we don't want to advance the runner from caught stealing since it's explicit in 1-1 advance already
+            if is_errored_out_but_advance_still_happens(
+                caught_stealing
+            ) and not _is_advance_already_accounted_for_after_stolen_base(advances, advance):
+                advances.append(advance)
 
     if result == PlayResult.STOLEN_BASE:
         for stolen_base in play_descriptor.split(";"):

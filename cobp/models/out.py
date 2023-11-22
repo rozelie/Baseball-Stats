@@ -44,7 +44,7 @@ class Out:
             raise ValueError(f"Unable to parse caught stealing as out: {caught_stealing_descriptor=}")
 
 
-def get_outs_from_play(play_descriptor: str, result: PlayResult, modifiers: list[PlayModifier]) -> list[Out]:
+def get_outs_from_play(play_descriptor: str, result: PlayResult) -> list[Out]:
     # data after '.' is for outs that are NOT from the batter
     outs = []
     if "." in play_descriptor:

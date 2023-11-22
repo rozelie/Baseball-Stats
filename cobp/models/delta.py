@@ -2,6 +2,7 @@ import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from pprint import pformat
+from typing import Iterator
 
 from cobp.models.advance import Advance
 from cobp.models.base import Base, BaseToPlayerId
@@ -23,6 +24,7 @@ def deduce_play_delta(
     resulting_base_state = deepcopy(previous_base_state)
     player_ids_scoring_a_run = []
     batter_rbis = 0
+    advances = list(_dedupe_advances(advances))
     ordered_deltas = _order_deltas(advances, outs)
     logger.debug(f"Deducing play delta: deltas=\n{pformat(ordered_deltas)}...")
     for delta in ordered_deltas:
@@ -95,3 +97,14 @@ def _order_deltas(advances: list[Advance], outs: list[Out]) -> list[Advance | Ou
         ordered_deltas = [*ordered_deltas, *backward_advances]
 
     return ordered_deltas
+
+
+def _dedupe_advances(advances: list[Advance]) -> Iterator[Advance]:
+    # There are some cases were advances are duplicated
+    # e.g. K+CS3(24E5).2-3 => caught stealing advance due to error and the explicit advance of 2-3
+    seen_deltas = set()
+    for advance in advances:
+        delta = (advance.starting_base, advance.ending_base)
+        if delta not in seen_deltas:
+            yield advance
+            seen_deltas.add(delta)
