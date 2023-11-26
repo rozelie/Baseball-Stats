@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from cobp.models.base import Base
 from cobp.models.out import Out, is_errored_out_but_advance_still_happens
+from cobp.models.play_modifier import PlayModifier
 from cobp.models.play_result import PlayResult
 
 
@@ -19,20 +20,71 @@ class Advance:
         return self.ending_base == Base.HOME
 
     @classmethod
-    def from_advance(cls, advance_descriptor: str) -> "Advance":
+    def from_advance(
+        cls,
+        advance_descriptor: str,
+        play_result: PlayResult,
+        modifiers: list[PlayModifier],
+    ) -> "Advance":
+        """
+        Parameters are used to indicate if a run is
+        unearned (UR) and if RBI is to be credited (RBI) or not (NR),
+        (NORBI). When these parameters are not present, normal rules are
+        followed.
+
+        play,9,0,davie001,30,BBBB,W+PB.3-H(NR);1-3
+            The run scored on the passed ball is not credited as an RBI to the
+            batter.
+
+        play,8,1,sax-s001,22,BCFBFX,S4/G34.2-H(E4/TH)(UR)(NR);1-3;B-2
+            Three parameters are given on the 2-H advance. The first indicates a
+            second baseman throwing error, the second indicates it is an unearned
+            run and the third indicates no RBI.
+
+        play,2,1,willk001,11,BFX,E6/G6.3-H(RBI);2-3;B-1
+            In this play an RBI is given to the batter.
+        """
+        should_attribute_rbi_despite_error = True
+
         starting_base, ending_base = advance_descriptor.split("-")
         # parenthesis are used to encode extra info we are not interested in - ignore this data
         if "(" in ending_base:
+            # the advance may be unearned or have an error
+            # if either, assume no RBI
+            # e.g. 2-H(UR)(E6/TH)
+            if "(UR)" in advance_descriptor and "(E" in advance_descriptor:
+                should_attribute_rbi_despite_error = False
+
             ending_base = ending_base.split("(")[0]
 
-        # TODO: figure out what the # represents and if it is needed
+        # '#' is used to encode extra info we are not interested in - ignore this data
         if "#" in ending_base:
             ending_base = ending_base.replace("#", "")
+
+        no_rbi = "NR" in advance_descriptor
+
+        is_error = play_result == PlayResult.ERROR
+        if is_error:
+            unearned = "UR" in advance_descriptor
+            is_rbi = "RBI" in advance_descriptor
+            if is_rbi:
+                should_attribute_rbi_despite_error = True
+            elif unearned:
+                should_attribute_rbi_despite_error = False
 
         return cls(
             Base(starting_base),
             Base(ending_base),
-            is_rbi_credited="NR" not in advance_descriptor,
+            is_rbi_credited=all(
+                [
+                    not no_rbi,
+                    PlayModifier.GROUND_BALL_DOUBLE_PLAY not in modifiers,
+                    # e.g. E4/TH/G34+.3-H;2-H(NR);B-2 => RBI for 3-H, not 2-H(NR)
+                    # e.g. E4/G89S.3-H;1-3;B-2        => RBI for 3-H
+                    # e.g. E3/G.2-H(UR);1-2           => no RBI for 2-H(UR)
+                    should_attribute_rbi_despite_error,
+                ]
+            ),
             player_advances_backwards=ending_base < starting_base,
         )
 
@@ -47,11 +99,11 @@ class Advance:
         # it seems Retrosheet does not explicitly show what base a runner came from during a steal
         # so we assume they were on the base prior
         if base_stolen == Base.HOME:
-            return cls(Base.THIRD_BASE, Base.HOME)
+            return cls(Base.THIRD_BASE, Base.HOME, is_rbi_credited=False)
         elif base_stolen == Base.THIRD_BASE:
-            return cls(Base.SECOND_BASE, Base.THIRD_BASE)
+            return cls(Base.SECOND_BASE, Base.THIRD_BASE, is_rbi_credited=False)
         elif base_stolen == Base.SECOND_BASE:
-            return cls(Base.FIRST_BASE, Base.SECOND_BASE)
+            return cls(Base.FIRST_BASE, Base.SECOND_BASE, is_rbi_credited=False)
         else:
             raise ValueError(f"Unable to load stolen base advance: {stolen_base=}")
 
@@ -76,10 +128,14 @@ class Advance:
 
 
 def get_advances_from_play(
-    play_descriptor: str, result: PlayResult, base_running_play_result: PlayResult | None, outs: list[Out]
+    play_descriptor: str,
+    result: PlayResult,
+    modifiers: list[PlayModifier],
+    base_running_play_result: PlayResult | None,
+    outs: list[Out],
 ) -> list[Advance]:
     advances: list[Advance] = []
-    _add_non_batter_advances(play_descriptor, result, base_running_play_result, advances, outs)
+    _add_non_batter_advances(play_descriptor, result, modifiers, base_running_play_result, advances, outs)
     _add_batter_advances(result, advances, outs)
     return advances
 
@@ -87,6 +143,7 @@ def get_advances_from_play(
 def _add_non_batter_advances(
     play_descriptor: str,
     result: PlayResult,
+    modifiers: list[PlayModifier],
     base_running_play_result: PlayResult | None,
     advances: list[Advance],
     outs: list[Out],
@@ -105,7 +162,7 @@ def _add_non_batter_advances(
             raise ValueError(f"Unable to parse non-batter advances from play descriptor: {play_descriptor=}")
 
         advance_descriptors = [descriptor for descriptor in advance_or_out_descriptors if "X" not in descriptor]
-        advances.extend([Advance.from_advance(advance) for advance in advance_descriptors])
+        advances.extend([Advance.from_advance(advance, result, modifiers) for advance in advance_descriptors])
         _add_advances_from_errored_out(advance_or_out_descriptors, advances)
 
     _add_stealing_advances(play_descriptor, result, base_running_play_result, advances, outs)
@@ -116,7 +173,9 @@ def _add_advances_from_errored_out(advance_or_out_descriptors: list[str], advanc
     for out_descriptor in out_descriptors:
         if is_errored_out_but_advance_still_happens(out_descriptor):
             out = Out.from_out(out_descriptor)
-            advances.append(Advance(Base(out.starting_base), Base(out.out_on_base)))
+            advances.append(
+                Advance(Base(out.starting_base), Base(out.out_on_base), is_rbi_credited="NR" not in out_descriptor)
+            )
 
 
 def _add_stealing_advances(

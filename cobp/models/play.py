@@ -42,7 +42,7 @@ class Play:
 
         modifiers = get_modifiers_from_play(play_descriptor)
         outs = get_outs_from_play(play_descriptor, result)
-        advances = get_advances_from_play(play_descriptor, result, base_running_play_result, outs)
+        advances = get_advances_from_play(play_descriptor, result, modifiers, base_running_play_result, outs)
         delta = deduce_play_delta(previous_base_state, batter_id, advances, outs)
         return cls(
             inning=int(inning),
