@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from cobp.models.base import Base
-from cobp.models.play_modifier import PlayModifier
 from cobp.models.play_result import PlayResult
 
 
@@ -85,9 +84,3 @@ def is_errored_out_but_advance_still_happens(out_descriptor: str) -> bool:
     # Retrosheet has this ridiculous case where rarely it will encode an out that didn't actually
     # happen due to an error
     return "(" in out_descriptor and "E" in out_descriptor
-
-
-a = get_outs_from_play(
-    "FC5.2X3(5X);B-1#",
-    PlayResult.FIELDERS_CHOICE,
-)
