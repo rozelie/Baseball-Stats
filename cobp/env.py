@@ -22,7 +22,7 @@ class Env(BaseSettings):
     GAME_ID: str | None = Field(default=None)
     TEAM: str | None = Field(default=None)
     YEAR: int | None = Field(default=None)
-    VIEW_FANGRAPH_RBI_DISCREPANCIES: bool = Field(default=False)
+    USE_BASEBALL_REFERENCE_R_AND_RBI_STATS: bool = Field(default=False)
 
 
 ENV = Env()

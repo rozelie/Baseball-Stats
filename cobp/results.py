@@ -11,14 +11,12 @@ from cobp.data import retrosheet
 from cobp.env import ENV
 from cobp.models import game
 from cobp.models.game import Game
-from cobp.models.player import TEAM_PLAYER_ID
 from cobp.models.team import Team, get_teams_for_year
 from cobp.stats.aggregated import get_player_to_stats, get_player_to_stats_df
 from cobp.ui import download, selectors
 from cobp.ui.core import display_error
 from cobp.ui.selectors import ALL_TEAMS, ENTIRE_SEASON, FIRST_AVAILABLE_YEAR, FULL_PERIOD, LAST_AVAILABLE_YEAR
 from cobp.ui.stats import display_game
-from cobp.validation.fangraphs import RBIDiscrepancy, validate_players_rbis, write_rbi_discrepancies
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +94,6 @@ def _display_download_for_all_teams_for_all_years() -> None:
     df = pd.DataFrame()
     progress = st.progress(0)
     current_iteration = 0
-    fangraph_rbi_discrepancies = []
     for year_ in reversed(range(FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR + 1)):
         teams_for_year = get_teams_for_year(year_)
         for team_ in teams_for_year:
@@ -109,17 +106,11 @@ def _display_download_for_all_teams_for_all_years() -> None:
                 df=df,
             )
 
-            if ENV.VIEW_FANGRAPH_RBI_DISCREPANCIES:
-                if discrepancy := _get_fangraph_rbi_discrepancy(df, team_, year_):
-                    fangraph_rbi_discrepancies.append(discrepancy)
-
         current_iteration += 1
 
     progress.empty()
     download.download_df_button(df, f"{FIRST_AVAILABLE_YEAR}_to_{LAST_AVAILABLE_YEAR}_all_teams.csv")
     session.set_state(session.StateKey.REFRESH_NEEDED, True)
-    if fangraph_rbi_discrepancies:
-        write_rbi_discrepancies(fangraph_rbi_discrepancies)
 
 
 def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) -> None:
@@ -172,20 +163,3 @@ def _add_teams_yearly_stats_to_df(
         year=year,
     )
     return pd.concat([df, team_player_to_stats_df])
-
-
-def _get_fangraph_rbi_discrepancy(df: pd.DataFrame, team: Team, year: int) -> RBIDiscrepancy | None:
-    for row in df.itertuples():
-        player = row.Player
-        if player == TEAM_PLAYER_ID:
-            continue
-
-        if discrepancy := validate_players_rbis(
-            player_name=player,
-            team=team,
-            year=year,
-            retrosheet_rbis=row.RBI,
-        ):
-            return discrepancy
-
-    return None

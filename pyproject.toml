@@ -39,7 +39,7 @@ dev = [
   "ruff==0.0.269",
   "types-requests==2.31.0.1",
   "coverage==7.2.7",
-  "pybaseball==2.2.7",
+  "selenium==4.15.2",
 ]
 
 [project.urls]
