@@ -9,7 +9,7 @@ from typing import Iterator, Mapping
 
 from cobp.models.base import BaseToPlayerId
 from cobp.models.play import Play
-from cobp.models.player import Player
+from cobp.models.player import TEAM_PLAYER_ID, Player
 from cobp.models.substitution import Substitution
 from cobp.models.team import Team, TeamLocation, get_team_for_year
 
@@ -277,6 +277,14 @@ def _get_teams_plays(game_lines: list[GameLine], team_players: list[Player], tea
                 teams_plays.append(play)
 
     return teams_plays
+
+
+def get_all_players_id_to_player(games: list[Game], include_team: bool = True) -> dict[str, Player]:
+    all_players = get_players_in_games(games)
+    player_id_to_player = {p.id: p for p in all_players}
+    if include_team:
+        player_id_to_player[TEAM_PLAYER_ID] = Player.as_team()
+    return player_id_to_player
 
 
 def _get_inning_to_plays(plays: list[Play]) -> Mapping[int, list[Play]]:

@@ -4,8 +4,8 @@ from typing import Mapping
 
 import pandas as pd
 
-from cobp.models.game import Game, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID, Player
+from cobp.models.game import Game, get_all_players_id_to_player, get_players_in_games
+from cobp.models.player import Player
 from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
@@ -72,7 +72,7 @@ def get_player_to_stats_df(
     team: Team | None = None,
     year: int | None = None,
 ) -> pd.DataFrame:
-    player_id_to_player = _get_all_players_id_to_player(games)
+    player_id_to_player = get_all_players_id_to_player(games)
     data: Mapping[str, list[str | float | int]] = defaultdict(list)
     for player_id, stats in player_to_stats.items():
         if team:
@@ -109,7 +109,7 @@ def get_player_to_stats_df(
 
 
 def get_player_to_game_stat_df(games: list[Game], player_to_stats: PlayerToStats, stat_name: str) -> pd.DataFrame:
-    player_id_to_player = _get_all_players_id_to_player(games)
+    player_id_to_player = get_all_players_id_to_player(games)
     data: Mapping[str, list[str | float]] = defaultdict(list)
     for game_id, player_game_stat in _get_game_to_player_stat(games, player_to_stats, stat_name).items():
         data["Game"].append(game_id)
@@ -124,7 +124,7 @@ def _get_game_to_player_stat(
     games: list[Game], player_to_stats: PlayerToStats, stat_name: str
 ) -> Mapping[str, Mapping[str, float]]:
     game_to_player_stat: Mapping[str, Mapping[str, float]] = defaultdict(dict)
-    player_id_to_player = _get_all_players_id_to_player(games, include_team=False)
+    player_id_to_player = get_all_players_id_to_player(games, include_team=False)
     for player_id, player in player_id_to_player.items():
         if player_to_stats[player_id].basic.at_bats == 0:
             continue
@@ -137,11 +137,3 @@ def _get_game_to_player_stat(
             game_to_player_stat[game.id][player_id] = player_game_stat_value  # type: ignore
 
     return game_to_player_stat
-
-
-def _get_all_players_id_to_player(games: list[Game], include_team: bool = True) -> dict[str, Player]:
-    all_players = get_players_in_games(games)
-    player_id_to_player = {p.id: p for p in all_players}
-    if include_team:
-        player_id_to_player[TEAM_PLAYER_ID] = Player.as_team()
-    return player_id_to_player
