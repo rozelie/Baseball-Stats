@@ -38,8 +38,8 @@ def validate_players_rbis(player_name: str, team: Team, year: int, retrosheet_rb
     except KeyError:
         # fangraph player data only seems to return top batters
         logger.debug(f"Unable to lookup fangraph player: {player_id=}")
-    finally:
-        return None
+
+    return None
 
 
 def write_rbi_discrepancies(discrepancies: list[RBIDiscrepancy]) -> None:
