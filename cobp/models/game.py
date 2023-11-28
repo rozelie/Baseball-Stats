@@ -61,7 +61,7 @@ class Game:
     @classmethod
     def from_game_lines(cls, game_lines: list[GameLine], team: Team, year: int) -> "Game":
         game_id = _get_game_id(game_lines)
-        logger.info(f"Loading game: {game_id=} | {team=}")
+        logger.debug(f"Loading game: {game_id=} | {team=}")
         home_team = _get_home_team(game_lines, year)
         visiting_team = _get_visiting_team(game_lines, year)
         team_number = 0 if team == visiting_team else 1

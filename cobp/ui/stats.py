@@ -26,6 +26,7 @@ def display_game(
 
 
 def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
+    player_to_stats_df.drop(columns=["ID"])
     team_pretty_name = games[0].team.pretty_name
     st.header(f"{team_pretty_name} Stats")
     # ignore players without any at bats as they will have 0 values for all stats

@@ -29,12 +29,10 @@ make run    # runs Streamlit application
 
 # Todo
 ## For MVP
-- Data Download
-  - Runs column
-  - RBIs column
 - Add baseball-reference link to results
   - single game URL format: https://www.baseball-reference.com/boxes/KCA/KCA202207250.shtml
   - season URL format: https://www.baseball-reference.com/teams/CHC/2022.shtml
+- fix csv numerical values
 
 ## Later
 - documentation

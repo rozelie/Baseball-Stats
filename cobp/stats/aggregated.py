@@ -82,6 +82,7 @@ def get_player_to_stats_df(
 
         player = player_id_to_player[player_id]
         data["Player"].append(player.name)
+        data["ID"].append(player.name)
         data["G"].append(stats.basic.games)
         data["AB"].append(stats.basic.at_bats)
         data["H"].append(stats.basic.hits)
