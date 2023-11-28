@@ -1,3 +1,4 @@
+import csv
 from typing import Any
 
 import pandas as pd
@@ -11,4 +12,4 @@ def download_df_button(df: pd.DataFrame, file_name: str) -> None:
 
 @st.cache_data
 def _convert_df_to_csv(df: pd.DataFrame) -> Any:
-    return df.to_csv(index=False).encode("utf-8")
+    return df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC).encode("utf-8")
