@@ -30,18 +30,13 @@ def cross_reference_retrosheet_seasonal_rbis_with_baseball_reference(
     year: int, player_name: str, player_id: str, team: Team, retrosheet_rbis: int
 ) -> RBICrossReference | None:
     team_id = team.baseball_reference_id or team.retrosheet_id
-    all_bb_ref_rbis = baseball_reference.get_seasonal_players_rbis(year)
-    players_bb_ref_rbis_series = all_bb_ref_rbis.loc[
-        (all_bb_ref_rbis["player_name"] == player_name)
-        & (all_bb_ref_rbis["baseball_reference_team_id"] == team_id),
-        "rbis",
-    ]
+    all_bb_ref_stats = baseball_reference.get_seasonal_players_stats(year)
+    bb_ref_player = baseball_reference.lookup_player(all_bb_ref_stats, player_name, team_id)
     try:
-        bb_ref_rbis = players_bb_ref_rbis_series.values[0]
+        bb_ref_rbis = bb_ref_player["rbis"].values[0]  # type: ignore
     except IndexError:
         logger.debug(
-            "Unable to find Baseball Reference player rbis: "
-            f"{year=} | {player_name=} | {player_id=} | {team_id=}"
+            "Unable to find Baseball Reference player rbis: " f"{year=} | {player_name=} | {player_id=} | {team_id=}"
         )
         return None
 
