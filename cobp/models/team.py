@@ -35,7 +35,8 @@ class Team:
 
 TEAMS = [
     Team("ALT", "Altoona", "Mountain Citys", 1884, 1884),
-    Team("ANA", "Anaheim", "Angels", 1997, 2022, baseball_reference_id="LAA"),
+    Team("ANA", "Anaheim", "Angels", 2005, 2022, baseball_reference_id="LAA"),
+    Team("ANA", "Anaheim", "Angels", 1997, 2004),
     Team("ARI", "Arizona", "Diamondbacks", 1998, 2022),
     Team("ATL", "Atlanta", "Braves", 1966, 2022),
     Team("BAL", "Baltimore", "Orioles", 1954, 2022),
@@ -89,7 +90,7 @@ TEAMS = [
     Team("DET", "Detroit", "Tigers", 1901, 2022),
     Team("DTN", "Detroit", "Wolverines", 1881, 1888),
     Team("ELI", "Elizabeth", "Resolutes", 1873, 1873),
-    Team("FLO", "Florida", "Marlins", 1993, 2011),
+    Team("FLO", "Florida", "Marlins", 1993, 2011, baseball_reference_id="FLA"),
     Team("FW1", "Ft. Wayne", "Kekiongas", 1871, 1871),
     Team("HAR", "Hartford", "Dark Blues", 1876, 1877),
     Team("HOU", "Houston", "Astros", 2013, 2022),
@@ -165,7 +166,8 @@ TEAMS = [
     Team("SPU", "St. Paul", "Saints", 1884, 1884),
     Team("SR1", "Syracuse", "Stars", 1879, 1879),
     Team("SR2", "Syracuse", "Stars", 1890, 1890),
-    Team("TBA", "Tampa Bay", "Devil Rays", 1998, 2022, baseball_reference_id="TBR"),
+    Team("TBA", "Tampa Bay", "Devil Rays", 2008, 2022, baseball_reference_id="TBR"),
+    Team("TBA", "Tampa Bay", "Devil Rays", 1998, 2007, baseball_reference_id="TBD"),
     Team("TEX", "Texas", "Rangers", 1972, 2022),
     Team("TL1", "Toledo", "Blue Stockings", 1884, 1884),
     Team("TL2", "Toledo", "Maumees", 1890, 1890),
