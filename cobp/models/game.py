@@ -193,7 +193,12 @@ def _get_teams_players(game_lines: list[GameLine], team: Team, visiting_team: Te
     for line in game_lines:
         if line.id in ["start", "sub"]:
             player = Player.from_start_line(line.values)
-            # only include the team we're interested in players
+            # there is a coding error in Retrosheet data where Zoilo Almonte
+            # is mixed up with Drew Stubbs for 2013 Yankees data
+            # 2013NYA.EVA: sub,almoz001,"Drew Stubbs",1,9,11
+            if player.id == "almoz001" and player.name == "Drew Stubbs":
+                player.name = "Zoilo Almonte"
+
             players_team_location = TeamLocation(int(line.values[2]))
             team_is_visiting_team = visiting_team == team and players_team_location == TeamLocation.VISITING
             team_is_home_team = home_team == team and players_team_location == TeamLocation.HOME
