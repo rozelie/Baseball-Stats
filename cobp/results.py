@@ -133,7 +133,7 @@ def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) 
     display_game(
         games=loaded_games,
         player_to_stats=player_to_stats,
-        player_to_stats_df=get_player_to_stats_df(loaded_games, player_to_stats),
+        player_to_stats_df=get_player_to_stats_df(loaded_games, player_to_stats, team=team, year=year),
     )
 
 

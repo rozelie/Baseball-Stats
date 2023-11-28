@@ -16,7 +16,7 @@ FLOAT_COLUMNS = [
 
 
 def highlight_team_row(row: pd.Series) -> list[str] | None:
-    player = row.iloc[0]
+    player = row["Player"]
     if player == "Team":
         return ["background-color: #4f4f4f"] * len(row)
     return None
