@@ -1,11 +1,11 @@
-from ordered_enum import OrderedEnum
+# from ordered_enum import OrderedEnum
 
-BaseToPlayerId = dict[str, str | None]
+# BaseToPlayerId = dict[str, str | None]
 
 
-class Base(OrderedEnum):
-    BATTER_AT_HOME = "B"
-    FIRST_BASE = "1"
-    SECOND_BASE = "2"
-    THIRD_BASE = "3"
-    HOME = "H"
+# class Base(OrderedEnum):
+#     BATTER_AT_HOME = "B"
+#     FIRST_BASE = "1"
+#     SECOND_BASE = "2"
+#     THIRD_BASE = "3"
+#     HOME = "H"

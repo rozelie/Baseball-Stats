@@ -4,13 +4,13 @@ from traceback import format_exc
 
 import pandas as pd
 import streamlit as st
+from pyretrosheet.load import load_games
+from pyretrosheet.models.game import Game
 from streamlit.delta_generator import DeltaGenerator
 
 from cobp import session
-from cobp.data import cross_reference, retrosheet
+from cobp.data import cross_reference
 from cobp.env import ENV
-from cobp.models import game
-from cobp.models.game import Game
 from cobp.models.team import Team, get_teams_for_year
 from cobp.stats.aggregated import get_player_to_stats, get_player_to_stats_df
 from cobp.ui import download, selectors
@@ -27,15 +27,20 @@ def load_season_games(
     basic_info_only: bool = False,
     game_ids: list[str] | None = None,
 ) -> list[Game]:
-    seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
-        if basic_info_only:
-            games = list(game.load_teams_games_basic_info(seasons_event_files, team, year))
+        # @TODO: Cache results for yearly results
+        games_for_year = list(load_games(year=year, basic_info_only=basic_info_only))
+        logger.info(f"Found {len(games_for_year)} games for {year} ({basic_info_only=})")
+        if game_ids:
+            teams_games_for_year = [g for g in games_for_year if g.id.raw in game_ids]
+            logger.info(f"Found {len(teams_games_for_year)} games for {year} matching {len(game_ids)} game ids")
         else:
-            games = list(game.load_teams_games(seasons_event_files, team, game_ids, year))
+            teams_games_for_year = [
+                g for g in games_for_year if team.retrosheet_id in (g.home_team_id, g.visiting_team_id)
+            ]
+            logger.info(f"Found {len(teams_games_for_year)} games for {year} {team.pretty_name}")
 
-        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
-        return games
+        return teams_games_for_year
     except ValueError:
         display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
         raise
@@ -121,15 +126,15 @@ def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) 
     if game_id:
         game_ids = [game_id]
     elif ENV.YEAR:
-        game_ids = [game.id for game in games]
+        game_ids = [game.id.raw for game in games]
     else:
         game_selection = _get_games_selection(games)
         if not game_selection:
             return
-        game_ids = [game.id for game in game_selection]
+        game_ids = [game.id.raw for game in game_selection]
 
     loaded_games = load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
-    player_to_stats = get_player_to_stats(loaded_games)
+    player_to_stats = get_player_to_stats(loaded_games, team)
     display_game(
         games=loaded_games,
         player_to_stats=player_to_stats,

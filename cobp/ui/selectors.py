@@ -1,10 +1,11 @@
 from typing import Any
 
 import streamlit as st
+from pyretrosheet.models.game import Game
+from pyretrosheet.models.player import Player
 
-from cobp.models.game import Game
-from cobp.models.player import Player
 from cobp.models.team import TEAMS, Team, get_teams_for_year
+from cobp.utils import get_game_pretty_id
 
 EMPTY_CHOICE = ""
 ENTIRE_SEASON = "Entire Season"
@@ -31,9 +32,9 @@ def get_team_selection(year: int | str) -> Team | str | None:
 
 
 def get_game_selection(games: list[Game]) -> Game | str | None:
-    game_id_to_game = {g.id: g for g in games}
-    game_pretty_ids = [g.pretty_id for g in games]
-    game_pretty_id_to_game_id = {g.pretty_id: g.id for g in games}
+    game_id_to_game = {g.id.raw: g for g in games}
+    game_pretty_ids = [get_game_pretty_id(g) for g in games]
+    game_pretty_id_to_game_id = {get_game_pretty_id(g): g.id.raw for g in games}
     options = [EMPTY_CHOICE, ENTIRE_SEASON, *sorted(game_pretty_ids)]
     selection = _get_selection("Select Game:", options=options)
     if not selection:

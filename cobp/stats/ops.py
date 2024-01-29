@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from cobp.models.game import Game, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID
+from pyretrosheet.models.player import Player
+
 from cobp.stats.obp import PlayerToOBP
 from cobp.stats.sp import PlayerToSP
 from cobp.stats.stat import Stat
+from cobp.utils import TEAM_PLAYER_ID
 
 
 @dataclass
@@ -23,9 +24,9 @@ class OPS(Stat):
 PlayerToOPS = dict[str, OPS]
 
 
-def get_player_to_ops(games: list[Game], player_to_obp: PlayerToOBP, player_to_sp: PlayerToSP) -> PlayerToOPS:
+def get_player_to_ops(players: list[Player], player_to_obp: PlayerToOBP, player_to_sp: PlayerToSP) -> PlayerToOPS:
     player_to_cops = {}
-    for player in get_players_in_games(games):
+    for player in players:
         obp = 0.0
         if obp_ := player_to_obp.get(player.id):
             obp = obp_.value

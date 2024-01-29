@@ -1,9 +1,19 @@
 """Calculate SP (Slugging Percentage) stats from game data."""
 from dataclasses import dataclass, field
 
-from cobp.models.game import Game, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID, Player
+from pyretrosheet.models.game import Game
+from pyretrosheet.models.player import Player
+
 from cobp.stats.stat import Stat
+from cobp.utils import (
+    TEAM_PLAYER_ID,
+    get_players_plays_used_in_stats,
+    is_play_at_bat,
+    is_play_double,
+    is_play_home_run,
+    is_play_single,
+    is_play_triple,
+)
 
 
 @dataclass
@@ -40,8 +50,7 @@ class SP(Stat):
 PlayerToSP = dict[str, SP]
 
 
-def get_player_to_sp(games: list[Game]) -> PlayerToSP:
-    players = get_players_in_games(games)
+def get_player_to_sp(games: list[Game], players: list[Player]) -> PlayerToSP:
     player_to_ba = {player.id: _get_sp(games, player) for player in players}
     player_to_ba[TEAM_PLAYER_ID] = _get_teams_sp(player_to_ba)
     return player_to_ba
@@ -49,26 +58,23 @@ def get_player_to_sp(games: list[Game]) -> PlayerToSP:
 
 def _get_sp(games: list[Game], player: Player) -> SP:
     sp = SP()
-    for game in games:
-        if not (game_player := game.get_player(player.id)):
-            continue
-
+    for game, plays in get_players_plays_used_in_stats(games, player):
         game_sp = SP()
-        for play in game_player.plays:
-            if play.is_at_bat:
+        for play in plays:
+            if is_play_at_bat(play):
                 sp.at_bats += 1
                 game_sp.at_bats += 1
 
-            if play.is_single:
+            if is_play_single(play):
                 sp.singles += 1
                 game_sp.singles += 1
-            elif play.is_double:
+            elif is_play_double(play):
                 sp.doubles += 1
                 game_sp.doubles += 1
-            elif play.is_triple:
+            elif is_play_triple(play):
                 sp.triples += 1
                 game_sp.triples += 1
-            elif play.is_home_run:
+            elif is_play_home_run(play):
                 sp.home_runs += 1
                 game_sp.home_runs += 1
 

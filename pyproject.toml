@@ -27,6 +27,7 @@ dependencies = [
     "ordered_enum==0.0.8",
     "beautifulsoup4==4.12.2",
     "fuzzywuzzy==0.18.0",
+    "pyretrosheet==0.0.5",
     "python-Levenshtein==0.23.0", # for fast fuzzy matching
 ]
 

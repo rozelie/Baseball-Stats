@@ -1,7 +1,21 @@
 from dataclasses import dataclass
 
-from cobp.models.game import Game, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID, Player
+from pyretrosheet.models.game import Game
+from pyretrosheet.models.player import Player
+
+from cobp.utils import (
+    TEAM_PLAYER_ID,
+    get_players_plays_used_in_stats,
+    is_play_at_bat,
+    is_play_double,
+    is_play_hit,
+    is_play_hit_by_pitch,
+    is_play_home_run,
+    is_play_sacrifice_fly,
+    is_play_single,
+    is_play_triple,
+    is_play_walk,
+)
 
 
 @dataclass
@@ -16,6 +30,8 @@ class BasicStats:
     doubles: int = 0
     triples: int = 0
     home_runs: int = 0
+
+    # to be populated from baseball reference
     runs: int = 0
     runs_batted_in: int = 0
 
@@ -23,12 +39,8 @@ class BasicStats:
 PlayerToBasicStats = dict[str, BasicStats]
 
 
-def get_player_to_basic_stats(games: list[Game]) -> PlayerToBasicStats:
-    players = get_players_in_games(games)
+def get_player_to_basic_stats(games: list[Game], players: list[Player]) -> PlayerToBasicStats:
     player_to_basic_stats = {player.id: _get_players_basic_stats(games, player) for player in players}
-    for game in games:
-        _add_player_runs_from_game(game, player_to_basic_stats)
-
     player_to_basic_stats[TEAM_PLAYER_ID] = _get_teams_basic_stats(player_to_basic_stats)
     player_to_basic_stats[TEAM_PLAYER_ID].games = len(games)
     return player_to_basic_stats
@@ -36,41 +48,29 @@ def get_player_to_basic_stats(games: list[Game]) -> PlayerToBasicStats:
 
 def _get_players_basic_stats(games: list[Game], player: Player) -> BasicStats:
     basic_stats = BasicStats()
-    for game in games:
-        if not (game_player := game.get_player(player.id)):
-            continue
-
+    for _, plays in get_players_plays_used_in_stats(games, player):
         basic_stats.games += 1
-        for play in game_player.plays:
-            if play.is_at_bat:
+        for play in plays:
+            if is_play_at_bat(play):
                 basic_stats.at_bats += 1
-            if play.is_hit:
+            if is_play_hit(play):
                 basic_stats.hits += 1
-            if play.is_walk:
+            if is_play_walk(play):
                 basic_stats.walks += 1
-            if play.is_hit_by_pitch:
+            if is_play_hit_by_pitch(play):
                 basic_stats.hit_by_pitches += 1
-            if play.is_sacrifice_fly:
+            if is_play_sacrifice_fly(play):
                 basic_stats.sacrifice_flys += 1
-            if play.is_single:
+            if is_play_single(play):
                 basic_stats.singles += 1
-            if play.is_double:
+            if is_play_double(play):
                 basic_stats.doubles += 1
-            if play.is_triple:
+            if is_play_triple(play):
                 basic_stats.triples += 1
-            if play.is_home_run:
+            if is_play_home_run(play):
                 basic_stats.home_runs += 1
 
-            basic_stats.runs_batted_in += play.delta.batter_rbis
-
     return basic_stats
-
-
-def _add_player_runs_from_game(game: Game, player_to_basic_stats: PlayerToBasicStats) -> None:
-    for inning_plays in game.inning_to_plays.values():
-        for play in inning_plays:
-            for player_id in play.delta.player_ids_scoring_a_run:
-                player_to_basic_stats[player_id].runs += 1
 
 
 def _get_teams_basic_stats(player_to_basic_stats: PlayerToBasicStats) -> BasicStats:
@@ -85,7 +85,5 @@ def _get_teams_basic_stats(player_to_basic_stats: PlayerToBasicStats) -> BasicSt
         team_basic_stats.doubles += basic_stat.doubles
         team_basic_stats.triples += basic_stat.triples
         team_basic_stats.home_runs += basic_stat.home_runs
-        team_basic_stats.runs_batted_in += basic_stat.runs_batted_in
-        team_basic_stats.runs += basic_stat.runs
 
     return team_basic_stats

@@ -1,9 +1,11 @@
 """Calculate BA stats from game data."""
 from dataclasses import dataclass
 
-from cobp.models.game import Game, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID, Player
+from pyretrosheet.models.game import Game
+from pyretrosheet.models.player import Player
+
 from cobp.stats.stat import Stat
+from cobp.utils import TEAM_PLAYER_ID, get_players_plays_used_in_stats, is_play_at_bat, is_play_hit
 
 
 @dataclass
@@ -25,8 +27,7 @@ class BA(Stat):
 PlayerToBA = dict[str, BA]
 
 
-def get_player_to_ba(games: list[Game]) -> PlayerToBA:
-    players = get_players_in_games(games)
+def get_player_to_ba(games: list[Game], players: list[Player]) -> PlayerToBA:
     player_to_ba = {player.id: _get_ba(games, player) for player in players}
     player_to_ba[TEAM_PLAYER_ID] = _get_teams_ba(player_to_ba)
     return player_to_ba
@@ -34,21 +35,15 @@ def get_player_to_ba(games: list[Game]) -> PlayerToBA:
 
 def _get_ba(games: list[Game], player: Player) -> BA:
     ba = BA()
-    for game in games:
-        if not (game_player := game.get_player(player.id)):
-            continue
-
-        for play in game_player.plays:
-            if play.is_unused_in_stats:
-                continue
-
-            if not play.is_hit and not play.is_at_bat:
+    for _, plays in get_players_plays_used_in_stats(games, player):
+        for play in plays:
+            if not is_play_hit(play) and not is_play_at_bat(play):
                 ba.add_play(play, resultant="N/A", color="red")
                 continue
 
-            if play.is_hit:
+            if is_play_hit(play):
                 ba.hits += 1
-            if play.is_at_bat:
+            if is_play_at_bat(play):
                 ba.at_bats += 1
             ba.add_play(play)
 
