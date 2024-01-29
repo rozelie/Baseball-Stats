@@ -4,9 +4,10 @@ from traceback import format_exc
 
 import pandas as pd
 import streamlit as st
-from pyretrosheet.load import load_games
-from pyretrosheet.models.game import Game
 from streamlit.delta_generator import DeltaGenerator
+
+from pyretrosheet.models.game import Game
+from pyretrosheet.load import load_games
 
 from cobp import session
 from cobp.data import cross_reference
@@ -33,13 +34,11 @@ def load_season_games(
         logger.info(f"Found {len(games_for_year)} games for {year} ({basic_info_only=})")
         if game_ids:
             teams_games_for_year = [g for g in games_for_year if g.id.raw in game_ids]
-            logger.info(f"Found {len(teams_games_for_year)} games for {year} matching {len(game_ids)} game ids")
+            logger.info(f"Found {len(teams_games_for_year)} games for {year}, matching {len(game_ids)} game ids")
         else:
-            teams_games_for_year = [
-                g for g in games_for_year if team.retrosheet_id in (g.home_team_id, g.visiting_team_id)
-            ]
+            teams_games_for_year = [g for g in games_for_year if team.retrosheet_id in (g.home_team_id, g.visiting_team_id)]
             logger.info(f"Found {len(teams_games_for_year)} games for {year} {team.pretty_name}")
-
+        
         return teams_games_for_year
     except ValueError:
         display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
@@ -136,6 +135,7 @@ def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) 
     loaded_games = load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
     player_to_stats = get_player_to_stats(loaded_games, team)
     display_game(
+        team=team,
         games=loaded_games,
         player_to_stats=player_to_stats,
         player_to_stats_df=get_player_to_stats_df(loaded_games, player_to_stats, team=team, year=year),

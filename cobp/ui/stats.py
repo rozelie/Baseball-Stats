@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 from pyretrosheet.models.game import Game
 
+from cobp.models.team import Team
 from cobp.stats.aggregated import PlayerStats, PlayerToStats, get_player_to_game_stat_df
 from cobp.stats.summary import get_team_seasonal_summary_stats_df
 from cobp.ui import download, formatters
@@ -9,12 +10,13 @@ from cobp.ui.selectors import get_correlation_method, get_player_selection, get_
 
 
 def display_game(
+    team: Team,
     games: list[Game],
     player_to_stats: PlayerToStats,
     player_to_stats_df: pd.DataFrame,
 ) -> None:
     player_to_stats_df = player_to_stats_df.drop(columns=["Team", "Year", "ID"])
-    _display_stats(games, player_to_stats_df)
+    _display_stats(team, games, player_to_stats_df)
     if len(games) > 1:
         _display_summary_stats(games, player_to_stats)
         _display_correlations(games, player_to_stats)
@@ -26,8 +28,8 @@ def display_game(
     _display_footer()
 
 
-def _display_stats(games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
-    team_pretty_name = games[0].team.pretty_name
+def _display_stats(team: Team, games: list[Game], player_to_stats_df: pd.DataFrame) -> None:
+    team_pretty_name = team.pretty_name
     st.header(f"{team_pretty_name} Stats")
     # ignore players without any at bats as they will have 0 values for all stats
     filtered_df = player_to_stats_df[player_to_stats_df["AB"] > 0]

@@ -80,7 +80,7 @@ def _get_sp(games: list[Game], player: Player) -> SP:
 
             sp.add_play(play)
 
-        sp.game_to_stat[game.id] = game_sp
+        sp.game_to_stat[game.id.raw] = game_sp
 
     sp.add_arithmetic()
     return sp
