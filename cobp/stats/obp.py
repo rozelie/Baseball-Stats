@@ -10,13 +10,8 @@ from cobp.utils import (
     TEAM_PLAYER_ID,
     does_inning_have_an_on_base,
     does_play_have_on_base_before_it_in_inning,
-    get_players_plays_used_in_stats,
-    is_play_at_bat,
+    get_players_plays,
     is_play_first_of_inning,
-    is_play_hit,
-    is_play_hit_by_pitch,
-    is_play_sacrifice_fly,
-    is_play_walk,
 )
 
 
@@ -79,7 +74,7 @@ def get_player_to_loop(games: list[Game], players: list[Player]) -> PlayerToOBP:
 
 def _get_obp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
-    for game, plays in get_players_plays_used_in_stats(games, player):
+    for game, plays in get_players_plays(games, player):
         for play in plays:
             obp.add_play(play)
             _increment_obp_counters(game, play, obp)
@@ -90,7 +85,7 @@ def _get_obp(games: list[Game], player: Player) -> OBP:
 
 def _get_cobp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
-    for game, plays in get_players_plays_used_in_stats(games, player):
+    for game, plays in get_players_plays(games, player):
         for play in plays:
             if not does_inning_have_an_on_base(game, play.inning, play.team_location):
                 obp.add_play(play, resultant="N/A (no other on-base in inning)", color="red")
@@ -105,7 +100,7 @@ def _get_cobp(games: list[Game], player: Player) -> OBP:
 
 def _get_sobp(games: list[Game], player: Player) -> OBP:
     obp = OBP()
-    for game, plays in get_players_plays_used_in_stats(games, player):
+    for game, plays in get_players_plays(games, player):
         for play in plays:
             if not does_play_have_on_base_before_it_in_inning(game, play):
                 obp.add_play(play, resultant="N/A (no other on-base prior to play)", color="red")
@@ -126,7 +121,7 @@ def _get_sobp(games: list[Game], player: Player) -> OBP:
 
 def _get_loop(games: list[Game], player: Player) -> OBP:
     obp = OBP()
-    for game, plays in get_players_plays_used_in_stats(games, player):
+    for game, plays in get_players_plays(games, player):
         for play in plays:
             if not is_play_first_of_inning(game, play):
                 obp.add_play(play, resultant="N/A (player is not first batter in inning)", color="red")
@@ -166,19 +161,19 @@ def _increment_obp_counters(game: Game, play: Play, obp: OBP) -> None:
         obp.game_to_stat[game.id.raw] = OBP()
 
     game_obp = obp.game_to_stat[game.id.raw]
-    if is_play_at_bat(play):
+    if play.is_an_at_bat():
         obp.at_bats += 1
         game_obp.at_bats += 1
 
-    if is_play_hit(play):
+    if play.is_hit():
         obp.hits += 1
         game_obp.hits += 1
-    elif is_play_walk(play):
+    elif play.is_walk():
         obp.walks += 1
         game_obp.walks += 1
-    elif is_play_hit_by_pitch(play):
+    elif play.is_hit_by_pitch():
         obp.hit_by_pitches += 1
         game_obp.hit_by_pitches += 1
-    elif is_play_sacrifice_fly(play):
+    elif play.is_sacrifice_fly():
         obp.sacrifice_flys += 1
         game_obp.sacrifice_flys += 1

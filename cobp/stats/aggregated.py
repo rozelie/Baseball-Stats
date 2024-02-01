@@ -6,6 +6,7 @@ from typing import Mapping
 import pandas as pd
 from pyretrosheet.models.game import Game
 from pyretrosheet.models.player import Player
+from pyretrosheet.views import get_team_players
 
 from cobp.data import baseball_reference
 from cobp.env import ENV
@@ -16,7 +17,7 @@ from cobp.stats.cops import COPS, get_player_to_cops
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_loop, get_player_to_obp, get_player_to_sobp
 from cobp.stats.ops import OPS, get_player_to_ops
 from cobp.stats.sp import SP, get_player_to_sp
-from cobp.utils import TEAM_PLAYER_ID, build_team_player, get_team_players
+from cobp.utils import TEAM_PLAYER_ID, build_team_player
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ PlayerToStats = dict[str, PlayerStats]
 
 
 def get_player_to_stats(games: list[Game], team: Team) -> PlayerToStats:
-    players = get_team_players(games, team)
+    players = get_team_players(games, team.retrosheet_id)
     player_to_obp = get_player_to_obp(games, players)
     player_to_cobp = get_player_to_cobp(games, players)
     player_to_sobp = get_player_to_sobp(games, players)
@@ -79,7 +80,7 @@ def get_player_to_stats_df(
     team: Team,
     year: int,
 ) -> pd.DataFrame:
-    players = [build_team_player(), *get_team_players(games, team)]
+    players = [build_team_player(), *get_team_players(games, team.retrosheet_id)]
     player_id_to_player = {p.id: p for p in players}
     data: Mapping[str, list[str | float | int]] = defaultdict(list)
     for player_id, stats in player_to_stats.items():
@@ -118,8 +119,8 @@ def get_player_to_stats_df(
 def get_player_to_game_stat_df(
     games: list[Game], team: Team, player_to_stats: PlayerToStats, stat_name: str
 ) -> pd.DataFrame:
-    players = [build_team_player(), get_team_players(games, team)]
-    player_id_to_player = {p.id for p in players}
+    players = [build_team_player(), get_team_players(games, team.retrosheet_id)]
+    player_id_to_player = {p.id: p for p in players}
     data: Mapping[str, list[str | float]] = defaultdict(list)
     for game_id, player_game_stat in _get_game_to_player_stat(games, team, player_to_stats, stat_name).items():
         data["Game"].append(game_id)
@@ -133,7 +134,7 @@ def get_player_to_game_stat_df(
 def _get_game_to_player_stat(
     games: list[Game], team: Team, player_to_stats: PlayerToStats, stat_name: str
 ) -> Mapping[str, Mapping[str, float]]:
-    players = get_team_players(games, team)
+    players = get_team_players(games, team.retrosheet_id)
     player_id_to_player = {p.id for p in players}
     game_to_player_stat: Mapping[str, Mapping[str, float]] = defaultdict(dict)
     for player_id, _ in player_id_to_player.items():

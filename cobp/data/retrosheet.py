@@ -40,7 +40,8 @@
 #         except requests.exceptions.RequestException:
 #             if attempts >= 3:
 #                 raise
-#             logger.exception(f"Retrosheet request failed - sleeping for {sleep_seconds_between_failure}s and retrying")
+#             logger.exception(f"Retrosheet request failed -
+# .            sleeping for {sleep_seconds_between_failure}s and retrying")
 #             time.sleep(sleep_seconds_between_failure)
 
 #     return ZipFile(BytesIO(response.content))

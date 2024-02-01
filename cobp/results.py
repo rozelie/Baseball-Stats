@@ -4,10 +4,9 @@ from traceback import format_exc
 
 import pandas as pd
 import streamlit as st
-from streamlit.delta_generator import DeltaGenerator
-
-from pyretrosheet.models.game import Game
 from pyretrosheet.load import load_games
+from pyretrosheet.models.game import Game
+from streamlit.delta_generator import DeltaGenerator
 
 from cobp import session
 from cobp.data import cross_reference
@@ -31,14 +30,16 @@ def load_season_games(
     try:
         # @TODO: Cache results for yearly results
         games_for_year = list(load_games(year=year, basic_info_only=basic_info_only))
-        logger.info(f"Found {len(games_for_year)} games for {year} ({basic_info_only=})")
+        logger.info(f"Loaded {len(games_for_year)} games for {year} ({basic_info_only=})")
         if game_ids:
             teams_games_for_year = [g for g in games_for_year if g.id.raw in game_ids]
-            logger.info(f"Found {len(teams_games_for_year)} games for {year}, matching {len(game_ids)} game ids")
+            logger.info(f"Loaded {len(teams_games_for_year)} games for {year}, matching {len(game_ids)} game ids")
         else:
-            teams_games_for_year = [g for g in games_for_year if team.retrosheet_id in (g.home_team_id, g.visiting_team_id)]
-            logger.info(f"Found {len(teams_games_for_year)} games for {year} {team.pretty_name}")
-        
+            teams_games_for_year = [
+                g for g in games_for_year if team.retrosheet_id in (g.home_team_id, g.visiting_team_id)
+            ]
+            logger.info(f"Loaded {len(teams_games_for_year)} games for {year} {team.pretty_name}")
+
         return teams_games_for_year
     except ValueError:
         display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
@@ -147,7 +148,7 @@ def _get_games_selection(all_games: list[Game]) -> list[Game] | None:
     if not game_:
         return None
 
-    return all_games if game_ == ENTIRE_SEASON else [game_]  # type: ignore
+    return all_games if game_ == ENTIRE_SEASON else [game_]
 
 
 def _get_team_player_to_stats_df(
@@ -159,7 +160,7 @@ def _get_team_player_to_stats_df(
 ) -> pd.DataFrame:
     progress.progress(current_iteration / total_iterations, text=f"Loading {year} {team.pretty_name} data...")
     team_games: list[Game] = load_season_games(year, team)
-    team_player_to_stats = get_player_to_stats(team_games)
+    team_player_to_stats = get_player_to_stats(team_games, team)
     df = get_player_to_stats_df(
         team_games,
         team_player_to_stats,

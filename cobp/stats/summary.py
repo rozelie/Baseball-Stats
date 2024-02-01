@@ -41,7 +41,7 @@ def _get_team_seasonal_summary_stats_for_stat(
     stat_values: list[float] = []
     team_stat = getattr(team_stats, stat)
     for game in games:
-        team_game_stat = team_stat.game_to_stat.get(game.id)
+        team_game_stat = team_stat.game_to_stat.get(game.id.raw)
         if team_game_stat:
             stat_values.append(team_game_stat.value)
 

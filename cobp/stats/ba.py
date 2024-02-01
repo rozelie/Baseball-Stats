@@ -5,7 +5,7 @@ from pyretrosheet.models.game import Game
 from pyretrosheet.models.player import Player
 
 from cobp.stats.stat import Stat
-from cobp.utils import TEAM_PLAYER_ID, get_players_plays_used_in_stats, is_play_at_bat, is_play_hit
+from cobp.utils import TEAM_PLAYER_ID, get_players_plays
 
 
 @dataclass
@@ -35,16 +35,17 @@ def get_player_to_ba(games: list[Game], players: list[Player]) -> PlayerToBA:
 
 def _get_ba(games: list[Game], player: Player) -> BA:
     ba = BA()
-    for _, plays in get_players_plays_used_in_stats(games, player):
+    for _, plays in get_players_plays(games, player):
         for play in plays:
-            if not is_play_hit(play) and not is_play_at_bat(play):
+            if not play.is_hit() and not play.is_an_at_bat():
                 ba.add_play(play, resultant="N/A", color="red")
                 continue
 
-            if is_play_hit(play):
+            if play.is_hit():
                 ba.hits += 1
-            if is_play_at_bat(play):
+            if play.is_an_at_bat():
                 ba.at_bats += 1
+
             ba.add_play(play)
 
     ba.add_arithmetic()

@@ -240,7 +240,8 @@
 #                 continue
 
 #             logger.debug(
-#                 f"Handling substitution: {line.values=} | sub={substitution_player.id} | subbed={substituted_player.id}"
+#                 f"Handling substitution: {line.values=} | sub={substitution_player.id} |
+# .                  subbed={substituted_player.id}"
 #             )
 #             if substitution.replacing_player_of_batting_order != 0:
 #                 logger.debug("Sub replaces player in batting order - switching lineup positions")

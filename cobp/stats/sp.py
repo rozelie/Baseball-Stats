@@ -5,15 +5,7 @@ from pyretrosheet.models.game import Game
 from pyretrosheet.models.player import Player
 
 from cobp.stats.stat import Stat
-from cobp.utils import (
-    TEAM_PLAYER_ID,
-    get_players_plays_used_in_stats,
-    is_play_at_bat,
-    is_play_double,
-    is_play_home_run,
-    is_play_single,
-    is_play_triple,
-)
+from cobp.utils import TEAM_PLAYER_ID, get_players_plays
 
 
 @dataclass
@@ -58,23 +50,23 @@ def get_player_to_sp(games: list[Game], players: list[Player]) -> PlayerToSP:
 
 def _get_sp(games: list[Game], player: Player) -> SP:
     sp = SP()
-    for game, plays in get_players_plays_used_in_stats(games, player):
+    for game, plays in get_players_plays(games, player):
         game_sp = SP()
         for play in plays:
-            if is_play_at_bat(play):
+            if play.is_an_at_bat():
                 sp.at_bats += 1
                 game_sp.at_bats += 1
 
-            if is_play_single(play):
+            if play.is_single():
                 sp.singles += 1
                 game_sp.singles += 1
-            elif is_play_double(play):
+            elif play.is_double():
                 sp.doubles += 1
                 game_sp.doubles += 1
-            elif is_play_triple(play):
+            elif play.is_triple():
                 sp.triples += 1
                 game_sp.triples += 1
-            elif is_play_home_run(play):
+            elif play.is_home_run():
                 sp.home_runs += 1
                 game_sp.home_runs += 1
 

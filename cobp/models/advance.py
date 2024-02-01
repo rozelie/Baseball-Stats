@@ -202,7 +202,8 @@
 
 #             advance = Advance.from_caught_stealing_error(caught_stealing)
 #             # handle cases like: K+CS2(2E6).1-1
-#             # where we don't want to advance the runner from caught stealing since it's explicit in 1-1 advance already
+#             # where we don't want to advance the runner from caught stealing since it's explicit in 1-1
+# .           advance already
 #             if is_errored_out_but_advance_still_happens(
 #                 caught_stealing
 #             ) and not _is_advance_already_accounted_for_after_stolen_base(advances, advance):
@@ -231,7 +232,8 @@
 #         advances.append(stolen_base_advance)
 
 
-# def _is_advance_already_accounted_for_after_stolen_base(advances: list[Advance], stolen_base_advance: Advance) -> bool:
+# def _is_advance_already_accounted_for_after_stolen_base(advances: list[Advance], stolen_base_advance: Advance)
+# -> bool:
 #     """For a stolen base, there is the possible case of an error happening after the base has been stolen that causes
 #     the stealer to advance further.
 

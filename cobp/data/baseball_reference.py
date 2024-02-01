@@ -131,10 +131,3 @@ def dump_all_seasons():
 
 def _get_players_seasonal_stats_data_path(year: int) -> Path:
     return paths.DATA_DIR / str(year) / "baseball_reference.csv"
-
-
-# 2023-11-27 15:57:42,536 INFO cross_reference:42 - Unable to find baseball reference player rbis:
-# year=2022 | player_name='Noah Syndergaard' | player_id='syndn001' | team_id='LAA'
-# a = get_seasonal_players_rbis(2022)
-# b = a[a["baseball_reference_team_id"] == "LAA"]
-# print(a)

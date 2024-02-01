@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 from pyretrosheet.models.game import Game
+from pyretrosheet.views import get_team_players
 
 from cobp.models.team import Team
 from cobp.stats.aggregated import PlayerStats, PlayerToStats, get_player_to_game_stat_df
@@ -19,12 +20,12 @@ def display_game(
     _display_stats(team, games, player_to_stats_df)
     if len(games) > 1:
         _display_summary_stats(games, player_to_stats)
-        _display_correlations(games, player_to_stats)
+        _display_correlations(team, games, player_to_stats)
 
     if len(games) == 1:
         _display_innings_toggle(games[0])
 
-    _display_player_stats_explanations_toggle(games, player_to_stats)
+    _display_player_stats_explanations_toggle(games, team, player_to_stats)
     _display_footer()
 
 
@@ -46,10 +47,10 @@ def _display_summary_stats(games: list[Game], player_to_stats: PlayerToStats) ->
     st.dataframe(formatted_df, hide_index=True, use_container_width=True)
 
 
-def _display_correlations(games: list[Game], player_to_stats: PlayerToStats) -> None:
+def _display_correlations(team: Team, games: list[Game], player_to_stats: PlayerToStats) -> None:
     st.header("Correlations")
     if stat_to_correlate := get_stat_to_correlate():
-        player_to_game_stat_df = get_player_to_game_stat_df(games, player_to_stats, stat_to_correlate.lower())
+        player_to_game_stat_df = get_player_to_game_stat_df(games, team, player_to_stats, stat_to_correlate.lower())
         player_to_game_stat_no_game_df = player_to_game_stat_df.drop(columns=["Game"])
         _display_correlations_df(stat_to_correlate, player_to_game_stat_no_game_df)
         _display_df_toggle(f"Player {stat_to_correlate} Per Game", player_to_game_stat_df)
@@ -90,9 +91,9 @@ def _display_innings_toggle(game: Game) -> None:
             st.divider()
 
 
-def _display_player_stats_explanations_toggle(games: list[Game], player_to_stats: PlayerToStats) -> None:
+def _display_player_stats_explanations_toggle(games: list[Game], team: Team, player_to_stats: PlayerToStats) -> None:
     with st.expander("View Player Stat Explanations"):
-        player = get_player_selection(get_players_in_games(games))
+        player = get_player_selection(get_team_players(games, team.retrosheet_id))
         if player:
             st.markdown(":green[GREEN]: On-Base | :orange[ORANGE]: At Bat | :red[RED]: N/A")
             _display_player_stats_explanation_row(player_to_stats[player.id])
