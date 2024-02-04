@@ -5,13 +5,6 @@ from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 
-# class TeamLocation(Enum):
-#     """Team location, as defined in Retrosheet spec."""
-
-#     VISITING = 0
-#     HOME = 1
-
-
 @dataclass
 class Team:
     """Team information as defined in Retrosheet spec."""
