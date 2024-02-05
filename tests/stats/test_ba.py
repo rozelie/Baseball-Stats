@@ -1,6 +1,7 @@
-from cobp.models.play_result import PlayResult
-from cobp.models.player import TEAM_PLAYER_ID
+from pyretrosheet.models.play.description import BatterEvent, RunnerEvent
+
 from cobp.stats import ba
+from cobp.utils import TEAM_PLAYER_ID
 
 
 class TestBA:
@@ -19,19 +20,19 @@ class TestBA:
         assert ba_.value == 0.0
 
 
-def test_get_player_to_ba(mock_game, mock_player, mock_player_2, mock_play_builder):
-    mock_player.plays = [
-        mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id, inning=1),
-        mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player.id, inning=2),
+def test_get_player_to_ba(mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder):
+    mock_game.chronological_events = [
+        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id, inning=1),
+        mock_play_builder(
+            mock_event_builder(runner_event=RunnerEvent.CAUGHT_STEALING), batter_id=mock_player_2.id, inning=1
+        ),
+        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id, inning=2),
+        mock_play_builder(mock_event_builder(BatterEvent.WALK), batter_id=mock_player_2.id, inning=2),
     ]
-    mock_player_2.plays = [
-        mock_play_builder(result=PlayResult.CAUGHT_STEALING, batter_id=mock_player_2.id, inning=1),
-        mock_play_builder(result=PlayResult.WALK, batter_id=mock_player_2.id, inning=2),
-    ]
-    mock_game.players = [mock_player, mock_player_2]
     games = [mock_game]
+    players = [mock_player, mock_player_2]
 
-    player_to_ba = ba.get_player_to_ba(games)
+    player_to_ba = ba.get_player_to_ba(games, players)
 
     assert len(player_to_ba) == 3
     assert player_to_ba[mock_player.id].value == 0.5
