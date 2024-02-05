@@ -61,3 +61,18 @@ def is_play_first_of_inning(game: Game, play: Play) -> bool:
         include_home_team=play.team_location == TeamLocation.HOME,
     )
     return inning_plays[play.inning][0] == play  # type: ignore
+
+
+def prettify_play(play: Play) -> str:
+    event = play.event
+    desc = event.description
+    parts = []
+    if desc.batter_event:
+        parts.append(desc.batter_event.name)
+    if desc.runner_event:
+        parts.append(desc.runner_event.name)
+    for modifier in event.modifiers:
+        parts.append(modifier.type.name)
+
+    parts.append(play.raw)
+    return " | ".join(parts)

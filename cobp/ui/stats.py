@@ -1,13 +1,15 @@
 import pandas as pd
 import streamlit as st
 from pyretrosheet.models.game import Game
-from pyretrosheet.views import get_team_players
+from pyretrosheet.models.team import TeamLocation
+from pyretrosheet.views import get_inning_plays, get_team_players
 
 from cobp.models.team import Team
 from cobp.stats.aggregated import PlayerStats, PlayerToStats, get_player_to_game_stat_df
 from cobp.stats.summary import get_team_seasonal_summary_stats_df
 from cobp.ui import download, formatters
 from cobp.ui.selectors import get_correlation_method, get_player_selection, get_stat_to_correlate
+from cobp.utils import does_inning_have_an_on_base, prettify_play
 
 
 def display_game(
@@ -23,7 +25,7 @@ def display_game(
         _display_correlations(team, games, player_to_stats)
 
     if len(games) == 1:
-        _display_innings_toggle(games[0])
+        _display_innings_toggle(games[0], team)
 
     _display_player_stats_explanations_toggle(games, team, player_to_stats)
     _display_footer()
@@ -76,17 +78,22 @@ def _display_df_toggle(header: str, df: pd.DataFrame) -> None:
         st.dataframe(df, use_container_width=True, hide_index=True)
 
 
-def _display_innings_toggle(game: Game) -> None:
-    header = f"Inning Play-by-Play For {game.team.pretty_name}"
+def _display_innings_toggle(game: Game, team: Team) -> None:
+    team_is_home = game.home_team_id == team.retrosheet_id
+    team_is_visiting = game.visiting_team_id == team.retrosheet_id
+    team_location = TeamLocation.HOME if team_is_home else TeamLocation.VISITING
+    player_id_to_player = {p.id: p for p in get_team_players([game], team.retrosheet_id)}
+    header = f"Inning Play-by-Play For {team.pretty_name}"
     with st.expander(f"View {header}"):
         st.header(header)
-        for inning, plays in game.inning_to_plays.items():
-            has_an_on_base = "Yes" if game.inning_has_an_on_base(inning) else "No"
+        for inning, plays in get_inning_plays(
+            game, include_home_team=team_is_home, include_visiting_team=team_is_visiting
+        ).items():
+            has_an_on_base = "Yes" if does_inning_have_an_on_base(game, inning, team_location) else "No"
             st.markdown(f"**Inning {inning}** (Has An On Base: {has_an_on_base})")
             for play in plays:
-                player = game.get_player(play.batter_id)
-                if player:
-                    st.markdown(f"- {player.name}: {play.pretty_description} => :{play.color}[{play.id}]")
+                player = player_id_to_player[play.batter_id]
+                st.markdown(f"- {player.name}: {prettify_play(play)}")
 
             st.divider()
 
