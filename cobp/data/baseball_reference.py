@@ -12,6 +12,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from cobp import paths
+from cobp.models.team import Team
 from cobp.ui.selectors import FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR
 
 logger = logging.getLogger(__name__)
@@ -90,6 +91,7 @@ def dump_players_seasonal_stats(year: int) -> None:
         )
 
     data_path = _get_players_seasonal_stats_data_path(year)
+    data_path.parent.mkdir(parents=True, exist_ok=True)
     data_path.write_text("\n".join(lines))
     logger.info(f"Wrote baseball reference seasonal players rbis to {data_path.as_posix()}")
 
@@ -104,7 +106,9 @@ def get_seasonal_players_stats(year: int) -> pd.DataFrame:
     return pd.read_csv(data_path)
 
 
-def lookup_player(df: pd.DataFrame, player_name: str, team_id: str) -> pd.Series | None:
+def lookup_player(df: pd.DataFrame, player_name: str, team: Team) -> pd.Series | None:
+    team_id = team.baseball_reference_id or team.retrosheet_id
+
     def fuzzy_lookup(query: str, choices: list[str], threshold: int = 50) -> str:
         """
         Note that the threshold is relatively low due to some players playing under different names.
@@ -115,7 +119,9 @@ def lookup_player(df: pd.DataFrame, player_name: str, team_id: str) -> pd.Series
         if score >= threshold:
             return result  # type: ignore
 
-        raise ValueError(f"Unable to perform a fuzzy lookup of {player_name=} | {team_id=} | {result=} | {score=}")
+        raise ValueError(
+            f"Unable to perform a fuzzy lookup of {player_name=} | {team_id=} | {result=} | {score=} | {choices=}"
+        )
 
     team_players = df.loc[df["baseball_reference_team_id"] == team_id]
     # some players have accented names in Baseball Reference data but not in Retrosheet so

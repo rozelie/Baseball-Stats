@@ -9,7 +9,6 @@ from pyretrosheet.models.game import Game
 from streamlit.delta_generator import DeltaGenerator
 
 from cobp import session
-from cobp.data import cross_reference
 from cobp.env import ENV
 from cobp.models.team import Team, get_teams_for_year
 from cobp.stats.aggregated import get_player_to_stats, get_player_to_stats_df
@@ -168,16 +167,4 @@ def _get_team_player_to_stats_df(
     )
     # remove players without ABs as they are not currently useful
     df = df[df["AB"] > 0]
-
-    if not ENV.USE_BASEBALL_REFERENCE_R_AND_RBI_STATS:
-        discrepancies = cross_reference.get_bb_ref_and_retrosheet_rbi_discrepancies(
-            year=year,
-            team=team,
-            retrosheet_df=df,
-        )
-        if discrepancies:
-            cross_reference.write_bb_ref_and_retrosheet_rbi_discrepancies(
-                f"{year}_{team.retrosheet_id}.csv", discrepancies
-            )
-
     return df

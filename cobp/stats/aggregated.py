@@ -9,7 +9,6 @@ from pyretrosheet.models.player import Player
 from pyretrosheet.views import get_team_players
 
 from cobp.data import baseball_reference
-from cobp.env import ENV
 from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
@@ -152,20 +151,18 @@ def _get_game_to_player_stat(
 
 
 def _get_runs_and_rbis(year: int, team: Team, player: Player, stats: PlayerStats) -> tuple[int, int]:
-    if ENV.USE_BASEBALL_REFERENCE_R_AND_RBI_STATS and not player.id == TEAM_PLAYER_ID:
-        # players without any bats will not appear in the Baseball Reference data
-        if stats.basic.at_bats == 0:
-            return stats.basic.runs, stats.basic.runs_batted_in
+    if player.id == TEAM_PLAYER_ID:
+        return stats.basic.runs, stats.basic.runs_batted_in
 
-        bb_ref_stats = baseball_reference.get_seasonal_players_stats(year)
-        try:
-            bb_ref_player = baseball_reference.lookup_player(
-                bb_ref_stats, player.name, team.baseball_reference_id or team.retrosheet_id
-            )
-        except ValueError:
-            logger.exception(f"Unable to lookup {player.name} - falling back to Retrosheet data")
-            return stats.basic.runs, stats.basic.runs_batted_in
+    # players without any bats will not appear in the Baseball Reference data
+    if stats.basic.at_bats == 0:
+        return stats.basic.runs, stats.basic.runs_batted_in
 
-        return bb_ref_player["runs"].values[0], bb_ref_player["rbis"].values[0]  # type: ignore
+    bb_ref_stats = baseball_reference.get_seasonal_players_stats(year)
 
-    return stats.basic.runs, stats.basic.runs_batted_in
+    # handle data error where either the player id or the name is incorrect (from 2013 New York Yankees retrosheet data)
+    if player.id == "almoz001" and player.name == "Drew Stubbs":
+        player.name = "Zoilo Almonte"
+
+    bb_ref_player = baseball_reference.lookup_player(bb_ref_stats, player.name, team)
+    return bb_ref_player["runs"].values[0], bb_ref_player["rbis"].values[0]  # type: ignore
