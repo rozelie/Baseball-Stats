@@ -27,7 +27,7 @@ def load_season_games(
     game_ids: list[str] | None = None,
 ) -> list[Game]:
     try:
-        games_for_year = list(load_games(year=year, basic_info_only=basic_info_only))
+        games_for_year = load_games(year=year, basic_info_only=basic_info_only)
         logger.info(f"Loaded {len(games_for_year)} games for {year} ({basic_info_only=})")
         if game_ids:
             teams_games_for_year = [g for g in games_for_year if g.id.raw in game_ids]

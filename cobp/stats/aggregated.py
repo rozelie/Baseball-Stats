@@ -156,13 +156,24 @@ def _get_runs_and_rbis(year: int, team: Team, player: Player, stats: PlayerStats
 
     # players without any bats will not appear in the Baseball Reference data
     if stats.basic.at_bats == 0:
-        return stats.basic.runs, stats.basic.runs_batted_in
+        return 0, 0
+
+    # rare case where the player will appear in the baseball reference data due to having more than one
+    # at bat for the season, but they had all of their hits for a single team and no hits for another team
+    # so they are not reported to have any hitting stats for that team
+    no_team_at_bats = [
+        ("Mat Latos", "ANA", 2015),
+        ("Jay Buente", "TBA", 2011),
+        ("Cha Seung Baek", "SEA", 2008),
+        ("Todd Wellemeyer", "KCA", 2007),
+        ("Cory Lidle", "NYA", 2006),
+        ("Felix Heredia", "NYA", 2003),
+        ("Jason Bere", "CLE", 2000),
+        ("Steve Woodard", "CLE", 2000),
+    ]
+    if (player.name, team.retrosheet_id, year) in no_team_at_bats:
+        return 0, 0
 
     bb_ref_stats = baseball_reference.get_seasonal_players_stats(year)
-
-    # handle data error where either the player id or the name is incorrect (from 2013 New York Yankees retrosheet data)
-    if player.id == "almoz001" and player.name == "Drew Stubbs":
-        player.name = "Zoilo Almonte"
-
-    bb_ref_player = baseball_reference.lookup_player(bb_ref_stats, player.name, team)
+    bb_ref_player = baseball_reference.lookup_player(bb_ref_stats, player, team, year)
     return bb_ref_player["runs"].values[0], bb_ref_player["rbis"].values[0]  # type: ignore
