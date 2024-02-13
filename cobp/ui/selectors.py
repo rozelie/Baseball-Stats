@@ -8,10 +8,10 @@ from cobp.models.team import TEAMS, Team, get_teams_for_year
 
 EMPTY_CHOICE = ""
 ENTIRE_SEASON = "Entire Season"
-FULL_PERIOD = "Full Period"
 ALL_TEAMS = "All Teams"
 FIRST_AVAILABLE_YEAR = 2000
 LAST_AVAILABLE_YEAR = 2022
+FULL_PERIOD = f"Full Period ({FIRST_AVAILABLE_YEAR} - {LAST_AVAILABLE_YEAR})"
 
 
 def get_year_selection() -> int | str | None:
