@@ -155,14 +155,13 @@ def _fuzzy_lookup_player(player: str, team_players: list[str]) -> str:
     player_last_name = player.split(" ")[-1]
     matched_player_last_name = matched_player.split(" ")[-1]
     if player_last_name == matched_player_last_name:
-        return matched_player # type: ignore
+        return matched_player  # type: ignore
 
     # try fuzzy matching on last name only
     player_last_name = player.split(" ")[-1]
     for team_player in team_players:
         team_player_last_name = team_player.split(" ")[-1]
         match_ratio = fuzz.ratio(player_last_name, team_player_last_name)
-        print(f"{player_last_name=} | {team_player_last_name=} | {match_ratio=}")
         if match_ratio >= 80:
             return team_player
 

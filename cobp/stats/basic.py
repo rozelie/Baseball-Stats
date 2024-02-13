@@ -19,10 +19,6 @@ class BasicStats:
     triples: int = 0
     home_runs: int = 0
 
-    # to be populated from baseball reference
-    runs: int = 0
-    runs_batted_in: int = 0
-
 
 PlayerToBasicStats = dict[str, BasicStats]
 

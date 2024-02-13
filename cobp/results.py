@@ -132,7 +132,7 @@ def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) 
         game_ids = [game.id.raw for game in game_selection]
 
     loaded_games = load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
-    player_to_stats = get_player_to_stats(loaded_games, team)
+    player_to_stats = get_player_to_stats(loaded_games, team, year)
     display_game(
         team=team,
         games=loaded_games,
@@ -158,7 +158,7 @@ def _get_team_player_to_stats_df(
 ) -> pd.DataFrame:
     progress.progress(current_iteration / total_iterations, text=f"Loading {year} {team.pretty_name} data...")
     team_games: list[Game] = load_season_games(year, team)
-    team_player_to_stats = get_player_to_stats(team_games, team)
+    team_player_to_stats = get_player_to_stats(team_games, team, year)
     df = get_player_to_stats_df(
         team_games,
         team_player_to_stats,
