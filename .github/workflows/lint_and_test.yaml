@@ -14,8 +14,9 @@ jobs:
       with:
         python-version: 3.11
 
+    # uninstall cobp so mypy doesn't traverse site-packages for some reason (I think import following)
     - name: Install module and dependencies
-      run: pip install . && pip install .[dev]
+      run: pip install . && pip install .[dev] && pip uninstall -y cobp
 
     - name: Run linters
       run: ruff cobp && mypy cobp
