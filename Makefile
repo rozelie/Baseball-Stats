@@ -1,8 +1,8 @@
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 SRC_DIR := ${ROOT_DIR}/cobp
 TESTS_DIR := ${ROOT_DIR}/tests
-VENV_DIR := ${VENV_DIR}/venv
-VENV_BIN := ${ROOT_DIR}/venv/bin
+VENV_DIR := ${ROOT_DIR}/venv
+VENV_BIN := ${VENV_DIR}/bin
 PYTHON := ${VENV_BIN}/python
 ENTRYPOINT := ${SRC_DIR}/__main__.py
 -include .env
