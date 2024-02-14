@@ -36,7 +36,7 @@ format:
 
 lint:
 	${VENV_BIN}/ruff ${SRC_DIR}
-	${VENV_BIN}/mypy -vv ${SRC_DIR}
+	${VENV_BIN}/mypy ${SRC_DIR} --no-site-packages
 
 aws_docker_build_and_push:
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ECR_URI}
