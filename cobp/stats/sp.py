@@ -1,9 +1,11 @@
 """Calculate SP (Slugging Percentage) stats from game data."""
 from dataclasses import dataclass, field
 
-from cobp.models.game import Game, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID, Player
+from pyretrosheet.models.game import Game
+from pyretrosheet.models.player import Player
+
 from cobp.stats.stat import Stat
+from cobp.utils import TEAM_PLAYER_ID, get_players_plays
 
 
 @dataclass
@@ -40,8 +42,7 @@ class SP(Stat):
 PlayerToSP = dict[str, SP]
 
 
-def get_player_to_sp(games: list[Game]) -> PlayerToSP:
-    players = get_players_in_games(games)
+def get_player_to_sp(games: list[Game], players: list[Player]) -> PlayerToSP:
     player_to_ba = {player.id: _get_sp(games, player) for player in players}
     player_to_ba[TEAM_PLAYER_ID] = _get_teams_sp(player_to_ba)
     return player_to_ba
@@ -49,32 +50,29 @@ def get_player_to_sp(games: list[Game]) -> PlayerToSP:
 
 def _get_sp(games: list[Game], player: Player) -> SP:
     sp = SP()
-    for game in games:
-        if not (game_player := game.get_player(player.id)):
-            continue
-
+    for game, plays in get_players_plays(games, player):
         game_sp = SP()
-        for play in game_player.plays:
-            if play.is_at_bat:
+        for play in plays:
+            if play.is_an_at_bat():
                 sp.at_bats += 1
                 game_sp.at_bats += 1
 
-            if play.is_single:
+            if play.is_single():
                 sp.singles += 1
                 game_sp.singles += 1
-            elif play.is_double:
+            elif play.is_double():
                 sp.doubles += 1
                 game_sp.doubles += 1
-            elif play.is_triple:
+            elif play.is_triple():
                 sp.triples += 1
                 game_sp.triples += 1
-            elif play.is_home_run:
+            elif play.is_home_run():
                 sp.home_runs += 1
                 game_sp.home_runs += 1
 
             sp.add_play(play)
 
-        sp.game_to_stat[game.id] = game_sp
+        sp.game_to_stat[game.id.raw] = game_sp
 
     sp.add_arithmetic()
     return sp

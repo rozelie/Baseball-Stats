@@ -4,18 +4,18 @@ from dataclasses import dataclass
 from typing import Mapping
 
 import pandas as pd
+from pyretrosheet.models.game import Game
+from pyretrosheet.views import get_team_players
 
-from cobp.data import baseball_reference
-from cobp.env import ENV
-from cobp.models.game import Game, get_all_players_id_to_player, get_players_in_games
-from cobp.models.player import TEAM_PLAYER_ID, Player
 from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
 from cobp.stats.cops import COPS, get_player_to_cops
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_loop, get_player_to_obp, get_player_to_sobp
 from cobp.stats.ops import OPS, get_player_to_ops
+from cobp.stats.runs import Runs, get_player_to_runs
 from cobp.stats.sp import SP, get_player_to_sp
+from cobp.utils import build_team_player
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,7 @@ class PlayerStats:
     ops: OPS
     cops: COPS
     basic: BasicStats
+    runs: Runs
 
     @property
     def loops(self) -> float:
@@ -44,17 +45,19 @@ class PlayerStats:
 PlayerToStats = dict[str, PlayerStats]
 
 
-def get_player_to_stats(games: list[Game]) -> PlayerToStats:
-    player_to_obp = get_player_to_obp(games)
-    player_to_cobp = get_player_to_cobp(games)
-    player_to_sobp = get_player_to_sobp(games)
-    player_to_loop = get_player_to_loop(games)
-    player_to_ba = get_player_to_ba(games)
-    player_to_sp = get_player_to_sp(games)
-    player_to_ops = get_player_to_ops(games, player_to_obp, player_to_sp)
-    player_to_cops = get_player_to_cops(games, player_to_cobp, player_to_sp)
-    player_to_basic_stats = get_player_to_basic_stats(games)
-    all_players = [Player.as_team(), *get_players_in_games(games)]
+def get_player_to_stats(games: list[Game], team: Team, year: int) -> PlayerToStats:
+    players = get_team_players(games, team.retrosheet_id)
+    player_to_obp = get_player_to_obp(games, players)
+    player_to_cobp = get_player_to_cobp(games, players)
+    player_to_sobp = get_player_to_sobp(games, players)
+    player_to_loop = get_player_to_loop(games, players)
+    player_to_ba = get_player_to_ba(games, players)
+    player_to_sp = get_player_to_sp(games, players)
+    player_to_ops = get_player_to_ops(players, player_to_obp, player_to_sp)
+    player_to_cops = get_player_to_cops(players, player_to_cobp, player_to_sp)
+    player_to_basic_stats = get_player_to_basic_stats(games, players)
+    player_to_runs = get_player_to_runs(year, team, players, player_to_basic_stats)
+    all_players = [build_team_player(), *players]
     return {
         player.id: PlayerStats(
             obp=player_to_obp.get(player.id) or OBP(),
@@ -66,6 +69,7 @@ def get_player_to_stats(games: list[Game]) -> PlayerToStats:
             ops=player_to_ops.get(player.id) or OPS(),
             cops=player_to_cops.get(player.id) or COPS(),
             basic=player_to_basic_stats.get(player.id) or BasicStats(),
+            runs=player_to_runs.get(player.id) or Runs(),
         )
         for player in all_players
     }
@@ -77,11 +81,11 @@ def get_player_to_stats_df(
     team: Team,
     year: int,
 ) -> pd.DataFrame:
-    player_id_to_player = get_all_players_id_to_player(games)
+    players = [build_team_player(), *get_team_players(games, team.retrosheet_id)]
+    player_id_to_player = {p.id: p for p in players}
     data: Mapping[str, list[str | float | int]] = defaultdict(list)
     for player_id, stats in player_to_stats.items():
         player = player_id_to_player[player_id]
-        runs, rbis = _get_runs_and_rbis(year, team, player, stats)
         data["Team"].append(team.name)
         data["Year"].append(year)
         data["Player"].append(player.name)
@@ -96,8 +100,8 @@ def get_player_to_stats_df(
         data["D"].append(stats.basic.doubles)
         data["T"].append(stats.basic.triples)
         data["HR"].append(stats.basic.home_runs)
-        data["R"].append(runs)
-        data["RBI"].append(rbis)
+        data["R"].append(stats.runs.runs)
+        data["RBI"].append(stats.runs.rbis)
         data["OBP"].append(stats.obp.value)
         data["COBP"].append(stats.cobp.value)
         data["LOOP"].append(stats.loop.value)
@@ -112,10 +116,13 @@ def get_player_to_stats_df(
     return pd.DataFrame(data=data)
 
 
-def get_player_to_game_stat_df(games: list[Game], player_to_stats: PlayerToStats, stat_name: str) -> pd.DataFrame:
-    player_id_to_player = get_all_players_id_to_player(games)
+def get_player_to_game_stat_df(
+    games: list[Game], team: Team, player_to_stats: PlayerToStats, stat_name: str
+) -> pd.DataFrame:
+    players = [build_team_player(), get_team_players(games, team.retrosheet_id)]
+    player_id_to_player = {p.id: p for p in players}
     data: Mapping[str, list[str | float]] = defaultdict(list)
-    for game_id, player_game_stat in _get_game_to_player_stat(games, player_to_stats, stat_name).items():
+    for game_id, player_game_stat in _get_game_to_player_stat(games, team, player_to_stats, stat_name).items():
         data["Game"].append(game_id)
         for player_id, game_stat in player_game_stat.items():
             player = player_id_to_player[player_id]
@@ -125,11 +132,12 @@ def get_player_to_game_stat_df(games: list[Game], player_to_stats: PlayerToStats
 
 
 def _get_game_to_player_stat(
-    games: list[Game], player_to_stats: PlayerToStats, stat_name: str
+    games: list[Game], team: Team, player_to_stats: PlayerToStats, stat_name: str
 ) -> Mapping[str, Mapping[str, float]]:
+    players = get_team_players(games, team.retrosheet_id)
+    player_id_to_player = {p.id for p in players}
     game_to_player_stat: Mapping[str, Mapping[str, float]] = defaultdict(dict)
-    player_id_to_player = get_all_players_id_to_player(games, include_team=False)
-    for player_id, player in player_id_to_player.items():
+    for player_id, _ in player_id_to_player.items():
         if player_to_stats[player_id].basic.at_bats == 0:
             continue
 
@@ -141,23 +149,3 @@ def _get_game_to_player_stat(
             game_to_player_stat[game.id][player_id] = player_game_stat_value  # type: ignore
 
     return game_to_player_stat
-
-
-def _get_runs_and_rbis(year: int, team: Team, player: Player, stats: PlayerStats) -> tuple[int, int]:
-    if ENV.USE_BASEBALL_REFERENCE_R_AND_RBI_STATS and not player.id == TEAM_PLAYER_ID:
-        # players without any bats will not appear in the Baseball Reference data
-        if stats.basic.at_bats == 0:
-            return stats.basic.runs, stats.basic.runs_batted_in
-
-        bb_ref_stats = baseball_reference.get_seasonal_players_stats(year)
-        try:
-            bb_ref_player = baseball_reference.lookup_player(
-                bb_ref_stats, player.name, team.baseball_reference_id or team.retrosheet_id
-            )
-        except ValueError:
-            logger.exception(f"Unable to lookup {player.name} - falling back to Retrosheet data")
-            return stats.basic.runs, stats.basic.runs_batted_in
-
-        return bb_ref_player["runs"].values[0], bb_ref_player["rbis"].values[0]  # type: ignore
-
-    return stats.basic.runs, stats.basic.runs_batted_in

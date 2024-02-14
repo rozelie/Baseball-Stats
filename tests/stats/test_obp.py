@@ -1,7 +1,8 @@
-from cobp.models.play_modifier import PlayModifier
-from cobp.models.play_result import PlayResult
-from cobp.models.player import TEAM_PLAYER_ID
+from pyretrosheet.models.play.description import BatterEvent
+from pyretrosheet.models.play.modifier import ModifierType
+
 from cobp.stats import obp
+from cobp.utils import TEAM_PLAYER_ID
 
 
 class TestOBP:
@@ -27,26 +28,27 @@ class TestOBP:
         assert obp_.value == 0.0
 
 
-def test_get_player_to_obp(mock_game, mock_player, mock_player_2, mock_play_builder):
-    mock_player.plays = [
-        mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id, inning=1),
-        mock_play_builder(result=PlayResult.WALK, batter_id=mock_player.id, inning=2),
-        mock_play_builder(result=PlayResult.HIT_BY_PITCH, batter_id=mock_player.id, inning=3),
+def test_get_player_to_obp(
+    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder, mock_modifier_builder
+):
+    mock_game.chronological_events = [
+        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id, inning=1),
+        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=1),
+        mock_play_builder(mock_event_builder(BatterEvent.WALK), batter_id=mock_player.id, inning=2),
+        mock_play_builder(mock_event_builder(BatterEvent.NO_PLAY), batter_id=mock_player_2.id, inning=2),
+        mock_play_builder(mock_event_builder(BatterEvent.HIT_BY_PITCH), batter_id=mock_player.id, inning=3),
         mock_play_builder(
-            result=PlayResult.FIELDED_OUT,
-            modifiers=[PlayModifier.SACRIFICE_FLY],
+            mock_event_builder(
+                BatterEvent.ASSISTED_FIELDED_OUT, modifiers=[mock_modifier_builder(ModifierType.SACRIFICE_FLY)]
+            ),
             batter_id=mock_player.id,
             inning=4,
         ),
     ]
-    mock_player_2.plays = [
-        mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player_2.id, inning=1),
-        mock_play_builder(result=PlayResult.NO_PLAY, batter_id=mock_player_2.id, inning=2),
-    ]
-    mock_game.players = [mock_player, mock_player_2]
     games = [mock_game]
+    players = [mock_player, mock_player_2]
 
-    player_to_obp = obp.get_player_to_obp(games)
+    player_to_obp = obp.get_player_to_obp(games, players)
 
     assert len(player_to_obp) == 3
     assert player_to_obp[mock_player.id].value == 0.75
@@ -54,16 +56,17 @@ def test_get_player_to_obp(mock_game, mock_player, mock_player_2, mock_play_buil
     assert player_to_obp[TEAM_PLAYER_ID].value == 0.6
 
 
-def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_player_2, mock_play_builder):
-    play_1 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id)
-    play_2 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player_2.id)
-    mock_player.plays = [play_1]
-    mock_player_2.plays = [play_2]
-    mock_game.players = [mock_player, mock_player_2]
-    mock_game.inning_to_plays[1] = [play_1, play_2]
+def test_get_player_to_cobp__inning_has_on_base(
+    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
+):
+    mock_game.chronological_events = [
+        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id),
+        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id),
+    ]
     games = [mock_game]
+    players = [mock_player, mock_player_2]
 
-    player_to_cobp = obp.get_player_to_cobp(games)
+    player_to_cobp = obp.get_player_to_cobp(games, players)
 
     assert len(player_to_cobp) == 3
     assert player_to_cobp[mock_player.id].value == 1
@@ -72,17 +75,16 @@ def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_pla
 
 
 def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
-    mock_game, mock_player, mock_player_2, mock_play_builder
+    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
 ):
-    play_1 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player.id)
-    play_2 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player_2.id)
-    mock_player.plays = [play_1]
-    mock_player_2.plays = [play_2]
-    mock_game.players = [mock_player, mock_player_2]
-    mock_game.inning_to_plays[1] = [play_1, play_2]
+    mock_game.chronological_events = [
+        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id),
+        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id),
+    ]
     games = [mock_game]
+    players = [mock_player, mock_player_2]
 
-    player_to_cobp = obp.get_player_to_cobp(games)
+    player_to_cobp = obp.get_player_to_cobp(games, players)
 
     assert player_to_cobp[mock_player.id].value == 0.0
     assert player_to_cobp[mock_player.id].at_bats == 0
@@ -92,17 +94,16 @@ def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
 
 
 def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
-    mock_game, mock_player, mock_player_2, mock_play_builder
+    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
 ):
-    play_1 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player.id)
-    play_2 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player_2.id)
-    mock_player.plays = [play_1]
-    mock_player_2.plays = [play_2]
-    mock_game.players = [mock_player, mock_player_2]
-    mock_game.inning_to_plays[1] = [play_1, play_2]
+    mock_game.chronological_events = [
+        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id),
+        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player_2.id),
+    ]
     games = [mock_game]
+    players = [mock_player, mock_player_2]
 
-    player_to_sobp = obp.get_player_to_sobp(games)
+    player_to_sobp = obp.get_player_to_sobp(games, players)
 
     assert len(player_to_sobp) == 3
     assert player_to_sobp[mock_player.id].value == 0.0
@@ -112,17 +113,17 @@ def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
 
 
 def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(
-    mock_game, mock_player, mock_player_2, mock_play_builder
+    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
 ):
-    play_1 = mock_play_builder(result=PlayResult.STRIKEOUT, batter_id=mock_player.id)
-    play_2 = mock_play_builder(result=PlayResult.SINGLE, batter_id=mock_player_2.id)
-    mock_player.plays = [play_1]
-    mock_player_2.plays = [play_2]
-    mock_game.players = [mock_player, mock_player_2]
-    mock_game.inning_to_plays[1] = [play_1, play_2]
-    games = [mock_game]
+    mock_game.chronological_events = [
+        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id),
+        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player_2.id),
+    ]
 
-    player_to_sobp = obp.get_player_to_sobp(games)
+    games = [mock_game]
+    players = [mock_player, mock_player_2]
+
+    player_to_sobp = obp.get_player_to_sobp(games, players)
 
     assert player_to_sobp[mock_player.id].value == 0.0
     assert player_to_sobp[mock_player.id].at_bats == 0

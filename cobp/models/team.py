@@ -1,16 +1,8 @@
 """Team data."""
 import logging
 from dataclasses import dataclass
-from enum import Enum
 
 logger = logging.getLogger(__name__)
-
-
-class TeamLocation(Enum):
-    """Team location, as defined in Retrosheet spec."""
-
-    VISITING = 0
-    HOME = 1
 
 
 @dataclass

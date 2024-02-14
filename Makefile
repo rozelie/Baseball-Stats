@@ -1,7 +1,8 @@
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 SRC_DIR := ${ROOT_DIR}/cobp
 TESTS_DIR := ${ROOT_DIR}/tests
-VENV_BIN := ${ROOT_DIR}/venv/bin
+VENV_DIR := ${ROOT_DIR}/venv
+VENV_BIN := ${VENV_DIR}/bin
 PYTHON := ${VENV_BIN}/python
 ENTRYPOINT := ${SRC_DIR}/__main__.py
 -include .env
@@ -13,7 +14,7 @@ install_dev:
 	${PYTHON} -m pip install .[dev]
 
 setup:
-	python3 -m venv venv
+	python3 -m venv ${VENV_DIR}
 	$(MAKE) install
 	$(MAKE) install_dev
 
@@ -27,7 +28,7 @@ docker_run:
 	docker run -p 80:80 cobp
 
 test:
-	PYTHONPATH="${ROOT_DIR}" PYTHONUNBUFFERED=1 ${PYTHON} -m pytest ${TESTS_DIR}
+	PYTHONPATH="${ROOT_DIR}" PYTHONUNBUFFERED=1 ${PYTHON} -m pytest --cov=cobp ${TESTS_DIR}
 
 format:
 	${VENV_BIN}/black ${SRC_DIR} ${TESTS_DIR}
@@ -35,7 +36,7 @@ format:
 
 lint:
 	${VENV_BIN}/ruff ${SRC_DIR}
-	${VENV_BIN}/mypy ${SRC_DIR}
+	${VENV_BIN}/mypy ${SRC_DIR} --no-site-packages
 
 aws_docker_build_and_push:
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ECR_URI}

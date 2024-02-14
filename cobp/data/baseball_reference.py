@@ -4,7 +4,8 @@ from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
-from fuzzywuzzy import process
+from fuzzywuzzy import fuzz, process
+from pyretrosheet.models.player import Player
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -12,6 +13,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from cobp import paths
+from cobp.models.team import Team
 from cobp.ui.selectors import FIRST_AVAILABLE_YEAR, LAST_AVAILABLE_YEAR
 
 logger = logging.getLogger(__name__)
@@ -53,15 +55,21 @@ class BaseballReferenceClient:
             try:
                 # href example: 'https://www.baseball-reference.com/players/a/abramcj01.shtml'
                 player_href = cells[0].find_element(By.TAG_NAME, "a").get_attribute("href")
-                player_id = player_href.split("/")[5].replace(".shtml", "")  # type: ignore
+                player_id = player_href.split("/")[5].replace(".shtml", "")
             except NoSuchElementException:
                 # skip non-player rows
+                continue
+
+            baseball_reference_team_id = cells[2].text
+
+            # ignore TOT team (an aggregation for all teams played on for the year)
+            if baseball_reference_team_id == "TOT":
                 continue
 
             player_stats = PlayerSeasonalStats(
                 player_name=player_name,
                 player_id=player_id,
-                baseball_reference_team_id=cells[2].text,
+                baseball_reference_team_id=baseball_reference_team_id,
                 rbis=int(cells[12].text),
                 runs=int(cells[7].text),
             )
@@ -90,6 +98,7 @@ def dump_players_seasonal_stats(year: int) -> None:
         )
 
     data_path = _get_players_seasonal_stats_data_path(year)
+    data_path.parent.mkdir(parents=True, exist_ok=True)
     data_path.write_text("\n".join(lines))
     logger.info(f"Wrote baseball reference seasonal players rbis to {data_path.as_posix()}")
 
@@ -104,24 +113,17 @@ def get_seasonal_players_stats(year: int) -> pd.DataFrame:
     return pd.read_csv(data_path)
 
 
-def lookup_player(df: pd.DataFrame, player_name: str, team_id: str) -> pd.Series | None:
-    def fuzzy_lookup(query: str, choices: list[str], threshold: int = 50) -> str:
-        """
-        Note that the threshold is relatively low due to some players playing under different names.
-        e.g. Clint Frazier has also played under the name of Jackson Frazier
-             https://www.baseball-reference.com/players/f/frazicl01.shtml
-        """
-        result, score = process.extractOne(query, choices)
-        if score >= threshold:
-            return result  # type: ignore
+def lookup_player(df: pd.DataFrame, player: Player, team: Team, year: int) -> pd.Series | None:
+    team_id = team.baseball_reference_id or team.retrosheet_id
+    team_players_df = df.loc[df["baseball_reference_team_id"] == team_id]
+    team_players = team_players_df["player_name"].tolist()
+    player_name = _get_real_player_name(player)
+    if player_name in team_players:
+        player_name_match = player_name
+    else:
+        player_name_match = _fuzzy_lookup_player(player_name, team_players)
 
-        raise ValueError(f"Unable to perform a fuzzy lookup of {player_name=} | {team_id=} | {result=} | {score=}")
-
-    team_players = df.loc[df["baseball_reference_team_id"] == team_id]
-    # some players have accented names in Baseball Reference data but not in Retrosheet so
-    # we perform a fuzzy lookup
-    player_name_match = fuzzy_lookup(player_name, team_players["player_name"].tolist())
-    return team_players.loc[df["player_name"] == player_name_match]
+    return team_players_df.loc[df["player_name"] == player_name_match]
 
 
 def dump_all_seasons():
@@ -133,8 +135,46 @@ def _get_players_seasonal_stats_data_path(year: int) -> Path:
     return paths.DATA_DIR / str(year) / "baseball_reference.csv"
 
 
-# 2023-11-27 15:57:42,536 INFO cross_reference:42 - Unable to find baseball reference player rbis:
-# year=2022 | player_name='Noah Syndergaard' | player_id='syndn001' | team_id='LAA'
-# a = get_seasonal_players_rbis(2022)
-# b = a[a["baseball_reference_team_id"] == "LAA"]
-# print(a)
+def _get_real_player_name(player: Player) -> str:
+    # handle data error where either the player id or the name is incorrect (from 2013 New York Yankees retrosheet data)
+    if player.id == "almoz001" and player.name == "Drew Stubbs":
+        return "Zoilo Almonte"
+
+    return player.name  # type: ignore
+
+
+def _fuzzy_lookup_player(player: str, team_players: list[str]) -> str:
+    """Perform a fuzzy lookup to match a player's name to the names of players on a team."""
+    # set to 80 so minor differences can be matched (e.g. accent in a name since Retrosheet does not use accents)
+    threshold = 80
+    matched_player, score = process.extractOne(player, team_players)
+    if score >= threshold:
+        return matched_player  # type: ignore
+
+    # if match does not reach the threshold, try matching on last name only
+    player_last_name = player.split(" ")[-1]
+    matched_player_last_name = matched_player.split(" ")[-1]
+    if player_last_name == matched_player_last_name:
+        return matched_player  # type: ignore
+
+    # try fuzzy matching on last name only
+    player_last_name = player.split(" ")[-1]
+    for team_player in team_players:
+        team_player_last_name = team_player.split(" ")[-1]
+        match_ratio = fuzz.ratio(player_last_name, team_player_last_name)
+        if match_ratio >= 80:
+            return team_player
+
+    # special cases of players playing under other names
+    player_aliases = {
+        "Jose Garcia": "José Barrero",  # https://www.baseball-reference.com/players/g/garcijo02.shtml
+        "Felipe Rivero": "Felipe Vazquez",  # https://www.baseball-reference.com/players/r/riverfe01.shtml
+        "Manuel Pina": "Manny Piña",
+        "Fausto Carmona": "Roberto Hernández",  # https://www.baseball-reference.com/players/c/carmofa01.shtml
+        "Leo Nunez": "Juan Carlos Oviedo",  # https://www.baseball-reference.com/players/n/nunezle01.shtml
+        "Jose J. Leon": "José León",
+    }
+    if player in player_aliases:
+        return player_aliases[player]
+
+    raise ValueError(f"Unable to perform a fuzzy lookup of {player=} | {matched_player=} | {score=} | {team_players=}")

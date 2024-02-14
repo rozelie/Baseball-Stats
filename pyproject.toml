@@ -27,6 +27,7 @@ dependencies = [
     "ordered_enum==0.0.8",
     "beautifulsoup4==4.12.2",
     "fuzzywuzzy==0.18.0",
+    "pyretrosheet==0.0.10",
     "python-Levenshtein==0.23.0", # for fast fuzzy matching
 ]
 
@@ -42,6 +43,7 @@ dev = [
   "types-requests==2.31.0.1",
   "coverage==7.2.7",
   "selenium==4.15.2",
+  "pytest-cov==4.1.0",
 ]
 
 [project.urls]
@@ -80,7 +82,7 @@ indent = 4
 color_output = true
 
 [tool.mypy]
-python_version = 3.11
+python_version = "3.11"
 pretty = true
 show_traceback = true
 color_output = true

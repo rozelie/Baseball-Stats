@@ -1,49 +1,118 @@
+from datetime import date
+
 import pytest
-
-from cobp.models.delta import PlayDelta
-from cobp.models.game import Game
-from cobp.models.play import Play
-from cobp.models.play_modifier import PlayModifier
-from cobp.models.play_result import PlayResult
-from cobp.models.player import Player
-from cobp.models.team import TEAMS
-
-
-@pytest.fixture
-def mock_player():
-    return Player(id="player", name="player", lineup_position=1)
+from pyretrosheet.models.base import Base
+from pyretrosheet.models.game import Game
+from pyretrosheet.models.game_id import GameID
+from pyretrosheet.models.play import Play
+from pyretrosheet.models.play.advance import Advance
+from pyretrosheet.models.play.description import BatterEvent, Description, RunnerEvent
+from pyretrosheet.models.play.event import Event
+from pyretrosheet.models.play.modifier import Modifier, ModifierType
+from pyretrosheet.models.player import Player
+from pyretrosheet.models.team import TeamLocation
 
 
 @pytest.fixture
-def mock_player_2():
-    return Player(id="player_2", name="player_2", lineup_position=2)
+def mock_team_location() -> TeamLocation:
+    return TeamLocation.HOME
 
 
 @pytest.fixture
-def mock_play_builder(mock_player):
+def mock_player(mock_team_location):
+    return Player(
+        id="player",
+        name="player",
+        team_location=mock_team_location,
+        batting_order_position=1,
+        fielding_position=1,
+        is_sub=False,
+        raw="",
+    )
+
+
+@pytest.fixture
+def mock_player_2(mock_team_location):
+    return Player(
+        id="player_2",
+        name="player_1",
+        team_location=mock_team_location,
+        batting_order_position=1,
+        fielding_position=1,
+        is_sub=False,
+        raw="",
+    )
+
+
+@pytest.fixture
+def mock_modifier_builder():
+    def modifier_builder(
+        type: ModifierType,
+        hit_location: str | None = None,
+        fielder_positions: list[int] | None = None,
+        base: Base | None = None,
+        raw: str = "",
+    ):
+        return Modifier(
+            type=type,
+            hit_location=hit_location,
+            fielder_positions=fielder_positions,
+            base=base,
+            raw=raw,
+        )
+
+    return modifier_builder
+
+
+@pytest.fixture
+def mock_event_builder():
+    def event_builder(
+        batter_event: BatterEvent | None = None,
+        runner_event: RunnerEvent | None = None,
+        modifiers: list[Modifier] | None = None,
+        advances: list[Advance] | None = None,
+    ):
+        return Event(
+            description=Description(
+                batter_event=batter_event,
+                runner_event=runner_event,
+                fielder_assists={},
+                fielder_put_outs={},
+                fielder_handlers={},
+                fielder_errors={},
+                put_out_at_base=None,
+                stolen_base=None,
+                raw="",
+            ),
+            modifiers=modifiers or [],
+            advances=advances or [],
+            raw="",
+        )
+
+    return event_builder
+
+
+@pytest.fixture
+def mock_play_builder(mock_player, mock_event_builder, mock_team_location):
     def play_builder(
-        result: PlayResult,
-        base_running_play_result: PlayResult | None = None,
-        modifiers: list[PlayModifier] | None = None,
+        event: Event = mock_event_builder(),
         inning: int = 1,
+        team_location: TeamLocation = mock_team_location,
         batter_id: str = mock_player.id,
-        play_descriptor: str = "",
-        delta: PlayDelta | None = None,
+        count: str = "",
+        pitches: str = "",
+        comments: list[str] | None = None,
+        raw: str = "",
     ):
         return Play(
             inning=inning,
+            team_location=team_location,
             batter_id=batter_id,
-            play_descriptor=play_descriptor,
-            result=result,
-            base_running_play_result=base_running_play_result,
-            previous_base_state={},
-            modifiers=modifiers or [],
-            delta=delta
-            or PlayDelta(
-                resulting_base_state={},
-                player_ids_scoring_a_run=[],
-                batter_rbis=0,
-            ),
+            count=count,
+            pitches=pitches,
+            comments=comments or [],
+            event=event,
+            raw=raw,
         )
 
     return play_builder
@@ -52,10 +121,13 @@ def mock_play_builder(mock_player):
 @pytest.fixture
 def mock_game():
     return Game(
-        id="CHN202204080",
-        team=TEAMS[0],
-        home_team=TEAMS[0],
-        visiting_team=TEAMS[1],
-        players=[],
-        inning_to_plays={},
+        id=GameID(
+            home_team_id="",
+            date=date(2024, 1, 1),
+            game_number=0,
+            raw="",
+        ),
+        info={"hometeam": "", "visteam": ""},
+        chronological_events=[],
+        earned_runs={},
     )

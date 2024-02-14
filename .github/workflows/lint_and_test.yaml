@@ -14,7 +14,7 @@ jobs:
       with:
         python-version: 3.11
 
-    - name: Install module in venv
+    - name: Install module and dependencies
       run: make setup
 
     - name: Run linters

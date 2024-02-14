@@ -4,13 +4,12 @@ from traceback import format_exc
 
 import pandas as pd
 import streamlit as st
+from pyretrosheet.load import load_games
+from pyretrosheet.models.game import Game
 from streamlit.delta_generator import DeltaGenerator
 
 from cobp import session
-from cobp.data import cross_reference, retrosheet
 from cobp.env import ENV
-from cobp.models import game
-from cobp.models.game import Game
 from cobp.models.team import Team, get_teams_for_year
 from cobp.stats.aggregated import get_player_to_stats, get_player_to_stats_df
 from cobp.ui import download, selectors
@@ -27,15 +26,19 @@ def load_season_games(
     basic_info_only: bool = False,
     game_ids: list[str] | None = None,
 ) -> list[Game]:
-    seasons_event_files = retrosheet.get_seasons_event_files(year)
     try:
-        if basic_info_only:
-            games = list(game.load_teams_games_basic_info(seasons_event_files, team, year))
+        games_for_year = load_games(year=year, basic_info_only=basic_info_only)
+        logger.info(f"Loaded {len(games_for_year)} games for {year} ({basic_info_only=})")
+        if game_ids:
+            teams_games_for_year = [g for g in games_for_year if g.id.raw in game_ids]
+            logger.info(f"Loaded {len(teams_games_for_year)} games for {year}, matching {len(game_ids)} game ids")
         else:
-            games = list(game.load_teams_games(seasons_event_files, team, game_ids, year))
+            teams_games_for_year = [
+                g for g in games_for_year if team.retrosheet_id in (g.home_team_id, g.visiting_team_id)
+            ]
+            logger.info(f"Loaded {len(teams_games_for_year)} games for {year} {team.pretty_name}")
 
-        logger.info(f"Found {len(games)} games for {year} {team.pretty_name}")
-        return games
+        return teams_games_for_year
     except ValueError:
         display_error(f"Error in loading {year} {team.pretty_name}'s data:\n\n{format_exc()}")
         raise
@@ -121,16 +124,17 @@ def _display_stats_for_team_in_year(year: int, team: Team, game_id: str | None) 
     if game_id:
         game_ids = [game_id]
     elif ENV.YEAR:
-        game_ids = [game.id for game in games]
+        game_ids = [game.id.raw for game in games]
     else:
         game_selection = _get_games_selection(games)
         if not game_selection:
             return
-        game_ids = [game.id for game in game_selection]
+        game_ids = [game.id.raw for game in game_selection]
 
     loaded_games = load_season_games(year, team, basic_info_only=False, game_ids=game_ids)
-    player_to_stats = get_player_to_stats(loaded_games)
+    player_to_stats = get_player_to_stats(loaded_games, team, year)
     display_game(
+        team=team,
         games=loaded_games,
         player_to_stats=player_to_stats,
         player_to_stats_df=get_player_to_stats_df(loaded_games, player_to_stats, team=team, year=year),
@@ -142,7 +146,7 @@ def _get_games_selection(all_games: list[Game]) -> list[Game] | None:
     if not game_:
         return None
 
-    return all_games if game_ == ENTIRE_SEASON else [game_]  # type: ignore
+    return all_games if game_ == ENTIRE_SEASON else [game_]
 
 
 def _get_team_player_to_stats_df(
@@ -154,7 +158,7 @@ def _get_team_player_to_stats_df(
 ) -> pd.DataFrame:
     progress.progress(current_iteration / total_iterations, text=f"Loading {year} {team.pretty_name} data...")
     team_games: list[Game] = load_season_games(year, team)
-    team_player_to_stats = get_player_to_stats(team_games)
+    team_player_to_stats = get_player_to_stats(team_games, team, year)
     df = get_player_to_stats_df(
         team_games,
         team_player_to_stats,
@@ -163,16 +167,4 @@ def _get_team_player_to_stats_df(
     )
     # remove players without ABs as they are not currently useful
     df = df[df["AB"] > 0]
-
-    if not ENV.USE_BASEBALL_REFERENCE_R_AND_RBI_STATS:
-        discrepancies = cross_reference.get_bb_ref_and_retrosheet_rbi_discrepancies(
-            year=year,
-            team=team,
-            retrosheet_df=df,
-        )
-        if discrepancies:
-            cross_reference.write_bb_ref_and_retrosheet_rbi_discrepancies(
-                f"{year}_{team.retrosheet_id}.csv", discrepancies
-            )
-
     return df

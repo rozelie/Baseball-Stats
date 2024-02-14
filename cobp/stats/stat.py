@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from cobp.models.play import Play
+from pyretrosheet.models.play import Play
 
 
 @dataclass
@@ -13,7 +13,7 @@ class Stat:
         resultant: str | None = None,
         color: str | None = None,
     ) -> None:
-        resultant = resultant if resultant else play.id
-        color = color if color else play.color
-        value = f"{play.pretty_description} => :{color}[{resultant}]"
+        resultant = resultant if resultant else "???"
+        color = color if color else "white"
+        value = f"{play.raw} => :{color}[{resultant}]"
         self.explanation.append(value)
