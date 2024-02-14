@@ -35,8 +35,8 @@ format:
 	${VENV_BIN}/isort ${SRC_DIR} ${TESTS_DIR}
 
 lint:
-	${VENV_BIN}/ruff ${SRC_DIR}
-	${VENV_BIN}/mypy ${SRC_DIR}
+	${VENV_BIN}/ruff ${SRC_DIR} --exclude=venv
+	${VENV_BIN}/mypy ${SRC_DIR} --exclude=venv
 
 aws_docker_build_and_push:
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ECR_URI}
