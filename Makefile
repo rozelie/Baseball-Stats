@@ -1,6 +1,7 @@
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 SRC_DIR := ${ROOT_DIR}/cobp
 TESTS_DIR := ${ROOT_DIR}/tests
+VENV_DIR := ${VENV_DIR}/venv
 VENV_BIN := ${ROOT_DIR}/venv/bin
 PYTHON := ${VENV_BIN}/python
 ENTRYPOINT := ${SRC_DIR}/__main__.py
@@ -13,7 +14,7 @@ install_dev:
 	${PYTHON} -m pip install .[dev]
 
 setup:
-	python3 -m venv venv
+	python3 -m venv ${VENV_DIR}
 	$(MAKE) install
 	$(MAKE) install_dev
 
@@ -27,7 +28,7 @@ docker_run:
 	docker run -p 80:80 cobp
 
 test:
-	PYTHONPATH="${ROOT_DIR}" PYTHONUNBUFFERED=1 ${PYTHON} -m pytest ${TESTS_DIR}
+	PYTHONPATH="${ROOT_DIR}" PYTHONUNBUFFERED=1 ${PYTHON} -m pytest --cov=cobp ${TESTS_DIR}
 
 format:
 	${VENV_BIN}/black ${SRC_DIR} ${TESTS_DIR}
