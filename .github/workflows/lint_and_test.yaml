@@ -18,7 +18,7 @@ jobs:
       run: python -m pip install . && python -m pip install .[dev]
 
     - name: Run linters
-      run: python -m ruff cobp && python -m mypy cobp
+      run: ls && python -m ruff cobp && python -m mypy cobp
 
     - name: Run tests
       run: python -m pytest tests
