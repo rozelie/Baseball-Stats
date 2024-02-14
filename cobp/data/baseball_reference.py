@@ -55,7 +55,7 @@ class BaseballReferenceClient:
             try:
                 # href example: 'https://www.baseball-reference.com/players/a/abramcj01.shtml'
                 player_href = cells[0].find_element(By.TAG_NAME, "a").get_attribute("href")
-                player_id = player_href.split("/")[5].replace(".shtml", "")  # type: ignore
+                player_id = player_href.split("/")[5].replace(".shtml", "")
             except NoSuchElementException:
                 # skip non-player rows
                 continue
