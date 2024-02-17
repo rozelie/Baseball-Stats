@@ -27,7 +27,7 @@ class Team:
 
 TEAMS = [
     Team("ALT", "Altoona", "Mountain Citys", 1884, 1884),
-    Team("ANA", "Anaheim", "Angels", 2005, 2022, baseball_reference_id="LAA"),
+    Team("ANA", "Los Angeles", "Angels", 2005, 2022, baseball_reference_id="LAA"),
     Team("ANA", "Anaheim", "Angels", 1997, 2004),
     Team("ARI", "Arizona", "Diamondbacks", 1998, 2022),
     Team("ATL", "Atlanta", "Braves", 1966, 2022),
