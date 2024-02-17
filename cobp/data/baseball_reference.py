@@ -113,7 +113,7 @@ def get_seasonal_players_stats(year: int) -> pd.DataFrame:
     return pd.read_csv(data_path)
 
 
-def lookup_player(df: pd.DataFrame, player: Player, team: Team, year: int) -> pd.Series | None:
+def lookup_player(df: pd.DataFrame, player: Player, team: Team) -> pd.Series | None:
     team_id = team.baseball_reference_id or team.retrosheet_id
     team_players_df = df.loc[df["baseball_reference_team_id"] == team_id]
     team_players = team_players_df["player_name"].tolist()

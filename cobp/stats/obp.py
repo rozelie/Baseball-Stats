@@ -105,9 +105,7 @@ def _get_sobp(games: list[Game], player: Player) -> OBP:
             if not does_play_have_on_base_before_it_in_inning(game, play):
                 obp.add_play(play, resultant="N/A (no other on-base prior to play)", color="red")
                 continue
-            if play.inning != 1 and not does_inning_have_an_on_base(game, play.inning - 1, play.team_location):
-                obp.add_play(play, resultant="N/A (no other on-base in prior inning)", color="red")
-                continue
+
             if is_play_first_of_inning(game, play):
                 obp.add_play(play, resultant="N/A (player is first batter in inning)", color="red")
                 continue
@@ -123,6 +121,10 @@ def _get_loop(games: list[Game], player: Player) -> OBP:
     obp = OBP()
     for game, plays in get_players_plays(games, player):
         for play in plays:
+            if not does_inning_have_an_on_base(game, play.inning, play.team_location):
+                obp.add_play(play, resultant="N/A (no other on-base in inning)", color="red")
+                continue
+
             if not is_play_first_of_inning(game, play):
                 obp.add_play(play, resultant="N/A (player is not first batter in inning)", color="red")
                 continue

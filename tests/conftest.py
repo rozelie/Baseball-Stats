@@ -12,6 +12,8 @@ from pyretrosheet.models.play.modifier import Modifier, ModifierType
 from pyretrosheet.models.player import Player
 from pyretrosheet.models.team import TeamLocation
 
+from cobp.models.team import Team
+
 
 @pytest.fixture
 def mock_team_location() -> TeamLocation:
@@ -119,15 +121,27 @@ def mock_play_builder(mock_player, mock_event_builder, mock_team_location):
 
 
 @pytest.fixture
-def mock_game():
+def mock_team():
+    return Team(
+        retrosheet_id="retrosheet_id",
+        location="location",
+        name="name",
+        start_year=2022,
+        end_year=2022,
+        baseball_reference_id=None,
+    )
+
+
+@pytest.fixture
+def mock_game(mock_team, mock_player, mock_player_2):
     return Game(
         id=GameID(
-            home_team_id="",
+            home_team_id=mock_team.retrosheet_id,
             date=date(2024, 1, 1),
             game_number=0,
             raw="",
         ),
-        info={"hometeam": "", "visteam": ""},
-        chronological_events=[],
+        info={"hometeam": mock_team.retrosheet_id, "visteam": ""},
+        chronological_events=[mock_player, mock_player_2],
         earned_runs={},
     )

@@ -49,7 +49,7 @@ def _get_player_runs(year: int, team: Team, player: Player, at_bats: int) -> Run
         return Runs(runs=0, rbis=0)
 
     bb_ref_stats = baseball_reference.get_seasonal_players_stats(year)
-    bb_ref_player = baseball_reference.lookup_player(bb_ref_stats, player, team, year)
+    bb_ref_player = baseball_reference.lookup_player(bb_ref_stats, player, team)
     return Runs(
         runs=bb_ref_player["runs"].values[0],  # type: ignore
         rbis=bb_ref_player["rbis"].values[0],  # type: ignore
