@@ -24,14 +24,14 @@ class TestSP:
         assert sp_.value == 0.0
 
 
-def test_get_player_to_sp(mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder):
+def test_get_player_to_sp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
     mock_game.chronological_events = [
-        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id, inning=1),
-        mock_play_builder(mock_event_builder(BatterEvent.DOUBLE), batter_id=mock_player.id, inning=2),
-        mock_play_builder(mock_event_builder(BatterEvent.TRIPLE), batter_id=mock_player.id, inning=3),
-        mock_play_builder(mock_event_builder(BatterEvent.HOME_RUN_INSIDE_PARK), batter_id=mock_player.id, inning=4),
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id, inning=5),
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=1),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player, 1),
+        mock_batter_event_play_builder(BatterEvent.DOUBLE, mock_player, 2),
+        mock_batter_event_play_builder(BatterEvent.TRIPLE, mock_player, 3),
+        mock_batter_event_play_builder(BatterEvent.HOME_RUN_INSIDE_PARK, mock_player, 4),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 5),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 1),
     ]
     games = [mock_game]
     players = [mock_player, mock_player_2]

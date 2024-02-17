@@ -29,14 +29,20 @@ class TestOBP:
 
 
 def test_get_player_to_obp(
-    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder, mock_modifier_builder
+    mock_game,
+    mock_player,
+    mock_player_2,
+    mock_play_builder,
+    mock_event_builder,
+    mock_modifier_builder,
+    mock_batter_event_play_builder,
 ):
     mock_game.chronological_events = [
-        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id, inning=1),
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=1),
-        mock_play_builder(mock_event_builder(BatterEvent.WALK), batter_id=mock_player.id, inning=2),
-        mock_play_builder(mock_event_builder(BatterEvent.NO_PLAY), batter_id=mock_player_2.id, inning=2),
-        mock_play_builder(mock_event_builder(BatterEvent.HIT_BY_PITCH), batter_id=mock_player.id, inning=3),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player, 1),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 1),
+        mock_batter_event_play_builder(BatterEvent.WALK, mock_player, 2),
+        mock_batter_event_play_builder(BatterEvent.NO_PLAY, mock_player_2, 2),
+        mock_batter_event_play_builder(BatterEvent.HIT_BY_PITCH, mock_player, 3),
         mock_play_builder(
             mock_event_builder(
                 BatterEvent.ASSISTED_FIELDED_OUT, modifiers=[mock_modifier_builder(ModifierType.SACRIFICE_FLY)]
@@ -56,12 +62,10 @@ def test_get_player_to_obp(
     assert player_to_obp[TEAM_PLAYER_ID].value == 0.6
 
 
-def test_get_player_to_cobp__inning_has_on_base(
-    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
-):
+def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
     mock_game.chronological_events = [
-        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id),
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2),
     ]
     games = [mock_game]
     players = [mock_player, mock_player_2]
@@ -75,11 +79,11 @@ def test_get_player_to_cobp__inning_has_on_base(
 
 
 def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
-    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
+    mock_game, mock_player, mock_player_2, mock_batter_event_play_builder
 ):
     mock_game.chronological_events = [
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id),
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2),
     ]
     games = [mock_game]
     players = [mock_player, mock_player_2]
@@ -94,11 +98,11 @@ def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(
 
 
 def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
-    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
+    mock_game, mock_player, mock_player_2, mock_batter_event_play_builder
 ):
     mock_game.chronological_events = [
-        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id),
-        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player_2.id),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2),
     ]
     games = [mock_game]
     players = [mock_player, mock_player_2]
@@ -113,11 +117,11 @@ def test_get_player_to_sobp__play_has_on_base_before_it_in_inning(
 
 
 def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(
-    mock_game, mock_player, mock_player_2, mock_play_builder, mock_event_builder
+    mock_game, mock_player, mock_player_2, mock_batter_event_play_builder
 ):
     mock_game.chronological_events = [
-        mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id),
-        mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player_2.id),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2),
     ]
 
     games = [mock_game]

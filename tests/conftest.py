@@ -121,6 +121,30 @@ def mock_play_builder(mock_player, mock_event_builder, mock_team_location):
 
 
 @pytest.fixture
+def mock_batter_event_play_builder(mock_play_builder, mock_player, mock_event_builder):
+    def batter_event_play_builder(
+        batter_event: BatterEvent,
+        player: Player = mock_player,
+        inning: int = 1,
+    ):
+        return mock_play_builder(mock_event_builder(batter_event), batter_id=player.id, inning=inning)
+
+    return batter_event_play_builder
+
+
+@pytest.fixture
+def mock_runner_event_play_builder(mock_play_builder, mock_player, mock_event_builder):
+    def runner_event_play_builder(
+        runner_event: RunnerEvent,
+        player: Player = mock_player,
+        inning: int = 1,
+    ):
+        return mock_play_builder(mock_event_builder(runner_event=runner_event), batter_id=player.id, inning=inning)
+
+    return runner_event_play_builder
+
+
+@pytest.fixture
 def mock_team():
     return Team(
         retrosheet_id="retrosheet_id",

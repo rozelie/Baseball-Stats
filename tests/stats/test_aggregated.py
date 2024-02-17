@@ -1,8 +1,7 @@
 import pytest
-from pyretrosheet.models.play.description import BatterEvent, RunnerEvent
+from pyretrosheet.models.play.description import BatterEvent
 
 from cobp.stats import aggregated
-from cobp.utils import TEAM_PLAYER_ID
 
 MODULE_PATH = "cobp.stats.aggregated"
 
@@ -13,7 +12,7 @@ def get_player_to_runs(mocker):
 
 
 def test_aggregated_stats_scenario(
-    mock_game, mock_team, mock_player, mock_player_2, mock_play_builder, mock_event_builder, get_player_to_runs
+    mock_game, mock_team, mock_player, mock_player_2, mock_batter_event_play_builder, get_player_to_runs
 ):
     """Can be used for regression testing - was initially given a specific scenario to test against (this test)
     which allowed for finding some errors in stat calculations.
@@ -24,22 +23,18 @@ def test_aggregated_stats_scenario(
     """
     mock_game.chronological_events.extend(
         [
-            mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player.id, inning=1),
-            mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=2),
-            mock_play_builder(mock_event_builder(BatterEvent.WALK), batter_id=mock_player.id, inning=3),
-            mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=4),
-            mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player.id, inning=5),
-            mock_play_builder(
-                mock_event_builder(BatterEvent.HOME_RUN_INSIDE_PARK), batter_id=mock_player_2.id, inning=5
-            ),
-            mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=6),
-            mock_play_builder(mock_event_builder(BatterEvent.TRIPLE), batter_id=mock_player_2.id, inning=7),
-            mock_play_builder(mock_event_builder(BatterEvent.DOUBLE), batter_id=mock_player.id, inning=7),
-            mock_play_builder(mock_event_builder(BatterEvent.STRIKEOUT), batter_id=mock_player_2.id, inning=8),
-            mock_play_builder(mock_event_builder(BatterEvent.SINGLE), batter_id=mock_player_2.id, inning=9),
-            mock_play_builder(
-                mock_event_builder(BatterEvent.UNASSISTED_FIELDED_OUT), batter_id=mock_player.id, inning=9
-            ),
+            mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 1),
+            mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 2),
+            mock_batter_event_play_builder(BatterEvent.WALK, mock_player, 3),
+            mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 4),
+            mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player, 5),
+            mock_batter_event_play_builder(BatterEvent.HOME_RUN_INSIDE_PARK, mock_player_2, 5),
+            mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 6),
+            mock_batter_event_play_builder(BatterEvent.TRIPLE, mock_player_2, 7),
+            mock_batter_event_play_builder(BatterEvent.DOUBLE, mock_player, 7),
+            mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 8),
+            mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 9),
+            mock_batter_event_play_builder(BatterEvent.UNASSISTED_FIELDED_OUT, mock_player, 9),
         ]
     )
     games = [mock_game]
