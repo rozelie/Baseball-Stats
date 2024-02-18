@@ -10,6 +10,7 @@ from pyretrosheet.views import get_team_players
 from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
+from cobp.stats.derived import COPS, LOOPS, OPS, SOPS
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_loop, get_player_to_obp, get_player_to_sobp
 from cobp.stats.runs import Runs, get_player_to_runs
 from cobp.stats.sp import SP, get_player_to_sp
@@ -30,20 +31,20 @@ class PlayerStats:
     runs: Runs
 
     @property
-    def ops(self) -> float:
-        return self.obp.value + self.sp.value
+    def ops(self) -> OPS:
+        return OPS(obp=self.obp, sp=self.sp)
 
     @property
-    def cops(self) -> float:
-        return self.cobp.value + self.sp.value
+    def cops(self) -> COPS:
+        return COPS(cobp=self.cobp, sp=self.sp)
 
     @property
-    def loops(self) -> float:
-        return self.loop.value + self.ops
+    def loops(self) -> LOOPS:
+        return LOOPS(loop=self.loop, ops=self.ops)
 
     @property
-    def sops(self) -> float:
-        return self.sobp.value + self.ops
+    def sops(self) -> SOPS:
+        return SOPS(sobp=self.sobp, ops=self.ops)
 
 
 PlayerToStats = dict[str, PlayerStats]
@@ -110,8 +111,8 @@ def get_player_to_stats_df(
         data["SP"].append(stats.sp.value)
         data["OPS"].append(stats.ops.value)
         data["COPS"].append(stats.cops.value)
-        data["LOOPS"].append(stats.loops)
-        data["SOPS"].append(stats.sops)
+        data["LOOPS"].append(stats.loops.value)
+        data["SOPS"].append(stats.sops.value)
 
     return pd.DataFrame(data=data)
 

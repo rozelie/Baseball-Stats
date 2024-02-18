@@ -29,10 +29,10 @@ class TestPlayerStats:
             runs=Runs(),
         )
 
-        assert player_stats.ops == 1.5
-        assert player_stats.cops == 1.0
-        assert player_stats.loops == 1.5
-        assert player_stats.sops == 2.0
+        assert player_stats.ops.value == 1.5
+        assert player_stats.cops.value == 1.0
+        assert player_stats.loops.value == 1.5
+        assert player_stats.sops.value == 2.0
 
 
 def test_aggregated_stats_scenario(
