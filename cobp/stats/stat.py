@@ -13,7 +13,29 @@ class Stat:
         resultant: str | None = None,
         color: str | None = None,
     ) -> None:
-        resultant = resultant if resultant else "???"
-        color = color if color else "white"
+        if not resultant:
+            if play.is_hit():
+                resultant = "H"
+            elif play.is_walk():
+                resultant = "W"
+            elif play.is_hit_by_pitch():
+                resultant = "HBP"
+            elif play.is_sacrifice_fly():
+                resultant = "SF"
+            elif play.is_an_at_bat():
+                resultant = "AB"
+            else:
+                resultant = "N/A"
+
+        if not color:
+            if play.is_hit():
+                color = "green"
+            elif play.is_an_at_bat():
+                color = "orange"
+            elif any([play.is_hit_by_pitch(), play.is_sacrifice_fly(), play.is_walk()]):
+                color = "white"
+            else:
+                color = "red"
+
         value = f"{play.raw} => :{color}[{resultant}]"
         self.explanation.append(value)
