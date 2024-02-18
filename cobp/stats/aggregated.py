@@ -10,9 +10,7 @@ from pyretrosheet.views import get_team_players
 from cobp.models.team import Team
 from cobp.stats.ba import BA, get_player_to_ba
 from cobp.stats.basic import BasicStats, get_player_to_basic_stats
-from cobp.stats.cops import COPS, get_player_to_cops
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_loop, get_player_to_obp, get_player_to_sobp
-from cobp.stats.ops import OPS, get_player_to_ops
 from cobp.stats.runs import Runs, get_player_to_runs
 from cobp.stats.sp import SP, get_player_to_sp
 from cobp.utils import build_team_player
@@ -28,18 +26,24 @@ class PlayerStats:
     loop: OBP
     ba: BA
     sp: SP
-    ops: OPS
-    cops: COPS
     basic: BasicStats
     runs: Runs
 
     @property
+    def ops(self) -> float:
+        return self.obp.value + self.sp.value
+
+    @property
+    def cops(self) -> float:
+        return self.cobp.value + self.sp.value
+
+    @property
     def loops(self) -> float:
-        return self.loop.value + self.ops.value
+        return self.loop.value + self.ops
 
     @property
     def sops(self) -> float:
-        return self.sobp.value + self.ops.value
+        return self.sobp.value + self.ops
 
 
 PlayerToStats = dict[str, PlayerStats]
@@ -53,8 +57,6 @@ def get_player_to_stats(games: list[Game], team: Team, year: int) -> PlayerToSta
     player_to_loop = get_player_to_loop(games, players)
     player_to_ba = get_player_to_ba(games, players)
     player_to_sp = get_player_to_sp(games, players)
-    player_to_ops = get_player_to_ops(players, player_to_obp, player_to_sp)
-    player_to_cops = get_player_to_cops(players, player_to_cobp, player_to_sp)
     player_to_basic_stats = get_player_to_basic_stats(games, players)
     player_to_runs = get_player_to_runs(year, team, players, player_to_basic_stats)
     all_players = [build_team_player(), *players]
@@ -66,8 +68,6 @@ def get_player_to_stats(games: list[Game], team: Team, year: int) -> PlayerToSta
             loop=player_to_loop.get(player.id) or OBP(),
             ba=player_to_ba.get(player.id) or BA(),
             sp=player_to_sp.get(player.id) or SP(),
-            ops=player_to_ops.get(player.id) or OPS(),
-            cops=player_to_cops.get(player.id) or COPS(),
             basic=player_to_basic_stats.get(player.id) or BasicStats(),
             runs=player_to_runs.get(player.id) or Runs(),
         )

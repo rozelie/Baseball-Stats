@@ -13,6 +13,8 @@ from pyretrosheet.models.player import Player
 from pyretrosheet.models.team import TeamLocation
 
 from cobp.models.team import Team
+from cobp.stats.obp import OBP
+from cobp.stats.sp import SP
 
 
 @pytest.fixture

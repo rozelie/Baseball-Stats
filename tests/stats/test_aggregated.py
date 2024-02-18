@@ -2,6 +2,11 @@ import pytest
 from pyretrosheet.models.play.description import BatterEvent
 
 from cobp.stats import aggregated
+from cobp.stats.ba import BA
+from cobp.stats.basic import BasicStats
+from cobp.stats.obp import OBP
+from cobp.stats.runs import Runs
+from cobp.stats.sp import SP
 
 MODULE_PATH = "cobp.stats.aggregated"
 
@@ -9,6 +14,25 @@ MODULE_PATH = "cobp.stats.aggregated"
 @pytest.fixture
 def get_player_to_runs(mocker):
     return mocker.patch(f"{MODULE_PATH}.get_player_to_runs")
+
+
+class TestPlayerStats:
+    def test_derivative_stats(self):
+        player_stats = aggregated.PlayerStats(
+            obp=OBP(hits=2, at_bats=2),  # 1.0
+            cobp=OBP(hits=1, at_bats=2),  # 0.5
+            sobp=OBP(hits=1, at_bats=2),  # 0.5
+            loop=OBP(hits=0, at_bats=2),  # 0.0
+            sp=SP(singles=1, at_bats=2),  # 0.5
+            ba=BA(),
+            basic=BasicStats(),
+            runs=Runs(),
+        )
+
+        assert player_stats.ops == 1.5
+        assert player_stats.cops == 1.0
+        assert player_stats.loops == 1.5
+        assert player_stats.sops == 2.0
 
 
 def test_aggregated_stats_scenario(
