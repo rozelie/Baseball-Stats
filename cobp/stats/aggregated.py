@@ -13,7 +13,7 @@ from cobp.stats.basic import BasicStats, get_player_to_basic_stats
 from cobp.stats.derived import COPS, LOOPS, OPS, SOPS
 from cobp.stats.obp import OBP, get_player_to_cobp, get_player_to_loop, get_player_to_obp, get_player_to_sobp
 from cobp.stats.runs import Runs, get_player_to_runs
-from cobp.stats.sp import SP, get_player_to_sp
+from cobp.stats.sp import SP, get_player_to_csp, get_player_to_lsp, get_player_to_sp, get_player_to_ssp
 from cobp.utils import build_team_player
 
 logger = logging.getLogger(__name__)
@@ -25,8 +25,11 @@ class PlayerStats:
     cobp: OBP
     sobp: OBP
     loop: OBP
-    ba: BA
     sp: SP
+    csp: SP
+    lsp: SP
+    ssp: SP
+    ba: BA
     basic: BasicStats
     runs: Runs
 
@@ -36,15 +39,15 @@ class PlayerStats:
 
     @property
     def cops(self) -> COPS:
-        return COPS(cobp=self.cobp, sp=self.sp)
+        return COPS(cobp=self.cobp, csp=self.csp)
 
     @property
     def loops(self) -> LOOPS:
-        return LOOPS(loop=self.loop, ops=self.ops)
+        return LOOPS(loop=self.loop, lsp=self.lsp)
 
     @property
     def sops(self) -> SOPS:
-        return SOPS(sobp=self.sobp, ops=self.ops)
+        return SOPS(sobp=self.sobp, ssp=self.ssp)
 
 
 PlayerToStats = dict[str, PlayerStats]
@@ -58,6 +61,9 @@ def get_player_to_stats(games: list[Game], team: Team, year: int) -> PlayerToSta
     player_to_loop = get_player_to_loop(games, players)
     player_to_ba = get_player_to_ba(games, players)
     player_to_sp = get_player_to_sp(games, players)
+    player_to_csp = get_player_to_csp(games, players)
+    player_to_lsp = get_player_to_lsp(games, players)
+    player_to_ssp = get_player_to_ssp(games, players)
     player_to_basic_stats = get_player_to_basic_stats(games, players)
     player_to_runs = get_player_to_runs(year, team, players, player_to_basic_stats)
     all_players = [build_team_player(), *players]
@@ -69,6 +75,9 @@ def get_player_to_stats(games: list[Game], team: Team, year: int) -> PlayerToSta
             loop=player_to_loop.get(player.id) or OBP(),
             ba=player_to_ba.get(player.id) or BA(),
             sp=player_to_sp.get(player.id) or SP(),
+            csp=player_to_csp.get(player.id) or SP(),
+            lsp=player_to_lsp.get(player.id) or SP(),
+            ssp=player_to_ssp.get(player.id) or SP(),
             basic=player_to_basic_stats.get(player.id) or BasicStats(),
             runs=player_to_runs.get(player.id) or Runs(),
         )

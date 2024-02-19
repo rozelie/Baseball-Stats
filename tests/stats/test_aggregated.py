@@ -24,15 +24,18 @@ class TestPlayerStats:
             sobp=OBP(hits=1, at_bats=2),  # 0.5
             loop=OBP(hits=0, at_bats=2),  # 0.0
             sp=SP(singles=1, at_bats=2),  # 0.5
+            csp=SP(singles=1, at_bats=2),  # 0.5
+            lsp=SP(singles=1, at_bats=2),  # 0.5
+            ssp=SP(singles=1, at_bats=2),  # 0.5
             ba=BA(),
             basic=BasicStats(),
             runs=Runs(),
         )
 
-        assert player_stats.ops.value == 1.5
-        assert player_stats.cops.value == 1.0
-        assert player_stats.loops.value == 1.5
-        assert player_stats.sops.value == 2.0
+        assert player_stats.ops.value == 1.5  # 1.0 + 0.5
+        assert player_stats.cops.value == 1.0  # 0.5 + 0.5
+        assert player_stats.loops.value == 0.5  # 0.0 + 0.5
+        assert player_stats.sops.value == 1.0  # 0.5 + 0.5
 
 
 def test_aggregated_stats_scenario(
@@ -73,3 +76,7 @@ def test_aggregated_stats_scenario(
     assert player_stats.cobp.value == 0.75
     assert player_stats.loop.value == 1.0
     assert player_stats.sobp.value == 0.5
+    assert player_stats.ops.value == 1.35
+    assert player_stats.cops.value == 1.75
+    assert player_stats.loops.value == 2.0
+    assert player_stats.sops.value == 1.5

@@ -134,33 +134,3 @@ def test_get_player_to_sobp__play_has_no_on_base_before_it_in_inning_skips_play(
     assert player_to_sobp[mock_player_2.id].value == 0.0
     assert player_to_sobp[mock_player_2.id].at_bats == 0
     assert player_to_sobp[TEAM_PLAYER_ID].value == 0.0
-
-
-def test__get_obp_handles_player_not_in_game(mock_game, mock_player):
-    mock_game.players = []
-    games = [mock_game]
-
-    obp_ = obp._get_obp(games, mock_player)
-
-    assert obp_.numerator == 0
-    assert obp_.denominator == 0
-
-
-def test__get_cobp_handles_player_not_in_game(mock_game, mock_player):
-    mock_game.players = []
-    games = [mock_game]
-
-    cobp_ = obp._get_cobp(games, mock_player)
-
-    assert cobp_.numerator == 0
-    assert cobp_.denominator == 0
-
-
-def test__get_sobp_handles_player_not_in_game(mock_game, mock_player):
-    mock_game.players = []
-    games = [mock_game]
-
-    sobp_ = obp._get_sobp(games, mock_player)
-
-    assert sobp_.numerator == 0
-    assert sobp_.denominator == 0

@@ -2,14 +2,18 @@
 from dataclasses import dataclass, field
 
 from pyretrosheet.models.game import Game
+from pyretrosheet.models.play import Play
 from pyretrosheet.models.player import Player
 
+from cobp.stats.conditions import ConditionFunction, is_conditional_play, is_leadoff_play, is_sequential_play
 from cobp.stats.stat import Stat
 from cobp.utils import TEAM_PLAYER_ID, get_players_plays
 
 
 @dataclass
 class SP(Stat):
+    """Slugging Percentage."""
+
     singles: int = 0
     doubles: int = 0
     triples: int = 0
@@ -43,39 +47,67 @@ PlayerToSP = dict[str, SP]
 
 
 def get_player_to_sp(games: list[Game], players: list[Player]) -> PlayerToSP:
-    player_to_ba = {player.id: _get_sp(games, player) for player in players}
-    player_to_ba[TEAM_PLAYER_ID] = _get_teams_sp(player_to_ba)
-    return player_to_ba
+    return _get_player_to_sp(games, players, condition=None)
 
 
-def _get_sp(games: list[Game], player: Player) -> SP:
+def get_player_to_csp(games: list[Game], players: list[Player]) -> PlayerToSP:
+    """Conditional Slugging Percentage."""
+    return _get_player_to_sp(games, players, condition=is_conditional_play)
+
+
+def get_player_to_ssp(games: list[Game], players: list[Player]) -> PlayerToSP:
+    """Sequential Slugging Percentage."""
+    return _get_player_to_sp(games, players, condition=is_sequential_play)
+
+
+def get_player_to_lsp(games: list[Game], players: list[Player]) -> PlayerToSP:
+    """Leadoff Slugging Percentage."""
+    return _get_player_to_sp(games, players, condition=is_leadoff_play)
+
+
+def _get_player_to_sp(games: list[Game], players: list[Player], condition: ConditionFunction | None) -> PlayerToSP:
+    player_to_sp = {player.id: _get_sp(games, player, condition=condition) for player in players}
+    player_to_sp[TEAM_PLAYER_ID] = _get_teams_sp(player_to_sp)
+    return player_to_sp
+
+
+def _get_sp(games: list[Game], player: Player, condition: ConditionFunction | None) -> SP:
     sp = SP()
     for game, plays in get_players_plays(games, player):
         game_sp = SP()
         for play in plays:
-            if play.is_an_at_bat():
-                sp.at_bats += 1
-                game_sp.at_bats += 1
+            if condition:
+                is_condition = condition(game, play)
+                if not is_condition.is_met:
+                    sp.add_play(play, resultant=is_condition.reason, color="red")
+                    continue
 
-            if play.is_single():
-                sp.singles += 1
-                game_sp.singles += 1
-            elif play.is_double():
-                sp.doubles += 1
-                game_sp.doubles += 1
-            elif play.is_triple():
-                sp.triples += 1
-                game_sp.triples += 1
-            elif play.is_home_run():
-                sp.home_runs += 1
-                game_sp.home_runs += 1
-
+            _increment_sp_counters(play, sp, game_sp)
             sp.add_play(play)
 
         sp.game_to_stat[game.id.raw] = game_sp
 
     sp.add_arithmetic()
     return sp
+
+
+def _increment_sp_counters(play: Play, sp: SP, game_sp: SP) -> None:
+    if play.is_an_at_bat():
+        sp.at_bats += 1
+        game_sp.at_bats += 1
+
+    if play.is_single():
+        sp.singles += 1
+        game_sp.singles += 1
+    elif play.is_double():
+        sp.doubles += 1
+        game_sp.doubles += 1
+    elif play.is_triple():
+        sp.triples += 1
+        game_sp.triples += 1
+    elif play.is_home_run():
+        sp.home_runs += 1
+        game_sp.home_runs += 1
 
 
 def _get_teams_sp(player_to_sp: PlayerToSP) -> SP:

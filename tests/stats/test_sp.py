@@ -48,7 +48,19 @@ def test__get_sp_handles_player_not_in_game(mock_game, mock_player):
     mock_game.chronological_events = []
     games = [mock_game]
 
-    sp_ = sp._get_sp(games, mock_player)
+    sp_ = sp._get_sp(games, mock_player, condition=None)
 
     assert sp_.numerator == 0
     assert sp_.denominator == 0
+
+
+def test_get_player_to_csp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
+    assert True is False
+
+
+def test_get_player_to_ssp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
+    assert True is False
+
+
+def test_get_player_to_lsp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
+    assert True is False
