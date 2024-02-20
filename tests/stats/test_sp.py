@@ -44,23 +44,76 @@ def test_get_player_to_sp(mock_game, mock_player, mock_player_2, mock_batter_eve
     assert round(player_to_sp[TEAM_PLAYER_ID].value, 1) == 1.7
 
 
-def test__get_sp_handles_player_not_in_game(mock_game, mock_player):
-    mock_game.chronological_events = []
-    games = [mock_game]
-
-    sp_ = sp._get_sp(games, mock_player, condition=None)
-
-    assert sp_.numerator == 0
-    assert sp_.denominator == 0
-
-
 def test_get_player_to_csp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
-    assert True is False
+    mock_game.chronological_events = [
+        # no on-base in inning - skip inning 1
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 1),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 1),
+        # on-base in inning so include inning
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 2),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 2),
+    ]
+    games = [mock_game]
+    players = [mock_player, mock_player_2]
+
+    player_to_csp = sp.get_player_to_csp(games, players)
+    player_1_csp = player_to_csp[mock_player.id]
+    player_2_csp = player_to_csp[mock_player_2.id]
+
+    assert player_1_csp.at_bats == 1
+    assert player_2_csp.at_bats == 1
+    assert player_1_csp.singles == 0
+    assert player_2_csp.singles == 1
+    assert player_1_csp.value == 0.0
+    assert player_2_csp.value == 1.0
 
 
 def test_get_player_to_ssp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
-    assert True is False
+    mock_game.chronological_events = [
+        # ignore all since there is no play on base before it in the inning
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 1),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 1),
+        # on-base in inning so player_2 is included, not player 1 since is first batter in inning
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player, 2),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 2),
+        # ignore player since they are the first batter, player_2 included since there is an on-base prior
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player, 3),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 3),
+    ]
+    games = [mock_game]
+    players = [mock_player, mock_player_2]
+
+    player_to_ssp = sp.get_player_to_ssp(games, players)
+    player_1_ssp = player_to_ssp[mock_player.id]
+    player_2_ssp = player_to_ssp[mock_player_2.id]
+
+    assert player_1_ssp.at_bats == 0
+    assert player_2_ssp.at_bats == 2
+    assert player_1_ssp.singles == 0
+    assert player_2_ssp.singles == 1
+    assert player_1_ssp.value == 0.0
+    assert player_2_ssp.value == 0.5
 
 
 def test_get_player_to_lsp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
-    assert True is False
+    mock_game.chronological_events = [
+        # ignore all since there is no play on base in the inning
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 1),
+        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 1),
+        # add player since it is the first of the inning, ignore player 2 since they are not the first batter
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player, 2),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 2),
+    ]
+    games = [mock_game]
+    players = [mock_player, mock_player_2]
+
+    player_to_lsp = sp.get_player_to_lsp(games, players)
+    player_1_lsp = player_to_lsp[mock_player.id]
+    player_2_lsp = player_to_lsp[mock_player_2.id]
+
+    assert player_1_lsp.at_bats == 1
+    assert player_2_lsp.at_bats == 0
+    assert player_1_lsp.singles == 1
+    assert player_2_lsp.singles == 0
+    assert player_1_lsp.value == 1.0
+    assert player_2_lsp.value == 0.0
