@@ -76,6 +76,12 @@ def test_aggregated_stats_scenario(
     assert player_stats.cobp.value == 0.75
     assert player_stats.loop.value == 1.0
     assert player_stats.sobp.value == 0.5
+
+    assert player_stats.sp.value == 0.750
+    assert player_stats.csp.value == 1.0
+    assert player_stats.lsp.value == 1.0
+    assert player_stats.ssp.value == 1.0
+
     assert player_stats.ops.value == 1.35
     assert player_stats.cops.value == 1.75
     assert player_stats.loops.value == 2.0
