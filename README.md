@@ -4,6 +4,30 @@ teams and players based on [retrosheet.org](retrosheet.org) event data.
 
 Through correlating these custom statistics, a more optimal batting lineup can be achieved.
 
+# Stats
+- `sp`: Slugging Percentage
+- `ba`: Batting Average
+- `runs`: Runs
+- `rbis`: Runs Batted In
+
+- On-Base Percentages
+- `obp`: On-Base Percentage
+
+- `cobp`: Conditional On-Base Percentage
+  - include only plays where there is another on-base in the inning
+  - `csp`: Conditional Slugging Percentage
+  - `cops`: `cobp` + `csp`
+
+- `sobp`: Sequential On-Base Percentage
+  - include only plays where there is another on-base before the play in the inning, excluding leadoff plays
+  - `ssp`: Sequential Slugging Percentage
+  - `sops`: `sobp` + `ssp`
+
+- `loop`: Leadoff On-Base Percentage
+  - include only leadoff plays that have another on-base in the inning
+  - `lsp`: Leadoff Slugging Percentage
+  - `loops`: `loop` + `lsp`
+
 # Technologies
 - Languages: Python 3.11
 - UI: [Streamlit](https://streamlit.io/)
@@ -28,6 +52,7 @@ make run    # runs Streamlit application
 - linting: `make lint`
 
 # Todo
+
 ## For MVP
 - Add baseball-reference link to results
   - single game URL format: https://www.baseball-reference.com/boxes/KCA/KCA202207250.shtml
