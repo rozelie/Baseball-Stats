@@ -8,11 +8,13 @@ def test_is_conditional_play__is_met(mock_game, mock_player, mock_player_2, mock
     play_2 = mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 1)
     mock_game.chronological_events = [play, play_2]
 
-    for play_ in [play, play_2]:
-        is_conditional_play = conditions.is_conditional_play(mock_game, play_)
+    is_play_conditional = conditions.is_conditional_play(mock_game, play)
+    is_play_2_condiitonal = conditions.is_conditional_play(mock_game, play_2)
 
-        assert is_conditional_play.is_met is True
-        assert is_conditional_play.reason is None
+    assert is_play_conditional.is_met is True
+    assert is_play_conditional.reason is None
+    assert is_play_2_condiitonal.is_met is False
+    assert is_play_2_condiitonal.reason == "no other on-base in inning"
 
 
 def test_is_conditional_play__is_not_met_due_to_no_other_on_bases_in_inning(

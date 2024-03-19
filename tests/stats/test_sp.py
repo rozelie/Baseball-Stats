@@ -49,7 +49,7 @@ def test_get_player_to_csp(mock_game, mock_player, mock_player_2, mock_batter_ev
         # no on-base in inning - skip inning 1
         mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 1),
         mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2, 1),
-        # on-base in inning so include inning
+        # on-base in inning so include inning only for mock_player
         mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player, 2),
         mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2, 2),
     ]
@@ -61,11 +61,11 @@ def test_get_player_to_csp(mock_game, mock_player, mock_player_2, mock_batter_ev
     player_2_csp = player_to_csp[mock_player_2.id]
 
     assert player_1_csp.at_bats == 1
-    assert player_2_csp.at_bats == 1
+    assert player_2_csp.at_bats == 0
     assert player_1_csp.singles == 0
-    assert player_2_csp.singles == 1
+    assert player_2_csp.singles == 0
     assert player_1_csp.value == 0.0
-    assert player_2_csp.value == 1.0
+    assert player_2_csp.value == 0.0
 
 
 def test_get_player_to_ssp(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):

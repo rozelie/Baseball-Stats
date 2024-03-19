@@ -23,29 +23,37 @@ def mock_team_location() -> TeamLocation:
 
 
 @pytest.fixture
-def mock_player(mock_team_location):
-    return Player(
-        id="player",
-        name="player",
-        team_location=mock_team_location,
-        batting_order_position=1,
-        fielding_position=1,
-        is_sub=False,
-        raw="",
-    )
+def mock_player_builder(mock_team_location):
+    def player_builder(
+        id: str = "player",
+        name: str = "player",
+        team_location: TeamLocation = mock_team_location,
+        batting_order_position: int = 1,
+        fielding_position: int = 1,
+        is_sub: bool = False,
+        raw: str = "",
+    ):
+        return Player(
+            id=id,
+            name=name,
+            team_location=team_location,
+            batting_order_position=batting_order_position,
+            fielding_position=fielding_position,
+            is_sub=is_sub,
+            raw=raw,
+        )
+
+    return player_builder
 
 
 @pytest.fixture
-def mock_player_2(mock_team_location):
-    return Player(
-        id="player_2",
-        name="player_1",
-        team_location=mock_team_location,
-        batting_order_position=1,
-        fielding_position=1,
-        is_sub=False,
-        raw="",
-    )
+def mock_player(mock_player_builder):
+    return mock_player_builder()
+
+
+@pytest.fixture
+def mock_player_2(mock_player_builder):
+    return mock_player_builder(id="player_2", name="player_1")
 
 
 @pytest.fixture

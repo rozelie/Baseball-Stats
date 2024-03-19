@@ -65,7 +65,7 @@ def test_get_player_to_obp(
 def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_player_2, mock_batter_event_play_builder):
     mock_game.chronological_events = [
         mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player),
-        mock_batter_event_play_builder(BatterEvent.STRIKEOUT, mock_player_2),
+        mock_batter_event_play_builder(BatterEvent.SINGLE, mock_player_2),
     ]
     games = [mock_game]
     players = [mock_player, mock_player_2]
@@ -73,9 +73,9 @@ def test_get_player_to_cobp__inning_has_on_base(mock_game, mock_player, mock_pla
     player_to_cobp = obp.get_player_to_cobp(games, players)
 
     assert len(player_to_cobp) == 3
-    assert player_to_cobp[mock_player.id].value == 1
-    assert player_to_cobp[mock_player_2.id].value == 0.0
-    assert player_to_cobp[TEAM_PLAYER_ID].value == 0.5
+    assert player_to_cobp[mock_player.id].value == 1.0
+    assert player_to_cobp[mock_player_2.id].value == 1.0
+    assert player_to_cobp[TEAM_PLAYER_ID].value == 1.0
 
 
 def test_get_player_to_cobp__inning_has_no_on_base_skips_plays(

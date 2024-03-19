@@ -114,7 +114,7 @@ def dump_team_plays_to_test_fixtures(games: list[Game], team_location: TeamLocat
                     continue
 
                 players.append(
-                    f'{player.id} = mock_player_builder(id="{player.id}", name="{player.name}", team_location={player.team_location})'
+                    f'{player.id} = mock_player_builder(id="{player.id}", name="{player.name}", team_location={player.team_location})' # noqa
                 )
 
             if isinstance(event, Play):
@@ -125,7 +125,7 @@ def dump_team_plays_to_test_fixtures(games: list[Game], team_location: TeamLocat
                 description = play.event.description
                 modifiers = ", ".join([f"mock_modifier_builder({m.type})" for m in play.event.modifiers])
                 plays.append(
-                    f"mock_play_builder(mock_event_builder(batter_event={description.batter_event}, runner_event={description.runner_event}, modifiers=[{modifiers}]), batter_id={play.batter_id}.id, inning={play.inning}),"
+                    f"mock_play_builder(mock_event_builder(batter_event={description.batter_event}, runner_event={description.runner_event}, modifiers=[{modifiers}]), batter_id={play.batter_id}.id, inning={play.inning})," # noqa
                 )
 
     print("\n".join(players))
