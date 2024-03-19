@@ -39,6 +39,22 @@ def does_inning_have_an_on_base(game: Game, inning: int, team_location: TeamLoca
     return False
 
 
+def does_inning_have_another_play_get_on_base(game: Game, play: Play, team_location: TeamLocation) -> bool:
+    inning_plays = get_inning_plays(
+        game,
+        include_visiting_team=team_location == TeamLocation.VISITING,
+        include_home_team=team_location == TeamLocation.HOME,
+    )
+    for inning_play in inning_plays[play.inning]:
+        if inning_play == play:
+            continue
+
+        if inning_play.batter_gets_on_base():
+            return True
+
+    return False
+
+
 def does_play_have_on_base_before_it_in_inning(game: Game, play: Play) -> bool:
     inning_plays = get_inning_plays(
         game,
@@ -76,3 +92,44 @@ def prettify_play(play: Play) -> str:
 
     parts.append(play.raw)
     return " | ".join(parts)
+
+
+def dump_team_plays_to_test_fixtures(games: list[Game], team_location: TeamLocation) -> None:
+    """
+    Usage:
+    ```python
+        from pyretrosheet.models.team import TeamLocation
+        from cobp.utils import dump_team_plays_to_test_fixtures
+
+        dump_team_plays_to_test_fixtures(games, TeamLocation.VISITING)
+    ```
+    """
+    players = []
+    plays = []
+    for game in games:
+        for event in game.chronological_events:
+            if isinstance(event, Player):
+                player = event
+                if player.team_location != team_location:
+                    continue
+
+                players.append(
+                    f'{player.id} = mock_player_builder(id="{player.id}", name="{player.name}", team_location={player.team_location})'
+                )
+
+            if isinstance(event, Play):
+                play = event
+                if play.team_location != team_location:
+                    continue
+
+                description = play.event.description
+                modifiers = ", ".join([f"mock_modifier_builder({m.type})" for m in play.event.modifiers])
+                plays.append(
+                    f"mock_play_builder(mock_event_builder(batter_event={description.batter_event}, runner_event={description.runner_event}, modifiers=[{modifiers}]), batter_id={play.batter_id}.id, inning={play.inning}),"
+                )
+
+    print("\n".join(players))
+    print()
+    print("mock_game.chronological_events = [")
+    print("    \n".join(plays))
+    print("]")
